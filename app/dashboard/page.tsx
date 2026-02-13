@@ -18,14 +18,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      setAnalyses(getStoredAnalyses(user.id));
+      (async () => {
+        const data = await getStoredAnalyses(user.id);
+        setAnalyses(data);
+      })();
     }
   }, [user]);
 
-  const handleDelete = (id: string) => {
-    deleteAnalysis(id);
+  const handleDelete = async (id: string) => {
+    await deleteAnalysis(id);
     if (user) {
-      setAnalyses(getStoredAnalyses(user.id));
+      const data = await getStoredAnalyses(user.id);
+      setAnalyses(data);
     }
   };
 

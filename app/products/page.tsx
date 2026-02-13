@@ -22,14 +22,22 @@ export default function ProductsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user) setAnalyses(getStoredAnalyses(user.id));
+    if (user) {
+      (async () => {
+        const data = await getStoredAnalyses(user.id);
+        setAnalyses(data);
+      })();
+    }
   }, [user]);
 
   const isPro = user?.plan === 'pro';
 
-  const handleDelete = (id: string) => {
-    deleteAnalysis(id);
-    if (user) setAnalyses(getStoredAnalyses(user.id));
+  const handleDelete = async (id: string) => {
+    await deleteAnalysis(id);
+    if (user) {
+      const data = await getStoredAnalyses(user.id);
+      setAnalyses(data);
+    }
   };
 
   const handleCSVImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,16 +50,16 @@ export default function ProductsPage() {
     }
 
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       const text = ev.target?.result as string;
       const { data, errors } = parseCSV(text);
       setCsvErrors(errors);
 
       if (data.length > 0) {
-        data.forEach((input) => {
+        for (const input of data) {
           const result = calculateProfit(input);
           const risk = calculateRisk(input, result);
-          saveAnalysis({
+          await saveAnalysis({
             id: generateId(),
             userId: user.id,
             input,
@@ -59,8 +67,9 @@ export default function ProductsPage() {
             risk,
             createdAt: new Date().toISOString(),
           });
-        });
-        setAnalyses(getStoredAnalyses(user.id));
+        }
+        const updatedAnalyses = await getStoredAnalyses(user.id);
+        setAnalyses(updatedAnalyses);
       }
     };
     reader.readAsText(file);

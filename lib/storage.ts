@@ -1,93 +1,133 @@
-import { Analysis, User } from '@/types';
+import { Analysis } from '@/types';
+import { supabase } from './supabase';
 
-const ANALYSES_KEY = 'pkk_analyses';
-const USER_KEY = 'pkk_user';
-
-function isBrowser(): boolean {
-  return typeof window !== 'undefined';
-}
-
-export function getStoredAnalyses(userId: string): Analysis[] {
-  if (!isBrowser()) return [];
+export async function getStoredAnalyses(userId: string): Promise<Analysis[]> {
   try {
-    const raw = localStorage.getItem(ANALYSES_KEY);
-    if (!raw) return [];
-    const all: Analysis[] = JSON.parse(raw);
-    return all.filter((a) => a.userId === userId).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  } catch {
+    const { data, error } = await supabase
+      .from('analyses')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching analyses:', error);
+      return [];
+    }
+
+    return (data || []).map(row => ({
+      id: row.id,
+      userId: row.user_id,
+      input: row.inputs,
+      result: row.outputs,
+      risk: {
+        score: row.risk_score,
+        level: row.risk_level as any,
+        factors: row.inputs.risk_factors || [],
+      },
+      createdAt: row.created_at,
+    }));
+  } catch (err) {
+    console.error('Error in getStoredAnalyses:', err);
     return [];
   }
 }
 
-export function getAnalysisById(id: string): Analysis | null {
-  if (!isBrowser()) return null;
+export async function getAnalysisById(id: string): Promise<Analysis | null> {
   try {
-    const raw = localStorage.getItem(ANALYSES_KEY);
-    if (!raw) return null;
-    const all: Analysis[] = JSON.parse(raw);
-    return all.find((a) => a.id === id) || null;
-  } catch {
-    return null;
-  }
-}
+    const { data, error } = await supabase
+      .from('analyses')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-export function saveAnalysis(analysis: Analysis): void {
-  if (!isBrowser()) return;
-  try {
-    const raw = localStorage.getItem(ANALYSES_KEY);
-    const all: Analysis[] = raw ? JSON.parse(raw) : [];
-    const idx = all.findIndex((a) => a.id === analysis.id);
-    if (idx >= 0) {
-      all[idx] = analysis;
-    } else {
-      all.push(analysis);
+    if (error || !data) {
+      return null;
     }
-    localStorage.setItem(ANALYSES_KEY, JSON.stringify(all));
-  } catch {
-    // silent fail
-  }
-}
 
-export function deleteAnalysis(id: string): void {
-  if (!isBrowser()) return;
-  try {
-    const raw = localStorage.getItem(ANALYSES_KEY);
-    if (!raw) return;
-    const all: Analysis[] = JSON.parse(raw);
-    const filtered = all.filter((a) => a.id !== id);
-    localStorage.setItem(ANALYSES_KEY, JSON.stringify(filtered));
-  } catch {
-    // silent fail
-  }
-}
-
-export function getStoredUser(): User | null {
-  if (!isBrowser()) return null;
-  try {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
+    return {
+      id: data.id,
+      userId: data.user_id,
+      input: data.inputs,
+      result: data.outputs,
+      risk: {
+        score: data.risk_score,
+        level: data.risk_level as any,
+        factors: data.inputs.risk_factors || [],
+      },
+      createdAt: data.created_at,
+    };
+  } catch (err) {
+    console.error('Error in getAnalysisById:', err);
     return null;
   }
 }
 
-export function setStoredUser(user: User | null): void {
-  if (!isBrowser()) return;
-  if (user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-  } else {
-    localStorage.removeItem(USER_KEY);
+export async function saveAnalysis(analysis: Analysis): Promise<void> {
+  try {
+    const { data: existingData } = await supabase
+      .from('analyses')
+      .select('id')
+      .eq('id', analysis.id)
+      .maybeSingle();
+
+    const analysisData = {
+      id: analysis.id,
+      user_id: analysis.userId,
+      marketplace: analysis.input.marketplace,
+      product_name: analysis.input.product_name,
+      inputs: analysis.input,
+      outputs: analysis.result,
+      risk_score: analysis.risk.score,
+      risk_level: analysis.risk.level,
+    };
+
+    if (existingData) {
+      await supabase
+        .from('analyses')
+        .update(analysisData)
+        .eq('id', analysis.id);
+    } else {
+      await supabase
+        .from('analyses')
+        .insert(analysisData);
+    }
+  } catch (err) {
+    console.error('Error in saveAnalysis:', err);
   }
 }
 
-export function getUserAnalysisCount(userId: string): number {
-  return getStoredAnalyses(userId).length;
+export async function deleteAnalysis(id: string): Promise<void> {
+  try {
+    await supabase
+      .from('analyses')
+      .delete()
+      .eq('id', id);
+  } catch (err) {
+    console.error('Error in deleteAnalysis:', err);
+  }
+}
+
+export async function getUserAnalysisCount(userId: string): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('analyses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error counting analyses:', error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (err) {
+    console.error('Error in getUserAnalysisCount:', err);
+    return 0;
+  }
 }
 
 export function generateId(): string {
-  if (isBrowser() && crypto?.randomUUID) {
+  if (typeof window !== 'undefined' && crypto?.randomUUID) {
     return crypto.randomUUID();
   }
   return Date.now().toString(36) + Math.random().toString(36).slice(2);

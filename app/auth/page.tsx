@@ -24,7 +24,7 @@ export default function AuthPage() {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -37,8 +37,8 @@ export default function AuthPage() {
     }
 
     const result = mode === 'login'
-      ? login(trimmedEmail, password)
-      : register(trimmedEmail, password);
+      ? await login(trimmedEmail, password)
+      : await register(trimmedEmail, password);
 
     if (result.success) {
       router.push('/dashboard');

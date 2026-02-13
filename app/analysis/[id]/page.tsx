@@ -27,10 +27,12 @@ export default function AnalysisResultPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const id = params.id as string;
-    const found = getAnalysisById(id);
-    setAnalysis(found);
-    setLoading(false);
+    (async () => {
+      const id = params.id as string;
+      const found = await getAnalysisById(id);
+      setAnalysis(found);
+      setLoading(false);
+    })();
   }, [params.id]);
 
   const isPro = user?.plan === 'pro';

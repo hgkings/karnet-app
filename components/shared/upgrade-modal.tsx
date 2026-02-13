@@ -54,8 +54,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         <div className="mt-8 space-y-3">
           <Button
             className="w-full"
-            onClick={() => {
-              upgradePlan();
+            onClick={async () => {
+              await upgradePlan();
               onClose();
             }}
           >

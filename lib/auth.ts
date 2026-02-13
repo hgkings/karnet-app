@@ -1,101 +1,102 @@
 import { User } from '@/types';
-import { getStoredUser, setStoredUser, generateId } from './storage';
+import { supabase } from './supabase';
 
-const USERS_DB_KEY = 'pkk_users_db';
-
-interface StoredUserRecord {
-  id: string;
-  email: string;
-  password: string;
-  plan: 'free' | 'pro';
-}
-
-function getUsersDB(): StoredUserRecord[] {
-  if (typeof window === 'undefined') return [];
+export async function login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
-    const raw = localStorage.getItem(USERS_DB_KEY);
-    if (!raw) {
-      const demo: StoredUserRecord = {
-        id: 'demo-user-001',
-        email: 'demo@demo.com',
-        password: '123456',
-        plan: 'pro',
-      };
-      localStorage.setItem(USERS_DB_KEY, JSON.stringify([demo]));
-      return [demo];
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { success: false, error: 'E-posta veya şifre hatalı.' };
     }
-    return JSON.parse(raw);
-  } catch {
-    return [];
+
+    if (!data.user) {
+      return { success: false, error: 'Giriş başarısız.' };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .maybeSingle();
+
+    const user: User = {
+      id: data.user.id,
+      email: data.user.email!,
+      plan: profile?.plan || 'free',
+    };
+
+    return { success: true, user };
+  } catch (err) {
+    return { success: false, error: 'Bir hata oluştu.' };
   }
 }
 
-function saveUsersDB(users: StoredUserRecord[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
-}
-
-export function login(email: string, password: string): { success: boolean; user?: User; error?: string } {
-  const db = getUsersDB();
-  const record = db.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
-  if (!record) {
-    return { success: false, error: 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.' };
-  }
-
-  if (record.password !== password) {
-    return { success: false, error: 'Şifre hatalı.' };
-  }
-
-  const user: User = { id: record.id, email: record.email, plan: record.plan };
-  setStoredUser(user);
-  return { success: true, user };
-}
-
-export function register(email: string, password: string): { success: boolean; user?: User; error?: string } {
+export async function register(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
   if (password.length < 6) {
     return { success: false, error: 'Şifre en az 6 karakter olmalıdır.' };
   }
 
-  const db = getUsersDB();
-  const existing = db.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
-  if (existing) {
-    return { success: false, error: 'Bu e-posta zaten kayıtlı.' };
+    if (error) {
+      if (error.message.includes('already registered')) {
+        return { success: false, error: 'Bu e-posta zaten kayıtlı.' };
+      }
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Kayıt başarısız.' };
+    }
+
+    const user: User = {
+      id: data.user.id,
+      email: data.user.email!,
+      plan: 'free',
+    };
+
+    return { success: true, user };
+  } catch (err) {
+    return { success: false, error: 'Bir hata oluştu.' };
   }
-
-  const newRecord: StoredUserRecord = {
-    id: generateId(),
-    email: email.toLowerCase(),
-    password,
-    plan: 'free',
-  };
-
-  db.push(newRecord);
-  saveUsersDB(db);
-
-  const user: User = { id: newRecord.id, email: newRecord.email, plan: newRecord.plan };
-  setStoredUser(user);
-  return { success: true, user };
 }
 
-export function logout(): void {
-  setStoredUser(null);
+export async function logout(): Promise<void> {
+  await supabase.auth.signOut();
 }
 
-export function getCurrentUser(): User | null {
-  return getStoredUser();
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return null;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    return {
+      id: user.id,
+      email: user.email!,
+      plan: profile?.plan || 'free',
+    };
+  } catch {
+    return null;
+  }
 }
 
-export function updateUserPlan(userId: string, plan: 'free' | 'pro'): void {
-  const db = getUsersDB();
-  const idx = db.findIndex((u) => u.id === userId);
-  if (idx >= 0) {
-    db[idx].plan = plan;
-    saveUsersDB(db);
-  }
-  const current = getStoredUser();
-  if (current && current.id === userId) {
-    setStoredUser({ ...current, plan });
-  }
+export async function updateUserPlan(userId: string, plan: 'free' | 'pro'): Promise<void> {
+  await supabase
+    .from('profiles')
+    .update({ plan })
+    .eq('id', userId);
 }

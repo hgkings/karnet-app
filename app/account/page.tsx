@@ -64,7 +64,7 @@ export default function AccountPage() {
 
             {!isPro && (
               <div className="mt-4 flex gap-2">
-                <Button onClick={upgradePlan}>Pro&apos;ya Yukselt</Button>
+                <Button onClick={() => upgradePlan()}>Pro&apos;ya Yukselt</Button>
                 <Link href="/pricing">
                   <Button variant="outline">Planlari Gor</Button>
                 </Link>

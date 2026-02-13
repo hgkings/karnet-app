@@ -107,11 +107,12 @@ export function AnalysisForm() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate() || !user) return;
 
-    if (user.plan === 'free' && getUserAnalysisCount(user.id) >= 5) {
+    const count = await getUserAnalysisCount(user.id);
+    if (user.plan === 'free' && count >= 5) {
       setShowUpgrade(true);
       return;
     }
@@ -127,7 +128,7 @@ export function AnalysisForm() {
       createdAt: new Date().toISOString(),
     };
 
-    saveAnalysis(analysis);
+    await saveAnalysis(analysis);
     router.push(`/analysis/${analysis.id}`);
   };
 

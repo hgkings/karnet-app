@@ -109,9 +109,9 @@ export default function PricingPage() {
                   ) : plan.planKey === 'pro' ? (
                     <Button
                       className="w-full"
-                      onClick={() => {
+                      onClick={async () => {
                         if (user) {
-                          upgradePlan();
+                          await upgradePlan();
                         }
                       }}
                     >
