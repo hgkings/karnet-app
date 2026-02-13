@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User } from '@/types';
-import { getCurrentUser, login as authLogin, register as authRegister, logout as authLogout, updateUserPlan } from '@/lib/auth';
+import { fetchProfile, login as authLogin, register as authRegister, logout as authLogout, updateUserPlan } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
@@ -22,21 +22,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const current = await getCurrentUser();
-    setUser(current);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setUser(null);
+        return;
+      }
+      const profile = await fetchProfile(session.user.id, session.user.email!);
+      setUser(profile);
+    } catch {
+      setUser(null);
+    }
   }, []);
 
   useEffect(() => {
-    refreshUser();
-    setLoading(false);
+    let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const init = async () => {
+      await refreshUser();
+      if (mounted) setLoading(false);
+    };
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setUser(null);
+        return;
+      }
       (async () => {
-        await refreshUser();
+        const profile = await fetchProfile(session.user.id, session.user.email!);
+        if (mounted) setUser(profile);
       })();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string) => {

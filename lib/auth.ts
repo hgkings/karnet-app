@@ -1,102 +1,66 @@
-import { User } from '@/types';
+import { User, PlanType } from '@/types';
 import { supabase } from './supabase';
 
-export async function login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+async function ensureProfile(userId: string, email: string): Promise<PlanType> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', userId)
+    .maybeSingle();
 
-    if (error) {
-      return { success: false, error: 'E-posta veya şifre hatalı.' };
-    }
+  if (data) return (data.plan as PlanType) || 'free';
 
-    if (!data.user) {
-      return { success: false, error: 'Giriş başarısız.' };
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user.id)
-      .maybeSingle();
-
-    const user: User = {
-      id: data.user.id,
-      email: data.user.email!,
-      plan: profile?.plan || 'free',
-    };
-
-    return { success: true, user };
-  } catch (err) {
-    return { success: false, error: 'Bir hata oluştu.' };
-  }
+  await supabase.from('profiles').insert({ id: userId, email, plan: 'free' });
+  return 'free';
 }
 
-export async function register(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
+export async function fetchProfile(userId: string, email: string): Promise<User> {
+  const plan = await ensureProfile(userId, email);
+  return { id: userId, email, plan };
+}
+
+export async function login(
+  email: string,
+  password: string
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    return { success: false, error: `Giris hatasi: ${error.message}` };
+  }
+  if (!data.user) {
+    return { success: false, error: 'Oturum acilamadi.' };
+  }
+
+  const user = await fetchProfile(data.user.id, data.user.email!);
+  return { success: true, user };
+}
+
+export async function register(
+  email: string,
+  password: string
+): Promise<{ success: boolean; user?: User; error?: string }> {
   if (password.length < 6) {
-    return { success: false, error: 'Şifre en az 6 karakter olmalıdır.' };
+    return { success: false, error: 'Sifre en az 6 karakter olmalidir.' };
   }
 
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+  const { data, error } = await supabase.auth.signUp({ email, password });
 
-    if (error) {
-      if (error.message.includes('already registered')) {
-        return { success: false, error: 'Bu e-posta zaten kayıtlı.' };
-      }
-      return { success: false, error: error.message };
-    }
-
-    if (!data.user) {
-      return { success: false, error: 'Kayıt başarısız.' };
-    }
-
-    const user: User = {
-      id: data.user.id,
-      email: data.user.email!,
-      plan: 'free',
-    };
-
-    return { success: true, user };
-  } catch (err) {
-    return { success: false, error: 'Bir hata oluştu.' };
+  if (error) {
+    return { success: false, error: `Kayit hatasi: ${error.message}` };
   }
+  if (!data.user) {
+    return { success: false, error: 'Kullanici olusturulamadi.' };
+  }
+
+  const user = await fetchProfile(data.user.id, data.user.email!);
+  return { success: true, user };
 }
 
 export async function logout(): Promise<void> {
   await supabase.auth.signOut();
 }
 
-export async function getCurrentUser(): Promise<User | null> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return null;
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    return {
-      id: user.id,
-      email: user.email!,
-      plan: profile?.plan || 'free',
-    };
-  } catch {
-    return null;
-  }
-}
-
-export async function updateUserPlan(userId: string, plan: 'free' | 'pro'): Promise<void> {
-  await supabase
-    .from('profiles')
-    .update({ plan })
-    .eq('id', userId);
+export async function updateUserPlan(userId: string, plan: PlanType): Promise<void> {
+  await supabase.from('profiles').update({ plan }).eq('id', userId);
 }
