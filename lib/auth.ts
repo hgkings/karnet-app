@@ -1,5 +1,5 @@
 import { User, PlanType } from '@/types';
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 
 async function ensureProfile(userId: string, email: string): Promise<PlanType> {
   const { data } = await supabase

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User } from '@/types';
 import { fetchProfile, login as authLogin, register as authRegister, logout as authLogout, updateUserPlan } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 
 interface AuthContextType {
   user: User | null;

@@ -1,5 +1,5 @@
 import { Analysis, RiskLevel } from '@/types';
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 
 interface AnalysisRow {
   id: string;
