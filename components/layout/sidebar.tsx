@@ -86,6 +86,16 @@ export function Sidebar() {
               </Link>
             );
           })}
+          {/* Version Indicator */}
+          <div className="mt-2 px-3 pb-2">
+            <Link
+              href="/api/version"
+              target="_blank"
+              className="text-[10px] text-muted-foreground hover:text-primary transition-colors font-mono"
+            >
+              v.{process.env.NEXT_PUBLIC_COMMIT_SHA?.substring(0, 7) || 'local'}
+            </Link>
+          </div>
         </div>
       </div>
     </aside>

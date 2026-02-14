@@ -30,9 +30,13 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sticky Top Header */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
-        <CriticalBanner />
+      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+        <div className="pointer-events-auto">
+          <Navbar />
+        </div>
+        <div className="pointer-events-auto">
+          <CriticalBanner />
+        </div>
       </div>
 
       {/* Main Content Wrapper */}
