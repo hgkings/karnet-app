@@ -27,8 +27,8 @@ export default function EditAnalysisPage() {
 
         if (user && id) {
             (async () => {
-                const data = await getAnalysisById(id);
-                if (data && data.userId === user.id) {
+                const data = await getAnalysisById(user.id, id);
+                if (data) {
                     setAnalysis(data);
                 }
                 setLoading(false);

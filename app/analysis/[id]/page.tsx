@@ -57,9 +57,10 @@ export default function AnalysisResultPage() {
   const [targetPos, setTargetPos] = useState<'cheaper' | 'same' | 'premium'>('same');
 
   useEffect(() => {
+    if (!user) return;
     (async () => {
       const id = params.id as string;
-      const found = await getAnalysisById(id);
+      const found = await getAnalysisById(user.id, id);
       if (found) {
         setAnalysis(found);
         setCompName(found.input.competitor_name || '');
@@ -68,7 +69,7 @@ export default function AnalysisResultPage() {
       }
       setLoading(false);
     })();
-  }, [params.id]);
+  }, [params.id, user]);
 
   const handleSaveCompetitor = async () => {
     if (!analysis) return;
@@ -361,7 +362,7 @@ export default function AnalysisResultPage() {
           <div className="rounded-2xl border bg-card p-5">
             <p className="text-xs font-medium text-muted-foreground">Vergi Etkisi (Birim KDV)</p>
             <p className="mt-1 text-2xl font-bold text-red-500">
-              -{formatCurrency(result.vat_amount)}
+              {formatCurrency(Math.abs(result.vat_amount))}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">Satis fiyatina dahil edilen KDV tutari.</p>
           </div>

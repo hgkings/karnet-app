@@ -50,10 +50,11 @@ export async function getStoredAnalyses(userId: string): Promise<Analysis[]> {
   return data.map(rowToAnalysis);
 }
 
-export async function getAnalysisById(id: string): Promise<Analysis | null> {
+export async function getAnalysisById(userId: string, id: string): Promise<Analysis | null> {
   const { data, error } = await supabase
     .from('analyses')
     .select('*')
+    .eq('user_id', userId)
     .eq('id', id)
     .maybeSingle();
 

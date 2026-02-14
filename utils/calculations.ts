@@ -1,18 +1,22 @@
 import { ProductInput, CalculationResult } from '@/types';
 
+export const n = (v: any, fallback = 0) => {
+  if (v === null || v === undefined) return fallback;
+  const num = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
+  return Number.isFinite(num) ? num : fallback;
+};
+
 export function calculateProfit(input: ProductInput): CalculationResult {
-  const {
-    sale_price,
-    product_cost,
-    commission_pct,
-    shipping_cost,
-    packaging_cost,
-    ad_cost_per_sale,
-    return_rate_pct,
-    vat_pct,
-    other_cost,
-    monthly_sales_volume,
-  } = input;
+  const sale_price = n(input.sale_price);
+  const product_cost = n(input.product_cost);
+  const commission_pct = n(input.commission_pct);
+  const shipping_cost = n(input.shipping_cost);
+  const packaging_cost = n(input.packaging_cost);
+  const ad_cost_per_sale = n(input.ad_cost_per_sale);
+  const return_rate_pct = n(input.return_rate_pct);
+  const vat_pct = n(input.vat_pct);
+  const other_cost = n(input.other_cost);
+  const monthly_sales_volume = n(input.monthly_sales_volume);
 
   // 1.1 Komisyon
   const commission_amount = sale_price * (commission_pct / 100);
@@ -63,16 +67,14 @@ export function calculateProfit(input: ProductInput): CalculationResult {
 }
 
 export function calculateBreakevenPrice(input: ProductInput): number {
-  const {
-    product_cost,
-    shipping_cost,
-    packaging_cost,
-    ad_cost_per_sale,
-    other_cost,
-    commission_pct,
-    vat_pct,
-    return_rate_pct,
-  } = input;
+  const product_cost = n(input.product_cost);
+  const shipping_cost = n(input.shipping_cost);
+  const packaging_cost = n(input.packaging_cost);
+  const ad_cost_per_sale = n(input.ad_cost_per_sale);
+  const other_cost = n(input.other_cost);
+  const commission_pct = n(input.commission_pct);
+  const vat_pct = n(input.vat_pct);
+  const return_rate_pct = n(input.return_rate_pct);
 
   const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
   const rate_sum = (commission_pct + vat_pct + return_rate_pct) / 100;
@@ -94,16 +96,14 @@ export function calculateRequiredPrice(
   type: 'margin' | 'profit',
   value: number
 ): number {
-  const {
-    product_cost,
-    shipping_cost,
-    packaging_cost,
-    ad_cost_per_sale,
-    other_cost,
-    commission_pct,
-    vat_pct,
-    return_rate_pct,
-  } = input;
+  const product_cost = n(input.product_cost);
+  const shipping_cost = n(input.shipping_cost);
+  const packaging_cost = n(input.packaging_cost);
+  const ad_cost_per_sale = n(input.ad_cost_per_sale);
+  const other_cost = n(input.other_cost);
+  const commission_pct = n(input.commission_pct);
+  const vat_pct = n(input.vat_pct);
+  const return_rate_pct = n(input.return_rate_pct);
 
   const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
   const rate_sum = (commission_pct + vat_pct + return_rate_pct) / 100;

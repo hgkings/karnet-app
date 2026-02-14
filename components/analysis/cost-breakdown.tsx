@@ -10,17 +10,17 @@ interface CostBreakdownProps {
 
 export function CostBreakdown({ input, result }: CostBreakdownProps) {
   const items = [
-    { label: 'Urun Maliyeti', value: input.product_cost },
-    { label: 'Komisyon', value: result.commission_amount },
-    { label: 'KDV', value: result.vat_amount },
-    { label: 'Iade Kaybi', value: result.expected_return_loss },
-    { label: 'Kargo', value: input.shipping_cost },
-    { label: 'Paketleme', value: input.packaging_cost },
-    { label: 'Reklam', value: input.ad_cost_per_sale },
-    { label: 'Diger', value: input.other_cost },
+    { label: 'Urun Maliyeti', value: Number.isFinite(input.product_cost) ? input.product_cost : 0 },
+    { label: 'Komisyon', value: Number.isFinite(result.commission_amount) ? result.commission_amount : 0 },
+    { label: 'KDV', value: Number.isFinite(result.vat_amount) ? result.vat_amount : 0 },
+    { label: 'Iade Kaybi', value: Number.isFinite(result.expected_return_loss) ? result.expected_return_loss : 0 },
+    { label: 'Kargo', value: Number.isFinite(input.shipping_cost) ? input.shipping_cost : 0 },
+    { label: 'Paketleme', value: Number.isFinite(input.packaging_cost) ? input.packaging_cost : 0 },
+    { label: 'Reklam', value: Number.isFinite(input.ad_cost_per_sale) ? input.ad_cost_per_sale : 0 },
+    { label: 'Diger', value: Number.isFinite(input.other_cost) ? input.other_cost : 0 },
   ];
 
-  const total = result.unit_total_cost;
+  const total = Number.isFinite(result.unit_total_cost) ? result.unit_total_cost : 0;
   const maxVal = Math.max(...items.map((i) => i.value), 1);
 
   return (
