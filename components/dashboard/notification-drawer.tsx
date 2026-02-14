@@ -17,10 +17,12 @@ import { useAlerts } from '@/contexts/alert-context';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { AlertType } from '@/types';
+import { useNotificationNavigation } from '@/hooks/use-notification-navigation';
 
 export function NotificationDrawer() {
     const { notifications, loading, markAsRead, markAllAsRead } = useAlerts();
     const router = useRouter();
+    const { navigate } = useNotificationNavigation();
     const [filter, setFilter] = useState<AlertType | 'all'>('all');
     const [onlyUnread, setOnlyUnread] = useState(false);
     const [showOnlyCritical, setShowOnlyCritical] = useState(false);
@@ -127,10 +129,7 @@ export function NotificationDrawer() {
                             {filteredNotifications.map((n) => (
                                 <div
                                     key={n.id}
-                                    onClick={async () => {
-                                        if (!n.is_read) await markAsRead(n.id);
-                                        if (n.analysis_id) router.push(`/analysis/${n.analysis_id}`);
-                                    }}
+                                    onClick={() => navigate(n)}
                                     className={cn(
                                         "group relative flex items-start gap-4 p-5 hover:bg-muted/50 transition-colors cursor-pointer",
                                         n.is_read && "opacity-60"

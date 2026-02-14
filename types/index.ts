@@ -15,6 +15,8 @@ export interface Notification {
   id: string;
   user_id: string;
   analysis_id?: string;
+  product_id?: string;
+  href?: string;
   type: AlertType;
   category: string;
   title: string;
