@@ -9,8 +9,20 @@ interface CostBreakdownProps {
 }
 
 export function CostBreakdown({ input, result }: CostBreakdownProps) {
+  const isProMode = input.accounting_mode === 'pro';
+  const vatRate = (input.vat_pct || 0) / 100;
+
+  // In PRO mode, if cost includes VAT, we display the NET cost
+  let displayProductCost = input.product_cost;
+  if (isProMode && input.product_cost_includes_vat !== false) {
+    displayProductCost = input.product_cost / (1 + vatRate);
+  }
+
   const items = [
-    { label: 'Urun Maliyeti', value: Number.isFinite(input.product_cost) ? input.product_cost : 0 },
+    {
+      label: isProMode ? 'Net Urun Maliyeti' : 'Urun Maliyeti',
+      value: Number.isFinite(displayProductCost) ? displayProductCost : 0
+    },
     { label: 'Komisyon', value: Number.isFinite(result.commission_amount) ? result.commission_amount : 0 },
     { label: 'KDV', value: Number.isFinite(result.vat_amount) ? result.vat_amount : 0 },
     { label: 'Iade Kaybi', value: Number.isFinite(result.expected_return_loss) ? result.expected_return_loss : 0 },

@@ -12,18 +12,21 @@ interface VatImpactCardProps {
 
 export function VatImpactCard({ input, vatAmount }: VatImpactCardProps) {
     const salePrice = n(input.sale_price);
-
-    // Calculate excluded VAT price if not provided elsewhere (though we plan to pass it, keeping logic self-contained or robust is good)
-    // Actually, let's rely on props or calculate locally if we want purely presentation. 
-    // The user requested: "Birim KDV Tutarı" and "KDV Hariç Satış".
+    const isVatIncluded = input.sale_price_includes_vat !== false;
 
     // Guard against NaN
     const displayVat = Number.isFinite(vatAmount) ? vatAmount : 0;
-    const netPrice = Number.isFinite(salePrice - displayVat) ? (salePrice - displayVat) : 0;
+
+    // Calculate Net Price
+    // If VAT included: Net = Price - VAT
+    // If VAT excluded: Net = Price
+    const netPrice = isVatIncluded
+        ? (Number.isFinite(salePrice - displayVat) ? (salePrice - displayVat) : 0)
+        : salePrice;
 
     // Formatting helper to handle 0 as valid but NaN/null as '-'
     const fmt = (val: number) => {
-        if (!Number.isFinite(val) || (salePrice <= 0 && val === 0)) return '—';
+        if (!Number.isFinite(val)) return '—';
         return formatCurrency(val);
     };
 
@@ -47,7 +50,10 @@ export function VatImpactCard({ input, vatAmount }: VatImpactCardProps) {
                     <span className="font-medium text-foreground">{fmt(netPrice)}</span>
                 </div>
                 <p className="mt-1.5 text-[10px] text-muted-foreground">
-                    Birim fiyat KDV dahil kabul edilerek hesaplanmıştır (%{input.vat_pct}).
+                    {isVatIncluded
+                        ? `Birim fiyat KDV dahil kabul edilerek ayrıştırıldı (%${input.vat_pct}).`
+                        : `Birim fiyat KDV hariç kabul edilerek hesaplandı (%${input.vat_pct}).`
+                    }
                 </p>
             </div>
         </div>

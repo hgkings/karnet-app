@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { saveAnalysis } from '@/lib/storage';
 import { calculateProfit } from '@/utils/calculations';
+import { calculateProAccounting } from '@/utils/pro-accounting';
 import { calculateRisk } from '@/utils/risk-engine';
 import { toast } from 'sonner';
 import { analysesToJSON, analysesToCSV } from '@/lib/csv';
@@ -99,7 +100,14 @@ export default function AnalysisResultPage() {
     setSaving(true);
     try {
       const updatedInput = { ...analysis.input, sale_price: price };
-      const updatedResult = calculateProfit(updatedInput);
+
+      const isPro = user?.plan === 'pro';
+      const mode = (isPro && updatedInput.accounting_mode === 'pro') ? 'pro' : 'standard';
+
+      const updatedResult = mode === 'pro'
+        ? calculateProAccounting(updatedInput)
+        : calculateProfit(updatedInput);
+
       const updatedRisk = calculateRisk(updatedInput, updatedResult);
 
       const updatedAnalysis = {

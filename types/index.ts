@@ -43,6 +43,11 @@ export interface ProductInput {
   competitor_price?: number;
   competitor_name?: string;
   target_position?: 'cheaper' | 'same' | 'premium';
+  // PRO Mode Fields
+  sale_price_includes_vat?: boolean;
+  product_cost_includes_vat?: boolean;
+  income_tax_pct?: number;
+  accounting_mode?: 'standard' | 'pro';
 }
 
 export interface CalculationResult {

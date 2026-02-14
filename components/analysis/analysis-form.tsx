@@ -1,21 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useAlerts } from '@/contexts/alert-context';
 import { ProductInput, Marketplace } from '@/types';
 import { marketplaces, getMarketplaceDefaults } from '@/lib/marketplace-data';
 import { calculateProfit, calculateRequiredPrice } from '@/utils/calculations';
+import { calculateProAccounting } from '@/utils/pro-accounting';
 import { calculateRisk } from '@/utils/risk-engine';
 import { saveAnalysis, generateId, getUserAnalysisCount } from '@/lib/storage';
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/components/shared/format';
 import { toast } from 'sonner';
-import { Target, ArrowRight } from 'lucide-react';
+import { Target, ArrowRight, Lock, Calculator } from 'lucide-react';
 
 const defaultInput: ProductInput = {
   marketplace: 'trendyol',
@@ -31,6 +34,11 @@ const defaultInput: ProductInput = {
   vat_pct: 20,
   other_cost: 0,
   payout_delay_days: 28,
+  // PRO defaults
+  sale_price_includes_vat: true,
+  product_cost_includes_vat: true,
+  income_tax_pct: 0,
+  accounting_mode: 'standard',
 };
 
 interface FieldConfig {
@@ -69,7 +77,9 @@ export function AnalysisForm({ initialData, analysisId }: AnalysisFormProps) {
   const { user } = useAuth();
   const { refresh } = useAlerts();
   const router = useRouter();
-  const [input, setInput] = useState<ProductInput>(initialData || defaultInput);
+
+  // Merge initialData with defaultInput to ensure PRO fields exist if editing old data
+  const [input, setInput] = useState<ProductInput>({ ...defaultInput, ...initialData });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -77,6 +87,17 @@ export function AnalysisForm({ initialData, analysisId }: AnalysisFormProps) {
   const [targetMargin, setTargetMargin] = useState<number | undefined>();
   const [targetProfit, setTargetProfit] = useState<number | undefined>();
   const [suggestedPrice, setSuggestedPrice] = useState<number | undefined>();
+
+  const isProUser = user?.plan === 'pro'; // or 'premium' if that's the plan key
+  const isProMode = input.accounting_mode === 'pro';
+
+  const handleProToggle = (checked: boolean) => {
+    if (!isProUser) {
+      setShowUpgrade(true);
+      return;
+    }
+    setInput(prev => ({ ...prev, accounting_mode: checked ? 'pro' : 'standard' }));
+  };
 
   const handleMarketplaceChange = (mp: Marketplace) => {
     const defaults = getMarketplaceDefaults(mp);
@@ -90,28 +111,42 @@ export function AnalysisForm({ initialData, analysisId }: AnalysisFormProps) {
     }));
   };
 
-  const handleFieldChange = (key: keyof ProductInput, value: string) => {
+  const handleFieldChange = (key: keyof ProductInput, value: string | boolean | number) => {
     const field = fields.find((f) => f.key === key);
-    if (!field) return;
 
-    if (field.type === 'text') {
-      setInput((prev) => ({ ...prev, [key]: value }));
-    } else {
-      const num = parseFloat(value);
-      if (value === '' || value === '-') {
-        setInput((prev) => ({ ...prev, [key]: 0 }));
-        return;
-      }
-      if (isNaN(num)) return;
-      if (field.min !== undefined && num < field.min) return;
-      if (field.max !== undefined && num > field.max) return;
-      setInput((prev) => ({ ...prev, [key]: num }));
+    // Handle booleans (new PRO fields) or direct updates
+    if (typeof value === 'boolean') {
+      setInput(prev => ({ ...prev, [key]: value }));
+      return;
     }
-    setErrors((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
+
+    // Handle standard fields
+    if (field) {
+      if (field.type === 'text') {
+        setInput((prev) => ({ ...prev, [key]: value }));
+      } else {
+        const strVal = value.toString();
+        const num = parseFloat(strVal);
+        if (strVal === '' || strVal === '-') {
+          setInput((prev) => ({ ...prev, [key]: 0 }));
+          return;
+        }
+        if (isNaN(num)) return;
+        if (field.min !== undefined && num < field.min) return;
+        if (field.max !== undefined && num > field.max) return;
+        setInput((prev) => ({ ...prev, [key]: num }));
+      }
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    } else {
+      // Fallback for fields not in 'fields' array but valid in ProductInput (e.g. income_tax_pct)
+      if (typeof value === 'number') {
+        setInput(prev => ({ ...prev, [key]: value }));
+      }
+    }
   };
 
   const validate = (): boolean => {
@@ -140,12 +175,20 @@ export function AnalysisForm({ initialData, analysisId }: AnalysisFormProps) {
         }
       }
 
-      const result = calculateProfit(input);
+      // Calculate logic based on mode
+      // CRITICAL: Even if free user managed to set mode='pro', we force check user.plan
+      const effectiveMode: 'standard' | 'pro' = (isProUser && input.accounting_mode === 'pro') ? 'pro' : 'standard';
+
+      const result = effectiveMode === 'pro'
+        ? calculateProAccounting(input)
+        : calculateProfit(input);
+
       const risk = calculateRisk(input, result);
+
       const analysisData = {
         id: analysisId || generateId(),
         userId: user.id,
-        input,
+        input: { ...input, accounting_mode: effectiveMode }, // Ensure stored mode matches logic
         result,
         risk,
         createdAt: new Date().toISOString(),
@@ -180,6 +223,75 @@ export function AnalysisForm({ initialData, analysisId }: AnalysisFormProps) {
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-8">
+
+        {/* PRO Toggle Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${isProMode ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+              <Calculator className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="pro-mode" className="font-semibold text-base cursor-pointer">PRO Muhasebe Modu</Label>
+                {!isProUser && <Lock className="h-3.5 w-3.5 text-amber-500" />}
+              </div>
+              <p className="text-xs text-muted-foreground">Gerçek e-ticaret muhasebe modeline göre net kâr hesaplar.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="pro-mode"
+              checked={isProMode}
+              onCheckedChange={handleProToggle}
+            />
+            <span className={`text-sm font-medium ${isProMode ? 'text-primary' : 'text-muted-foreground'}`}>
+              {isProMode ? 'Aktif' : 'Pasif'}
+            </span>
+          </div>
+        </div>
+
+        {/* PRO Fields Section */}
+        {isProMode && (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 space-y-4 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">PRO Ayarlar</Badge>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="flex items-center justify-between rounded-lg border bg-card p-3 shadow-sm">
+                <Label htmlFor="sale_vat_inc" className="cursor-pointer flex-1">Satış Fiyatına KDV Dahil mi?</Label>
+                <Switch
+                  id="sale_vat_inc"
+                  checked={input.sale_price_includes_vat !== false}
+                  onCheckedChange={(c) => handleFieldChange('sale_price_includes_vat', c)}
+                />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border bg-card p-3 shadow-sm">
+                <Label htmlFor="cost_vat_inc" className="cursor-pointer flex-1">Ürün Maliyetine KDV Dahil mi?</Label>
+                <Switch
+                  id="cost_vat_inc"
+                  checked={input.product_cost_includes_vat !== false}
+                  onCheckedChange={(c) => handleFieldChange('product_cost_includes_vat', c)}
+                />
+              </div>
+
+              {/* Optional: Income Tax */}
+              {/*
+                    <div className="space-y-2">
+                        <Label>Gelir Vergisi Oranı (%)</Label>
+                        <Input 
+                            type="number" 
+                            min={0} 
+                            max={100} 
+                            value={input.income_tax_pct || 0}
+                            onChange={(e) => handleFieldChange('income_tax_pct', parseFloat(e.target.value))}
+                        />
+                    </div>
+                    */}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-3">
           <Label>Pazaryeri Secimi</Label>
           <div className="flex flex-wrap gap-2">
