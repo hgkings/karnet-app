@@ -30,6 +30,7 @@ const testInput: ProductInput = {
     return_rate_pct: 0,
     payout_delay_days: 1,
 
+    vat_pct: 20,
     pro_mode: true
 };
 

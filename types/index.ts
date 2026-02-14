@@ -37,7 +37,7 @@ export interface ProductInput {
   packaging_cost: number;
   ad_cost_per_sale: number;
   return_rate_pct: number;
-  vat_pct: number;
+  vat_pct?: number; // defaults to 20 via n() fallback in calculators
   other_cost: number;
   payout_delay_days: number;
   competitor_price?: number;
