@@ -7,6 +7,7 @@ import { NotificationDrawer } from '@/components/dashboard/notification-drawer';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { NAV_ITEMS, BOTTOM_NAV_ITEMS } from '@/config/navigation';
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -57,28 +58,30 @@ export function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t bg-card px-4 py-4 md:hidden">
+        <div className="border-t bg-card px-4 py-4 md:hidden overflow-y-auto max-h-[calc(100vh-64px)]">
           <div className="flex flex-col gap-1.5">
             {user ? (
               <>
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-lg">Panel</Button>
-                </Link>
-                <Link href="/analysis/new" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-lg">Yeni Analiz</Button>
-                </Link>
-                <Link href="/products" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-lg">Ürünler</Button>
-                </Link>
-                <Link href="/pricing" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-lg">Premium</Button>
-                </Link>
-                <Link href="/account" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-lg">Profil</Button>
-                </Link>
-                <Link href="/settings" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-lg">Ayarlar</Button>
-                </Link>
+                {NAV_ITEMS.map((item) => (
+                  <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start rounded-lg gap-2">
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))}
+
+                <div className="my-2 border-t border-dashed" />
+
+                {BOTTOM_NAV_ITEMS.map((item) => (
+                  <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start rounded-lg gap-2">
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))}
+
                 <Button variant="outline" className="w-full rounded-[10px] mt-2" onClick={() => { logout(); setMobileOpen(false); }}>
                   Çıkış
                 </Button>

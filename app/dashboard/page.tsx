@@ -54,13 +54,13 @@ export default function DashboardPage() {
       <div className="space-y-8 pb-10">
         {/* Header with Risk Card */}
         <div className="flex flex-col lg:flex-row gap-6 items-start justify-between border-b pb-6">
-          <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Panel</h1>
-            <p className="text-muted-foreground">
+          <div className="space-y-1.5 w-full lg:w-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Panel</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Ürün portföyünüzün anlık karlılık ve risk durumu.
             </p>
           </div>
-          <div className="w-full lg:w-auto min-w-[300px]">
+          <div className="w-full lg:w-auto min-w-0 lg:min-w-[300px]">
             <GeneralRiskCard />
           </div>
         </div>

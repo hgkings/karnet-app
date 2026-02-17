@@ -31,8 +31,20 @@ function formatMonth(yyyy_mm: string): string {
     return date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
 }
 
+import { UpgradeModal } from '@/components/shared/upgrade-modal';
+// ... existing imports
+
 export default function CashPlanPage() {
     const { user } = useAuth();
+    const [showUpgrade, setShowUpgrade] = useState(false);
+
+    useEffect(() => {
+        if (user && user.plan !== 'pro' && user.plan !== 'admin') {
+            setShowUpgrade(true);
+        }
+    }, [user]);
+
+
 
     // State
     const [horizon, setHorizon] = useState<3 | 6 | 12>(6);
@@ -162,6 +174,19 @@ export default function CashPlanPage() {
     const lowestCash = Math.min(...rows.map(r => r.closing_cash));
     const negativeMonths = rows.filter(r => r.closing_cash < 0).length;
     const totalNet = rows.reduce((sum, r) => sum + (r.cash_in - r.cash_out), 0);
+
+    if (showUpgrade) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <UpgradeModal
+                        open={true}
+                        onClose={() => { }}
+                    />
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     if (loading) {
         return (

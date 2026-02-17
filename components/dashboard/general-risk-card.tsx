@@ -17,8 +17,10 @@ export function GeneralRiskCard() {
     const [reasons, setReasons] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const isPro = user?.plan === 'pro' || user?.plan === 'admin';
+
     useEffect(() => {
-        if (!user) return;
+        if (!user || !isPro) return;
 
         const checkRisk = async () => {
             let level: RiskLevel = 'safe';
@@ -65,8 +67,9 @@ export function GeneralRiskCard() {
         };
 
         checkRisk();
-    }, [user]);
+    }, [user, isPro]);
 
+    if (!isPro) return null;
     if (loading) return null;
 
     const styles = {

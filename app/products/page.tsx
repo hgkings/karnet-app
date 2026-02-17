@@ -104,29 +104,32 @@ export default function ProductsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Ürünler</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {analyses.length} urun analizi{!isPro && ` (Ucretsiz: maks 5)`}
-            </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Ürünler</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {analyses.length} ürün analizi{!isPro && ` (Ücretsiz: maks 5)`}
+              </p>
+            </div>
+            <Link href="/analysis/new" className="w-full sm:w-auto">
+              <Button size="sm" className="w-full sm:w-auto">Yeni Analiz</Button>
+            </Link>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExportJSON} disabled={analyses.length === 0}>
+
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+            <Button variant="outline" size="sm" onClick={handleExportJSON} disabled={analyses.length === 0} className="whitespace-nowrap">
               <Download className="mr-1.5 h-4 w-4" />
               JSON
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={analyses.length === 0}>
+            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={analyses.length === 0} className="whitespace-nowrap">
               <Download className="mr-1.5 h-4 w-4" />
               {isPro ? 'CSV' : 'CSV (Pro)'}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowBulkUpdate(true)} disabled={analyses.length === 0}>
+            <Button variant="outline" size="sm" onClick={() => setShowBulkUpdate(true)} disabled={analyses.length === 0} className="whitespace-nowrap">
               <Settings2 className="mr-1.5 h-4 w-4" />
-              Toplu Guncelle
+              Toplu Güncelle
             </Button>
-            <Link href="/analysis/new">
-              <Button size="sm">Yeni Analiz</Button>
-            </Link>
           </div>
         </div>
 

@@ -21,23 +21,10 @@ import {
   Target,
   Landmark
 } from 'lucide-react';
+import { NAV_ITEMS, BOTTOM_NAV_ITEMS } from '@/config/navigation';
 import { getSidebarStats } from '@/lib/storage';
 import { useEffect, useState } from 'react';
 import { isProUser } from '@/utils/access';
-
-const mainNavItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/analysis/new', label: 'Yeni Analiz', icon: PlusCircle },
-  { href: '/products', label: 'Ürünler', icon: Package },
-  { href: '/break-even', label: 'Başabaş', icon: Target },
-  { href: '/cash-plan', label: 'Nakit Planı', icon: Landmark },
-];
-
-const bottomNavItems = [
-  { href: '/pricing', label: 'Premium', icon: Crown, highlight: true },
-  { href: '/account', label: 'Profil', icon: User },
-  { href: '/settings', label: 'Ayarlar', icon: Settings },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -117,9 +104,33 @@ export function Sidebar() {
             </p>
           </div>
           <div className="flex flex-col gap-1">
-            {mainNavItems.map((item) => {
+            {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               const isProducts = item.href === '/products';
+              const isLocked = (item as any).restricted && !isPro;
+
+              if (isLocked) {
+                return (
+                  <div key={item.href} className="group relative">
+                    <div className="absolute right-2 top-2.5 z-10 pointer-events-none">
+                      <div className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 p-0.5 rounded-full">
+                        <Crown className="h-3 w-3" />
+                      </div>
+                    </div>
+                    <Link
+                      href="/pricing"
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 text-muted-foreground/60 hover:bg-muted/50 cursor-pointer',
+                      )}
+                    >
+                      <item.icon className="h-[18px] w-[18px] shrink-0 opacity-70" />
+                      <div className="flex-1 opacity-70">
+                        {item.label}
+                      </div>
+                    </Link>
+                  </div>
+                );
+              }
 
               return (
                 <Link
@@ -139,8 +150,6 @@ export function Sidebar() {
 
                   <div className="flex flex-1 items-center justify-between min-w-0">
                     <span className="truncate">{item.label}</span>
-                    {/* Simplified badges for main nav since we have the summary card now, 
-                        but keeping the total count as requested by "mevcut aksiyonlar" rule */}
                     {isProducts && stats.total > 0 && (
                       <span className={cn(
                         "text-[10px] font-bold px-1.5 py-0.5 rounded",
@@ -238,7 +247,7 @@ export function Sidebar() {
             </p>
           </div>
 
-          {bottomNavItems.map((item) => {
+          {BOTTOM_NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const isPremium = item.label === 'Premium';
 

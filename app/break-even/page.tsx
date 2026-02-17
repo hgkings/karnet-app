@@ -11,10 +11,24 @@ import { formatCurrency } from '@/components/shared/format';
 import { toast } from 'sonner';
 import { Calculator, Target, TrendingUp, DollarSign, Save, Info } from 'lucide-react';
 
+import { UpgradeModal } from '@/components/shared/upgrade-modal';
+// ... existing imports
+
 export default function BreakEvenPage() {
     const { user, updateProfile } = useAuth();
+    const [showUpgrade, setShowUpgrade] = useState(false);
 
-    // Inputs
+    useEffect(() => {
+        if (user && user.plan !== 'pro' && user.plan !== 'admin') {
+            setShowUpgrade(true);
+        }
+    }, [user]);
+
+    // ... existing state
+
+    // ... existing state
+
+    // ... rest of component
     const [avgPrice, setAvgPrice] = useState<number>(0);
     const [avgVarCost, setAvgVarCost] = useState<number>(0);
     const [fixedCost, setFixedCost] = useState<number>(0);
@@ -84,6 +98,19 @@ export default function BreakEvenPage() {
         }
         setIsSaving(false);
     };
+
+    if (showUpgrade) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <UpgradeModal
+                        open={true}
+                        onClose={() => { }}
+                    />
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>

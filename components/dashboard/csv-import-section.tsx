@@ -132,12 +132,12 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex bg-muted rounded-lg p-1">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex bg-muted rounded-lg p-1 w-fit">
                             <button
                                 onClick={() => { setMode('upload'); reset(); }}
                                 className={cn(
-                                    "px-4 py-1.5 text-xs font-medium rounded-md transition-all",
+                                    "px-4 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap",
                                     mode === 'upload' ? "bg-background shadow-sm" : "hover:bg-background/50"
                                 )}
                             >
@@ -146,7 +146,7 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
                             <button
                                 onClick={() => { setMode('paste'); reset(); }}
                                 className={cn(
-                                    "px-4 py-1.5 text-xs font-medium rounded-md transition-all",
+                                    "px-4 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap",
                                     mode === 'paste' ? "bg-background shadow-sm" : "hover:bg-background/50"
                                 )}
                             >
@@ -154,12 +154,12 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
                             </button>
                         </div>
 
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleCopyTemplate}>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <Button variant="ghost" size="sm" className="h-8 text-xs flex-1 sm:flex-initial whitespace-nowrap" onClick={handleCopyTemplate}>
                                 <Copy className="mr-1.5 h-3.5 w-3.5" />
                                 Şablonu Kopyala
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={handleDownloadTemplate}>
+                            <Button variant="ghost" size="sm" className="h-8 text-xs flex-1 sm:flex-initial whitespace-nowrap" onClick={handleDownloadTemplate}>
                                 <Download className="mr-1.5 h-3.5 w-3.5" />
                                 Şablonu İndir
                             </Button>
@@ -169,7 +169,7 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
                     {mode === 'upload' ? (
                         <div
                             onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-muted rounded-2xl p-8 flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+                            className="border-2 border-dashed border-muted rounded-2xl p-4 sm:p-8 flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
                         >
                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                                 <FileBox className="h-5 w-5 text-primary" />

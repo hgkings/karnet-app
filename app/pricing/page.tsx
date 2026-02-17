@@ -84,11 +84,14 @@ export default function PricingPage() {
               <FeatureItem text={`Maksimum ${FREE_LIMIT} Ürün Analizi`} included />
               <FeatureItem text="Temel Kâr Hesaplama" included />
               <FeatureItem text="Risk Puanı Görüntüleme" included />
-              <FeatureItem text="JSON Dışa Aktarma" included />
-              <FeatureItem text="Profesyonel Muhasebe Modu" included={false} />
               <FeatureItem text="Sınırsız Analiz" included={false} />
-              <FeatureItem text="CSV İçe/Dışa Aktarma" included={false} />
-              <FeatureItem text="Yazdırılabilir Rapor" included={false} />
+              <FeatureItem text="Profesyonel Muhasebe Modu" included={false} />
+              <FeatureItem text="Hassasiyet Analizi" included={false} />
+              <FeatureItem text="CSV İçe & Dışa Aktarma" included={false} />
+              <FeatureItem text="Nakit Akışı Tahmini" included={false} />
+              <FeatureItem text="Pazaryeri Karşılaştırması" included={false} />
+              <FeatureItem text="Yazdırılabilir PDF Rapor" included={false} />
+              <FeatureItem text="Öncelikli Destek" included={false} />
             </div>
 
             <div className="mt-8 pt-6 border-t">
@@ -138,7 +141,7 @@ export default function PricingPage() {
                 {/* Current Price */}
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-bold text-foreground tracking-tight">
-                    {isAnnual ? `${PRICING.yearly.toLocaleString('tr-TR')}` : `${PRICING.monthly}`}₺
+                    {isAnnual ? `${PRICING.proYearly.toLocaleString('tr-TR')}` : `${PRICING.proMonthly}`}₺
                   </span>
                   <span className="text-base font-medium text-muted-foreground">
                     {isAnnual ? '/ yıl' : '/ ay'}

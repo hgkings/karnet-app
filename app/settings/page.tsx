@@ -6,6 +6,8 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PRICING } from '@/config/pricing';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -336,8 +338,8 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-2xl font-bold">₺{billingCycle === 'monthly' ? '199' : '1.990'}</span>
-                                        <span className="text-xs text-muted-foreground">/{billingCycle === 'monthly' ? 'ay' : 'yıl'}</span>
+                                        <span className="text-2xl font-bold">₺{billingCycle === 'monthly' ? PRICING.proMonthly : PRICING.proYearly.toLocaleString('tr-TR')}</span>
+                                        <span className="text-muted-foreground">/ {billingCycle === 'monthly' ? 'ay' : 'yıl'}</span>
                                     </div>
                                     {billingCycle === 'yearly' && (
                                         <p className="text-[10px] text-emerald-600 font-medium">~2 ay ücretsiz! (Yıllık %17 tasarruf)</p>

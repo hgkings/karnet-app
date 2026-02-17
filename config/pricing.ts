@@ -1,21 +1,19 @@
-/**
- * Central Pricing Configuration — Single Source of Truth
- * 
- * ALL price displays must reference this file.
- * Do NOT hardcode prices anywhere else in the app.
- */
 
 export const PRICING = {
-    monthly: 229,
-    yearly: 2290,
-    oldMonthly: 349, // Struck-through "was" price on pricing page
-    currency: '₺',
-} as const;
+    proMonthly: 229,
+    oldMonthly: 399, // Eskiden 399'du indirimli 199 gibi gösteriliyor
+    proYearly: 2290,
+    currency: "TRY",
+    symbol: "₺",
+};
 
-export function formatPrice(amount: number): string {
-    return `${amount}${PRICING.currency}`;
-}
+export const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: PRICING.currency,
+        maximumFractionDigits: 0,
+    }).format(amount).replace('TRY', '').trim() + PRICING.symbol;
+};
 
-export function monthlyLabel(): string {
-    return `Aylık ${formatPrice(PRICING.monthly)}`;
-}
+export const monthlyLabel = () => `${PRICING.proMonthly}${PRICING.symbol}/ay`;
+export const yearlyLabel = () => `${PRICING.proYearly}${PRICING.symbol}/yıl`;
