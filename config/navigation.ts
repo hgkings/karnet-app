@@ -10,7 +10,8 @@ import {
     Crown,
     FileText,
     Upload,
-    CreditCard
+    CreditCard,
+    MessageSquare
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
@@ -24,6 +25,7 @@ export const NAV_ITEMS = [
 export const BOTTOM_NAV_ITEMS = [
     { label: 'Premium', href: '/pricing', icon: Crown, highlight: true },
     { label: 'Profil', href: '/account', icon: User },
+    { label: 'Destek', href: '/support', icon: MessageSquare },
     { label: 'Ayarlar', href: '/settings', icon: Settings },
 ];
 

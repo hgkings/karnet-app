@@ -2,8 +2,11 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
-import { Crown, X, Check } from 'lucide-react';
-import { PRICING, formatPrice, monthlyLabel } from '@/config/pricing';
+import { Crown, X, Check, Loader2 } from 'lucide-react';
+import { PRICING, monthlyLabel } from '@/config/pricing';
+import { startShopierCheckout } from '@/lib/shopier-client';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -20,9 +23,19 @@ const features = [
 ];
 
 export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
-  const { upgradePlan } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   if (!open) return null;
+
+  const handleUpgrade = async () => {
+    setLoading(true);
+    try {
+      await startShopierCheckout('pro_monthly');
+    } catch (err: any) {
+      toast.error(err.message || 'Ödeme başlatılamadı.');
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -30,7 +43,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Crown className="h-6 w-6 text-amber-500" />
-            <h2 className="text-xl font-bold">Pro&apos;ya Yukselt</h2>
+            <h2 className="text-xl font-bold">Pro&apos;ya Yükselt</h2>
           </div>
           <button onClick={onClose} className="rounded-lg p-1 hover:bg-muted">
             <X className="h-5 w-5" />
@@ -38,7 +51,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         </div>
 
         <p className="mt-3 text-sm text-muted-foreground">
-          Ucretsiz plan limitine ulastiniz. Pro plana gecis yaparak tum ozelliklere erisebilirsiniz.
+          Ücretsiz plan limitine ulaştınız. Pro plana geçiş yaparak tüm özelliklere erişebilirsiniz.
         </p>
 
         <div className="mt-6 space-y-3">
@@ -55,20 +68,22 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         <div className="mt-8 space-y-3">
           <Button
             className="w-full"
-            onClick={async () => {
-              await upgradePlan();
-              onClose();
-            }}
+            disabled={loading}
+            onClick={handleUpgrade}
           >
-            {monthlyLabel()} - Pro&apos;ya Geç
+            {loading ? (
+              <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Yönlendiriliyor…</>
+            ) : (
+              <>{monthlyLabel()} - Pro&apos;ya Geç</>
+            )}
           </Button>
           <Button variant="outline" className="w-full" onClick={onClose}>
-            Simdilik Degil
+            Şimdilik Değil
           </Button>
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Demo: Tiklayin ve aninda Pro olun
+          Güvenli ödeme Shopier altyapısı ile gerçekleştirilir.
         </p>
       </div>
     </div>

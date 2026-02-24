@@ -3,16 +3,19 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Navbar } from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
-import { Check, X, Crown, Sparkles } from 'lucide-react';
+import { Check, X, Crown, Sparkles, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PLAN_LIMITS } from '@/config/plans';
 import { PRICING } from '@/config/pricing';
 import { isProUser } from '@/utils/access';
+import { startShopierCheckout } from '@/lib/shopier-client';
+import { toast } from 'sonner';
 
 export default function PricingPage() {
   const { user, upgradePlan } = useAuth();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const FREE_LIMIT = PLAN_LIMITS.free.maxProducts;
 
@@ -194,12 +197,24 @@ export default function PricingPage() {
                 <div className="space-y-3">
                   <Button
                     className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-premium-md hover:shadow-premium-lg hover:scale-[1.02] transition-all duration-300 active:scale-95"
+                    disabled={loading}
                     onClick={async () => {
-                      if (user) await upgradePlan();
-                      else window.location.href = '/auth';
+                      if (!user) { window.location.href = '/auth'; return; }
+                      setLoading(true);
+                      try {
+                        const plan = isAnnual ? 'pro_yearly' : 'pro_monthly';
+                        await startShopierCheckout(plan as any);
+                      } catch (err: any) {
+                        toast.error(err.message || 'Ödeme başlatılamadı.');
+                        setLoading(false);
+                      }
                     }}
                   >
-                    {user ? "Pro'ya Yükselt" : "Pro ile Başla"}
+                    {loading ? (
+                      <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Yönlendiriliyor…</>
+                    ) : (
+                      user ? "Pro'ya Yükselt" : "Pro ile Başla"
+                    )}
                   </Button>
                   <p className="text-[10px] text-center text-muted-foreground">
                     7 gün içinde koşulsuz para iade garantisi
@@ -212,7 +227,7 @@ export default function PricingPage() {
         </div>
 
         <p className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          Demo Modu: &quot;Pro&apos;ya Yükselt&quot; butonuna tıkladığınızda anında Pro özellikleri aktif edilir. Gerçek ödeme sistemi entegrasyonu için Stripe veya Iyzico yapılandırması gerekir.
+          Güvenli ödeme Shopier altyapısı ile gerçekleştirilir. Kart bilgileriniz tarafımızca saklanmaz.
         </p>
 
       </div>

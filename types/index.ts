@@ -142,3 +142,20 @@ export interface MarketplaceDefaults {
   vat_pct: number;
   payout_delay_days: number;
 }
+
+export type SupportPriority = 'low' | 'medium' | 'high';
+export type SupportStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+
+export interface SupportTicket {
+  id: string;
+  user_id: string;
+  category: string;
+  subject: string;
+  message: string;
+  priority: SupportPriority;
+  status: SupportStatus;
+  admin_note?: string;
+  attachment_url?: string;
+  created_at: string;
+  updated_at: string;
+}

@@ -302,10 +302,10 @@ export default function AccountPage() {
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${monthlyNetProfit >= monthlyTarget
-                          ? 'bg-emerald-500'
-                          : monthlyNetProfit >= monthlyTarget * 0.5
-                            ? 'bg-amber-500'
-                            : 'bg-primary'
+                        ? 'bg-emerald-500'
+                        : monthlyNetProfit >= monthlyTarget * 0.5
+                          ? 'bg-amber-500'
+                          : 'bg-primary'
                         }`}
                       style={{ width: `${Math.min(100, Math.max(0, (monthlyNetProfit / monthlyTarget) * 100))}%` }}
                     />
@@ -445,7 +445,7 @@ export default function AccountPage() {
             </div>
           ) : (
             <div className="mt-4 flex gap-2">
-              <Button onClick={() => upgradePlan()} className="rounded-[10px]">Pro&apos;ya Yükselt</Button>
+              <Button onClick={() => window.location.href = '/pricing'} className="rounded-[10px]">Pro&apos;ya Yükselt</Button>
               <Link href="/pricing">
                 <Button variant="outline" className="rounded-[10px]">Planları Gör</Button>
               </Link>

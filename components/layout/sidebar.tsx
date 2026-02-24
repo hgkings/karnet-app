@@ -51,47 +51,49 @@ export function Sidebar() {
     <aside className="flex h-full w-full flex-col bg-card border-r overflow-y-auto scrollbar-thin scrollbar-thumb-muted/50">
       <div className="flex h-full flex-col px-3 py-4 space-y-6">
 
-        {/* --- 1. Mini Summary Card (Compact) --- */}
+        {/* --- 1. Mini Summary Card (Premium Look) --- */}
         {user && (
-          <Link href="/analysis/new" className="block rounded-lg border border-primary/10 bg-gradient-to-br from-primary/[0.03] via-primary/[0.01] to-transparent p-3 shadow-sm relative overflow-hidden group hover:border-primary/20 transition-all">
-            {/* Minimal Ambient Glow */}
-            <div className="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 blur-[30px] rounded-full group-hover:bg-primary/10 transition-colors" />
+          <Link href="/analysis/new" className="block rounded-xl border border-primary/10 bg-gradient-to-br from-primary/[0.04] via-zinc-900/[0.02] to-transparent dark:from-primary/[0.08] dark:via-zinc-900/[0.2] p-3.5 shadow-sm relative overflow-hidden group hover:border-primary/30 hover:shadow-md transition-all">
+            {/* Glow Effect */}
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-primary/10 blur-[30px] rounded-full group-hover:bg-primary/20 transition-colors" />
 
-            {/* Row 1: Badge + Icon */}
-            <div className="flex items-center justify-between mb-2 relative z-10">
+            {/* Row 1: Badge */}
+            <div className="relative z-10 mb-3">
               <div className={cn(
-                "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border backdrop-blur-sm",
+                "flex w-full justify-center items-center gap-1.5 px-2 py-1 rounded-lg border shadow-sm",
                 isPro
-                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                  : "bg-muted/50 text-muted-foreground border-border/50"
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                  : "bg-muted text-muted-foreground border-border/50"
               )}>
-                {isPro && <Crown className="h-2.5 w-2.5 fill-current" />}
-                <span>{isPro ? 'Pro Aktif' : 'Ücretsiz'}</span>
+                {isPro && <Crown className="h-3.5 w-3.5 fill-current shrink-0" />}
+                <span className="text-[11px] font-bold uppercase tracking-wide whitespace-nowrap leading-none">
+                  {isPro ? 'Pro Aktif' : 'Ücretsiz'}
+                </span>
+              </div>
+            </div>
+
+            {/* Row 2: Stats Display */}
+            <div className="flex flex-col gap-0.5 relative z-10 mt-1">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-foreground tracking-tighter tabular-nums drop-shadow-sm">{stats.total}</span>
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Analiz</span>
               </div>
 
-              <Crown className="h-8 w-8 text-foreground/[0.03] -rotate-12 absolute -right-1 -top-1" />
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {stats.profitable > 0 ? (
+                  <>
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-500 tracking-wide">{stats.profitable} Kârlı</span>
+                  </>
+                ) : (
+                  <span className="text-[10px] font-medium text-muted-foreground tracking-wide">Henüz kâr yok</span>
+                )}
+              </div>
             </div>
 
-            {/* Row 2: Single Line Stats */}
-            <div className="flex items-baseline gap-1.5 relative z-10 pl-0.5">
-              <span className="text-2xl font-bold text-foreground tracking-tight">{stats.total}</span>
-              <span className="text-[10px] uppercase font-semibold text-muted-foreground/70 tracking-wide">Analiz</span>
-
-              <span className="text-muted-foreground/20 mx-1">•</span>
-
-              {stats.profitable > 0 ? (
-                <div className="flex items-center gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
-                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-500">{stats.profitable} Kârlı</span>
-                </div>
-              ) : (
-                <span className="text-[10px] text-muted-foreground">Henüz kâr yok</span>
-              )}
-            </div>
-
-            {/* Subtle "New" hint on hover (optional, kept purely visual/minimal) */}
-            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-1 group-hover:translate-y-0">
-              <PlusCircle className="h-4 w-4 text-primary/40" />
+            {/* Subtle Action Hint */}
+            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-1 group-hover:translate-x-0">
+              <PlusCircle className="h-5 w-5 text-primary/50 dark:text-primary/70" />
             </div>
           </Link>
         )}
@@ -255,9 +257,9 @@ export function Sidebar() {
               if (isPro) {
                 return (
                   <div key={item.href} className="px-1 py-1 mb-1">
-                    <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
-                      <Crown className="h-3.5 w-3.5 fill-current" />
-                      Pro Plan Aktif
+                    <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 px-3 py-2.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm overflow-hidden">
+                      <Crown className="h-4 w-4 fill-current shrink-0" />
+                      <span className="truncate whitespace-nowrap">Pro Plan Aktif</span>
                     </div>
                   </div>
                 );

@@ -1,11 +1,23 @@
 
 export const PRICING = {
     proMonthly: 229,
-    oldMonthly: 399, // Eskiden 399'du indirimli 199 gibi gösteriliyor
+    proMonthlyId: 'pro_monthly' as const,
+    oldMonthly: 399,
     proYearly: 2290,
+    proYearlyId: 'pro_yearly' as const,
     currency: "TRY",
     symbol: "₺",
 };
+
+export type PlanId = typeof PRICING.proMonthlyId | typeof PRICING.proYearlyId;
+
+export function getPlanAmount(planId: PlanId): number {
+    return planId === 'pro_monthly' ? PRICING.proMonthly : PRICING.proYearly;
+}
+
+export function getPlanDays(planId: PlanId): number {
+    return planId === 'pro_monthly' ? 30 : 365;
+}
 
 export const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
