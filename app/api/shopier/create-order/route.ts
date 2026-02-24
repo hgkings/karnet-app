@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server-client';
 import { supabaseAdmin } from '@/lib/supabase-server-client';
-import { generateShopierForm } from '@/lib/shopier';
 import { getPlanAmount, PlanId } from '@/config/pricing';
 
 export const dynamic = 'force-dynamic';
@@ -57,33 +56,15 @@ export async function POST(req: Request) {
         const firstName = nameParts[0] || 'Müşteri';
         const lastName = nameParts[1] || 'Karnet';
 
-        // 6. Generate Shopier form HTML
+        // 6. Product name
         const productName = plan === 'pro_monthly'
             ? 'Kârnet Pro - Aylık Abonelik'
             : 'Kârnet Pro - Yıllık Abonelik';
 
-        const formHtml = generateShopierForm({
-            platformOrderId: providerOrderId,
-            productName,
-            totalAmount: amount,
-            currency: 0, // TRY
-            buyer: {
-                name: firstName,
-                surname: lastName,
-                email: buyerEmail,
-                phone: '05000000000',
-                address: 'Türkiye',
-                city: 'İstanbul',
-                country: 'TR',
-                postcode: '34000',
-            },
-        });
+        // 7. Return JSON with redirectUrl to the Shopier form page
+        const redirectUrl = `/api/shopier/checkout?orderId=${providerOrderId}&plan=${plan}&amount=${amount}&product=${encodeURIComponent(productName)}&name=${encodeURIComponent(firstName)}&surname=${encodeURIComponent(lastName)}&email=${encodeURIComponent(buyerEmail)}`;
 
-        // Return HTML that auto-submits to Shopier
-        return new Response(formHtml, {
-            status: 200,
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        });
+        return NextResponse.json({ redirectUrl });
 
     } catch (error: any) {
         console.error('[create-order] Error:', error);

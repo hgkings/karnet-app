@@ -1,8 +1,8 @@
 /**
  * Client-side helper to initiate Shopier checkout.
  * 
- * Calls the create-order API which returns an auto-submitting 
- * HTML form → the browser gets redirected to Shopier.
+ * Calls POST /api/shopier/create-order → gets { redirectUrl }
+ * Then redirects the browser to the Shopier form page.
  */
 export async function startShopierCheckout(plan: 'pro_monthly' | 'pro_yearly'): Promise<void> {
     const res = await fetch('/api/shopier/create-order', {
@@ -16,11 +16,12 @@ export async function startShopierCheckout(plan: 'pro_monthly' | 'pro_yearly'): 
         throw new Error(data.error || 'Ödeme başlatılamadı.');
     }
 
-    // The response is an HTML page that auto-submits to Shopier
-    const html = await res.text();
+    const data = await res.json();
 
-    // Replace current page with the auto-submitting form
-    document.open();
-    document.write(html);
-    document.close();
+    if (!data.redirectUrl) {
+        throw new Error('Ödeme bağlantısı alınamadı.');
+    }
+
+    // Redirect browser to the Shopier form page
+    window.location.href = data.redirectUrl;
 }
