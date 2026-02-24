@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server-client';
 import { getPlanDays } from '@/config/pricing';
 import crypto from 'crypto';
 
@@ -9,16 +7,9 @@ export const dynamic = 'force-dynamic';
  * POST /api/shopier/callback
  * 
  * Shopier OSB (Otomatik Sipariş Bildirimi) webhook.
- * 
- * Incoming POST fields:
- *   - res: base64 encoded JSON with order data
- *   - hash: HMAC-SHA256 signature for verification
- * 
- * Verification:
- *   expected_hash = HMAC_SHA256(res + OSB_USERNAME, OSB_KEY)
- *   Compare with POST.hash — reject if mismatch.
- * 
- * Must respond with plain text: "success"
+ * Incoming: res (base64 JSON) + hash
+ * Verify: HMAC_SHA256(res + OSB_USERNAME, OSB_KEY)
+ * Respond: "success"
  */
 export async function POST(req: Request) {
     try {
@@ -32,7 +23,6 @@ export async function POST(req: Request) {
             resField = (formData.get('res') || '').toString();
             hashField = (formData.get('hash') || '').toString();
         } else {
-            // Fallback: try parsing as URL-encoded text
             const text = await req.text();
             const params = new URLSearchParams(text);
             resField = params.get('res') || '';
@@ -60,14 +50,11 @@ export async function POST(req: Request) {
             .digest('hex');
 
         if (expectedHash !== hashField) {
-            console.error('[Shopier OSB] Hash mismatch!', {
-                expected: expectedHash,
-                received: hashField,
-            });
+            console.error('[Shopier OSB] Hash mismatch!');
             return new Response('INVALID_HASH', { status: 403 });
         }
 
-        // 3. Decode and parse the order data
+        // 3. Decode and parse
         const jsonStr = Buffer.from(resField, 'base64').toString('utf-8');
         const data = JSON.parse(jsonStr);
 
@@ -77,38 +64,50 @@ export async function POST(req: Request) {
         const isTest = data.istest === 1 || data.istest === '1' || data.istest === true;
 
         if (!orderId) {
-            console.error('[Shopier OSB] Missing orderid in decoded data');
+            console.error('[Shopier OSB] Missing orderid');
             return new Response('MISSING_ORDER_ID', { status: 400 });
         }
 
-        // 4. Handle test orders gracefully
         if (isTest) {
-            console.log('[Shopier OSB] 🧪 Test order received:', orderId);
-            // Still process it — but log that it's a test
+            console.log('[Shopier OSB] 🧪 Test order:', orderId);
         }
 
-        // 5. Fetch existing payment record
-        const { data: payment, error: fetchError } = await supabaseAdmin
+        // 4. Safe env guard for Supabase
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseServiceKey) {
+            console.error('[Shopier OSB] Missing Supabase env vars');
+            return new Response('SERVER_CONFIG_ERROR', { status: 500 });
+        }
+
+        // 5. Create admin client inside handler
+        const { createServerClient } = await import('@supabase/ssr');
+        const adminClient = createServerClient(supabaseUrl, supabaseServiceKey, {
+            cookies: { getAll: () => [], setAll: () => { } },
+        });
+
+        // 6. Fetch payment record
+        const { data: payment, error: fetchError } = await adminClient
             .from('payments')
             .select('*')
             .eq('provider_order_id', orderId)
             .single();
 
         if (fetchError || !payment) {
-            console.error('[Shopier OSB] Payment not found for orderId:', orderId, fetchError);
-            // Still return success to prevent Shopier from retrying with unknown orders
+            console.error('[Shopier OSB] Payment not found:', orderId);
             return new Response('success', { status: 200 });
         }
 
-        // 6. Idempotency: if already paid, just return success
+        // 7. Idempotency
         if (payment.status === 'paid') {
-            console.log('[Shopier OSB] Already paid, skipping:', orderId);
+            console.log('[Shopier OSB] Already paid:', orderId);
             return new Response('success', { status: 200 });
         }
 
-        // 7. Update payment record → paid
+        // 8. Mark paid
         const now = new Date().toISOString();
-        await supabaseAdmin
+        await adminClient
             .from('payments')
             .update({
                 status: 'paid',
@@ -118,12 +117,12 @@ export async function POST(req: Request) {
             })
             .eq('id', payment.id);
 
-        // 8. Activate Pro for the user
+        // 9. Activate Pro
         const planDays = getPlanDays(payment.plan);
         const proUntil = new Date();
         proUntil.setDate(proUntil.getDate() + planDays);
 
-        await supabaseAdmin
+        await adminClient
             .from('profiles')
             .update({
                 plan: 'pro',
@@ -131,13 +130,12 @@ export async function POST(req: Request) {
             })
             .eq('id', payment.user_id);
 
-        console.log(`[Shopier OSB] ✅ Pro activated for user ${payment.user_id} until ${proUntil.toISOString()}${isTest ? ' (TEST)' : ''}`);
+        console.log(`[Shopier OSB] ✅ Pro activated for ${payment.user_id} until ${proUntil.toISOString()}${isTest ? ' (TEST)' : ''}`);
 
-        // 9. Respond with "success" (required by Shopier)
         return new Response('success', { status: 200 });
 
     } catch (error: any) {
-        console.error('[Shopier OSB] Unhandled error:', error);
+        console.error('[Shopier OSB] Error:', error);
         return new Response('SERVER_ERROR', { status: 500 });
     }
 }
