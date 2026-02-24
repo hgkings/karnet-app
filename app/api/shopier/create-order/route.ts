@@ -4,6 +4,8 @@ import { supabaseAdmin } from '@/lib/supabase-server-client';
 import { generateShopierForm } from '@/lib/shopier';
 import { getPlanAmount, PlanId } from '@/config/pricing';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         // 1. Auth check

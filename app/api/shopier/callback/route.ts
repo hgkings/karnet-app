@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase-server-client';
 import { getPlanDays } from '@/config/pricing';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/shopier/callback
  * 

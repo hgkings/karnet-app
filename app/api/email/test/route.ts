@@ -3,6 +3,9 @@ import { supabaseAdmin, createClient } from '@/lib/supabase-server-client';
 import { emailService } from '@/lib/email/emailService';
 import { getTestEmailTemplate } from '@/lib/email/templates';
 
+// Force dynamic — this route uses cookies and env vars at runtime
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         // 1. Env Checks (Critical)
