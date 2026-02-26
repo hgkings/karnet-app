@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 // Shopier checks this URL with GET to verify it's reachable
 export async function GET() {
-    return new Response('OK', { status: 200 });
+    return new Response('success', { status: 200 });
 }
 
 /**
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
         if (!resField || !hashField) {
             console.error('[Shopier OSB] Missing res or hash fields');
-            return new Response('OK', { status: 200 });
+            return new Response('success', { status: 200 });
         }
 
         // 2. Verify HMAC signature (try both hex and base64)
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
             data = JSON.parse(jsonStr);
         } catch (parseErr) {
             console.error('[Shopier OSB] Failed to decode/parse res:', parseErr);
-            return new Response('OK', { status: 200 });
+            return new Response('success', { status: 200 });
         }
 
         console.log('[Shopier OSB] Decoded payload:', JSON.stringify(data, null, 2));
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
 
         if (!supabaseUrl || !supabaseServiceKey) {
             console.error('[Shopier OSB] Missing Supabase env vars');
-            return new Response('OK', { status: 200 });
+            return new Response('success', { status: 200 });
         }
 
         const { createServerClient } = await import('@supabase/ssr');
@@ -185,7 +185,7 @@ export async function POST(req: Request) {
             // Update existing payment record
             if (payment.status === 'paid') {
                 console.log('[Shopier OSB] Already paid:', payment.id);
-                return new Response('OK', { status: 200 });
+                return new Response('success', { status: 200 });
             }
 
             const { error: updateErr } = await adminClient
@@ -221,7 +221,7 @@ export async function POST(req: Request) {
             console.log('[Shopier OSB] Created new payment record:', { userId, error: insertErr?.message });
         } else {
             console.error('[Shopier OSB] ❌ Cannot find user. OrderId:', shopierOrderId, 'Email:', buyerEmail);
-            return new Response('OK', { status: 200 });
+            return new Response('success', { status: 200 });
         }
 
         // 8. Update profile to Pro
@@ -237,10 +237,10 @@ export async function POST(req: Request) {
             console.log(`[Shopier OSB] ✅ Pro activated for ${userId} | plan=${determinedPlan} | until=${proUntil.toISOString()} | error=${profileErr?.message || 'none'}${isTest ? ' (TEST)' : ''}`);
         }
 
-        return new Response('OK', { status: 200 });
+        return new Response('success', { status: 200 });
 
     } catch (error: any) {
         console.error('[Shopier OSB] Unhandled error:', error);
-        return new Response('OK', { status: 200 });
+        return new Response('success', { status: 200 });
     }
 }
