@@ -1,4 +1,3 @@
-import { getPlanDays } from '@/config/pricing';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -68,7 +67,36 @@ export async function POST(req: Request) {
         const shopierOrderId = data.orderid || data.order_id || data.platform_order_id || '';
         const buyerEmail = data.buyer_email || data.email || '';
         const isTest = data.istest === 1 || data.istest === '1' || data.istest === true;
-        const paymentTotal = parseFloat(data.total_order_value || data.payment_amount || '0');
+
+        // 3b. Determine plan by Shopier productid
+        const productId = String(
+            data.productid ||
+            data.product_id ||
+            (Array.isArray(data.productlist) && data.productlist[0]?.productid) ||
+            ''
+        );
+        const monthlyProductId = process.env.SHOPIER_MONTHLY_PRODUCT_ID || '';
+        const yearlyProductId = process.env.SHOPIER_YEARLY_PRODUCT_ID || '';
+
+        let determinedPlan: 'pro_monthly' | 'pro_yearly' | null = null;
+        if (productId && productId === monthlyProductId) {
+            determinedPlan = 'pro_monthly';
+        } else if (productId && productId === yearlyProductId) {
+            determinedPlan = 'pro_yearly';
+        }
+
+        console.log('[Shopier OSB] Product matching:', {
+            receivedProductId: productId,
+            monthlyProductId,
+            yearlyProductId,
+            determinedPlan
+        });
+
+        if (!determinedPlan) {
+            console.error('[Shopier OSB] Unknown productid:', productId);
+            // Still return success so Shopier doesn't retry, but don't activate
+            return new Response('success', { status: 200 });
+        }
 
         if (isTest) {
             console.log('[Shopier OSB] 🧪 Test order:', shopierOrderId);
@@ -136,20 +164,21 @@ export async function POST(req: Request) {
             return new Response('success', { status: 200 });
         }
 
-        // 7. Mark paid
+        // 7. Mark paid + set plan from productid
         const now = new Date().toISOString();
         await adminClient
             .from('payments')
             .update({
                 status: 'paid',
                 paid_at: now,
+                plan: determinedPlan,
                 provider_tx_id: shopierOrderId || payment.provider_order_id,
                 raw_payload: data,
             })
             .eq('id', payment.id);
 
-        // 8. Activate Pro
-        const planDays = getPlanDays(payment.plan);
+        // 8. Activate Pro using plan determined by productid
+        const planDays = determinedPlan === 'pro_monthly' ? 30 : 365;
         const proUntil = new Date();
         proUntil.setDate(proUntil.getDate() + planDays);
 
@@ -161,7 +190,7 @@ export async function POST(req: Request) {
             })
             .eq('id', payment.user_id);
 
-        console.log(`[Shopier OSB] ✅ Pro activated for ${payment.user_id} until ${proUntil.toISOString()}${isTest ? ' (TEST)' : ''}`);
+        console.log(`[Shopier OSB] ✅ Pro activated for ${payment.user_id} | plan=${determinedPlan} | until ${proUntil.toISOString()}${isTest ? ' (TEST)' : ''}`);
 
         return new Response('success', { status: 200 });
 
