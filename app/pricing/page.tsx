@@ -199,12 +199,15 @@ export default function PricingPage() {
                     className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-premium-md hover:shadow-premium-lg hover:scale-[1.02] transition-all duration-300 active:scale-95"
                     disabled={loading}
                     onClick={async () => {
+                      console.log('[pricing-page] Button clicked! user:', !!user, 'isAnnual:', isAnnual);
                       if (!user) { window.location.href = '/auth'; return; }
                       setLoading(true);
                       try {
                         const plan = isAnnual ? 'pro_yearly' : 'pro_monthly';
+                        console.log('[pricing-page] Calling startShopierCheckout with plan:', plan);
                         await startShopierCheckout(plan as any);
                       } catch (err: any) {
+                        console.error('[pricing-page] Checkout error:', err);
                         toast.error(err.message || 'Ödeme başlatılamadı.');
                         setLoading(false);
                       }
