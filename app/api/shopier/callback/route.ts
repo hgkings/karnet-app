@@ -2,6 +2,11 @@ import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
+// Shopier checks this URL with GET to verify it's reachable
+export async function GET() {
+    return new Response('OK', { status: 200 });
+}
+
 /**
  * POST /api/shopier/callback
  * 
