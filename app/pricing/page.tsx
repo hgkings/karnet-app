@@ -9,11 +9,11 @@ import { cn } from '@/lib/utils';
 import { PLAN_LIMITS } from '@/config/plans';
 import { PRICING } from '@/config/pricing';
 import { isProUser } from '@/utils/access';
-import { startShopierCheckout } from '@/lib/shopier-client';
+// fetch POST is inlined in the button onClick — no external import needed
 import { toast } from 'sonner';
 
 export default function PricingPage() {
-  const { user, upgradePlan } = useAuth();
+  const { user } = useAuth();
   const [isAnnual, setIsAnnual] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -199,15 +199,29 @@ export default function PricingPage() {
                     className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-premium-md hover:shadow-premium-lg hover:scale-[1.02] transition-all duration-300 active:scale-95"
                     disabled={loading}
                     onClick={async () => {
-                      console.log('[pricing-page] Button clicked! user:', !!user, 'isAnnual:', isAnnual);
+                      const selectedPlan = isAnnual ? 'pro_yearly' : 'pro_monthly';
+                      console.log('[PRICING v3] Button clicked!', { user: !!user, selectedPlan });
                       if (!user) { window.location.href = '/auth'; return; }
                       setLoading(true);
                       try {
-                        const plan = isAnnual ? 'pro_yearly' : 'pro_monthly';
-                        console.log('[pricing-page] Calling startShopierCheckout with plan:', plan);
-                        await startShopierCheckout(plan as any);
+                        console.log('[PRICING v3] Calling POST /api/shopier/create-order...');
+                        const res = await fetch('/api/shopier/create-order', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ plan: selectedPlan }),
+                          credentials: 'same-origin',
+                        });
+                        console.log('[PRICING v3] Response status:', res.status);
+                        if (!res.ok) {
+                          const errData = await res.json().catch(() => ({}));
+                          throw new Error(errData.error || `HTTP ${res.status}`);
+                        }
+                        const data = await res.json();
+                        console.log('[PRICING v3] Got redirectUrl:', data.redirectUrl);
+                        if (!data.redirectUrl) throw new Error('redirectUrl eksik');
+                        window.location.href = data.redirectUrl;
                       } catch (err: any) {
-                        console.error('[pricing-page] Checkout error:', err);
+                        console.error('[PRICING v3] Error:', err);
                         toast.error(err.message || 'Ödeme başlatılamadı.');
                         setLoading(false);
                       }

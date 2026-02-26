@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Crown, X, Check, Loader2 } from 'lucide-react';
 import { PRICING, monthlyLabel } from '@/config/pricing';
-import { startShopierCheckout } from '@/lib/shopier-client';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -30,8 +29,24 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      await startShopierCheckout('pro_monthly');
+      console.log('[UPGRADE-MODAL v3] Calling POST /api/shopier/create-order...');
+      const res = await fetch('/api/shopier/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: 'pro_monthly' }),
+        credentials: 'same-origin',
+      });
+      console.log('[UPGRADE-MODAL v3] Response status:', res.status);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      console.log('[UPGRADE-MODAL v3] Got redirectUrl:', data.redirectUrl);
+      if (!data.redirectUrl) throw new Error('redirectUrl eksik');
+      window.location.href = data.redirectUrl;
     } catch (err: any) {
+      console.error('[UPGRADE-MODAL v3] Error:', err);
       toast.error(err.message || 'Ödeme başlatılamadı.');
       setLoading(false);
     }
