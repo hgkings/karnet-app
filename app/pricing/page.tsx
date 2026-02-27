@@ -3,27 +3,167 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Navbar } from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
-import { Check, X, Crown, Sparkles, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { Check, X, Crown, Sparkles, Loader2, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { PLAN_LIMITS } from '@/config/plans';
 import { PRICING } from '@/config/pricing';
 import { isProUser } from '@/utils/access';
-// fetch POST is inlined in the button onClick — no external import needed
 import { toast } from 'sonner';
 
 export default function PricingPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [isAnnual, setIsAnnual] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Payment return state
+  const paymentStatus = searchParams.get('payment'); // 'success' | 'fail' | null
+  const [pollState, setPollState] = useState<'idle' | 'polling' | 'active' | 'pending'>('idle');
+  const [pollCount, setPollCount] = useState(0);
+
   const FREE_LIMIT = PLAN_LIMITS.free.maxProducts;
+
+  // Refresh profile from Supabase
+  const refreshProfile = useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/user/profile', { credentials: 'same-origin', cache: 'no-store' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      const plan = data?.plan || data?.profile?.plan || '';
+      return plan === 'pro' || plan.startsWith('pro_');
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Poll for Pro activation after successful payment
+  useEffect(() => {
+    if (paymentStatus !== 'success' || !user) return;
+    if (pollState !== 'idle') return;
+
+    // Already Pro? Show immediately
+    if (isProUser(user)) {
+      setPollState('active');
+      toast.success('Plan aktif ✅ Pro planınız zaten aktif!');
+      return;
+    }
+
+    setPollState('polling');
+    toast.success('Ödeme başarılı ✅ Planınız kontrol ediliyor...');
+
+    let attempt = 0;
+    const maxAttempts = 6;
+    const interval = 5000; // 5 seconds
+
+    const poll = async () => {
+      attempt++;
+      setPollCount(attempt);
+      const isPro = await refreshProfile();
+
+      if (isPro) {
+        setPollState('active');
+        toast.success('Plan aktif ✅ Pro planınız aktif edildi!');
+        // Reload page to reflect new plan
+        setTimeout(() => window.location.href = '/pricing', 1500);
+        return;
+      }
+
+      if (attempt < maxAttempts) {
+        setTimeout(poll, interval);
+      } else {
+        setPollState('pending');
+      }
+    };
+
+    // Start first check after 3 seconds
+    setTimeout(poll, 3000);
+  }, [paymentStatus, user, pollState, refreshProfile]);
+
+  // Show fail toast
+  useEffect(() => {
+    if (paymentStatus === 'fail') {
+      toast.error('Ödeme başarısız ❌ Tekrar deneyebilirsiniz.');
+    }
+  }, [paymentStatus]);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+
+        {/* Payment Return Banner */}
+        {paymentStatus === 'success' && (
+          <div className={cn(
+            "mb-8 mx-auto max-w-2xl rounded-xl border p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4",
+            pollState === 'active'
+              ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800"
+              : "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
+          )}>
+            {pollState === 'active' ? (
+              <>
+                <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+                <div>
+                  <p className="font-semibold text-emerald-700 dark:text-emerald-400">Plan Aktif ✅</p>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-500">Pro planınız başarıyla aktif edildi!</p>
+                </div>
+              </>
+            ) : pollState === 'pending' ? (
+              <>
+                <Loader2 className="h-6 w-6 text-amber-500 shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-700 dark:text-amber-400">Ödeme Alındı ⏳</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-500">
+                    Ödeme alındı ancak plan henüz aktif değil. 30 saniye içinde otomatik aktif olur.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    setPollState('polling');
+                    setPollCount(0);
+                    const isPro = await refreshProfile();
+                    if (isPro) {
+                      setPollState('active');
+                      toast.success('Plan aktif ✅');
+                      setTimeout(() => window.location.href = '/pricing', 1500);
+                    } else {
+                      setPollState('pending');
+                      toast.info('Henüz aktif değil, biraz daha bekleyin.');
+                    }
+                  }}
+                  className="shrink-0"
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Yenile
+                </Button>
+              </>
+            ) : (
+              <>
+                <Loader2 className="h-6 w-6 text-blue-500 animate-spin shrink-0" />
+                <div>
+                  <p className="font-semibold text-blue-700 dark:text-blue-400">Ödeme Başarılı ✅</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-500">
+                    Planınız kontrol ediliyor... ({pollCount}/6)
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {paymentStatus === 'fail' && (
+          <div className="mb-8 mx-auto max-w-2xl rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+            <XCircle className="h-6 w-6 text-red-500 shrink-0" />
+            <div>
+              <p className="font-semibold text-red-700 dark:text-red-400">Ödeme Başarısız ❌</p>
+              <p className="text-sm text-red-600 dark:text-red-500">Ödeme tamamlanamadı. Tekrar deneyebilirsiniz.</p>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center space-y-4 mb-16">
@@ -149,13 +289,12 @@ export default function PricingPage() {
                   <span className="text-base font-medium text-muted-foreground">
                     {isAnnual ? '/ yıl' : '/ ay'}
                   </span>
-                  {/* Minimal Discount Chip */}
                   <span className="ml-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                     %50 İndirim
                   </span>
                 </div>
 
-                {/* Founder Price Badge - Improved Readability */}
+                {/* Founder Badge */}
                 <div className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 border border-amber-200/60 dark:border-amber-800/30 w-full group transition-all hover:bg-amber-100/50">
                   <div className="shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-amber-950/50 shadow-sm border border-amber-100">
                     <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-current" />
@@ -200,28 +339,24 @@ export default function PricingPage() {
                     disabled={loading}
                     onClick={async () => {
                       const selectedPlan = isAnnual ? 'pro_yearly' : 'pro_monthly';
-                      console.log('[PRICING v3] Button clicked!', { user: !!user, selectedPlan });
                       if (!user) { window.location.href = '/auth'; return; }
                       setLoading(true);
                       try {
-                        console.log('[PRICING v3] Calling POST /api/shopier/create-order...');
                         const res = await fetch('/api/shopier/create-order', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ plan: selectedPlan }),
                           credentials: 'same-origin',
                         });
-                        console.log('[PRICING v3] Response status:', res.status);
                         if (!res.ok) {
                           const errData = await res.json().catch(() => ({}));
                           throw new Error(errData.error || `HTTP ${res.status}`);
                         }
                         const data = await res.json();
-                        console.log('[PRICING v3] Got redirectUrl:', data.redirectUrl);
                         if (!data.redirectUrl) throw new Error('redirectUrl eksik');
                         window.location.href = data.redirectUrl;
                       } catch (err: any) {
-                        console.error('[PRICING v3] Error:', err);
+                        console.error('[PRICING] Error:', err);
                         toast.error(err.message || 'Ödeme başlatılamadı.');
                         setLoading(false);
                       }
