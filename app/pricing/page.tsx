@@ -353,12 +353,25 @@ export default function PricingPage() {
                           throw new Error(errData.error || `HTTP ${res.status}`);
                         }
                         const data = await res.json();
-                        if (!data.redirectUrl) throw new Error('redirectUrl eksik');
                         // Store paymentId for success/fail pages
                         if (data.paymentId) {
                           try { localStorage.setItem('karnet_paymentId', data.paymentId); } catch { }
                         }
-                        window.location.href = data.redirectUrl;
+
+                        if (data.formHtml) {
+                          const container = document.createElement('div');
+                          container.innerHTML = data.formHtml;
+                          document.body.appendChild(container);
+                          const form = container.querySelector('form');
+                          if (form) {
+                            form.submit();
+                            return;
+                          }
+                        } else if (data.redirectUrl) {
+                          window.location.href = data.redirectUrl;
+                        } else {
+                          throw new Error('Ödeme başlatılamadı (formHtml eksik)');
+                        }
                       } catch (err: any) {
                         console.error('[PRICING] Error:', err);
                         toast.error(err.message || 'Ödeme başlatılamadı.');

@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getPlanAmount, PlanId } from '@/config/pricing';
+import { Shopier, Buyer, Address, ProductType, AutoSubmitFormRenderer } from 'shopier';
 
 export const dynamic = 'force-dynamic';
-
-// GET → redirect to pricing (prevent 405)
-export async function GET() {
-    return NextResponse.redirect(new URL('/pricing', process.env.NEXT_PUBLIC_APP_URL || 'https://xn--krnet-3qa.com'));
-}
 
 export async function POST(req: Request) {
     console.log('[create-order] POST hit');
@@ -15,14 +11,12 @@ export async function POST(req: Request) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-        const shopierMonthlyUrl = process.env.SHOPIER_PRO_MONTHLY_URL;
-        const shopierYearlyUrl = process.env.SHOPIER_PRO_YEARLY_URL;
+
+        const apiKey = process.env.SHOPIER_API_KEY || '70de4ee88fca7cc1296ff79ae86eebd5';
+        const apiSecret = process.env.SHOPIER_API_SECRET || '6f0a13e0a08fdb6e30355cf0694b41b3';
 
         if (!supabaseUrl || !supabaseAnonKey || !serviceKey) {
             return NextResponse.json({ error: 'Sunucu yapılandırması eksik.' }, { status: 500 });
-        }
-        if (!shopierMonthlyUrl || !shopierYearlyUrl) {
-            return NextResponse.json({ error: 'Ödeme yapılandırması eksik.' }, { status: 500 });
         }
 
         // Auth
@@ -52,7 +46,7 @@ export async function POST(req: Request) {
 
         const amount = getPlanAmount(plan);
 
-        // Insert payment with service role
+        // Insert payment
         const admin = createServerClient(supabaseUrl, serviceKey, {
             cookies: { getAll: () => [], setAll: () => { } },
         });
@@ -76,23 +70,51 @@ export async function POST(req: Request) {
         }
 
         const paymentId = payment.id;
+        console.log('[create-order] Payment DB inserted:', paymentId);
 
-        console.log('[create-order]', {
-            paymentId,
-            userId: user.id,
-            plan,
-            amount,
+        // API INTEGRATION
+        const shopier = new Shopier(apiKey, apiSecret);
+
+        // Setup buyer details
+        const email = user.email || 'bilgi@karnet.com';
+        const phone = user.user_metadata?.phone || '05555555555';
+        const name = user.user_metadata?.first_name || 'Karnet';
+        const surname = user.user_metadata?.last_name || 'Kullanıcısı';
+
+        const buyer = new Buyer({
+            id: user.id.substring(0, 10),
+            name: name,
+            surname: surname,
+            email: email,
+            phone: phone,
         });
 
-        // Build redirect URL
-        // Shopier fixed product URL — we can't pass custom fields through it
-        // But we store paymentId in success/fail return URLs for the client
-        const baseUrl = plan === 'pro_monthly' ? shopierMonthlyUrl : shopierYearlyUrl;
-        const redirectUrl = baseUrl;
+        const address = new Address({
+            address: 'Bilinmeyen Adres',
+            city: 'İstanbul',
+            country: 'Türkiye',
+            postcode: '34000',
+        });
 
-        console.log('[create-order] redirectUrl:', redirectUrl);
+        const params = shopier.getParams();
+        params.setBuyer(buyer);
+        params.setAddress(address);
 
-        return NextResponse.json({ redirectUrl, paymentId });
+        // Base domain (to create return url)
+        const domain = process.env.NEXT_PUBLIC_APP_URL || 'https://xn--krnet-3qa.com';
+        const returnUrl = `${domain}/api/shopier/callback?paymentId=${paymentId}`;
+
+        params.setOrderData(paymentId, amount.toString(), returnUrl);
+        params.setProductData(
+            plan === 'pro_monthly' ? 'Kârnet Pro Aylık' : 'Kârnet Pro Yıllık',
+            ProductType.DEFAULT_TYPE
+        );
+
+        // Generate HTML with Shopier AutoSubmit Form
+        const renderer = new AutoSubmitFormRenderer(shopier);
+        const formHtml = shopier.goWith(renderer);
+
+        return NextResponse.json({ formHtml, paymentId });
 
     } catch (error: any) {
         console.error('[create-order] error:', error?.message);
