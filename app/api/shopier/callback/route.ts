@@ -14,14 +14,34 @@ export async function POST(req: Request) {
     console.log('[OSB] POST received');
 
     try {
-        // ── 1. Read form body ──
-        const raw = await req.text();
-        const params = new URLSearchParams(raw);
-        const resField = params.get('res') || '';
-        const hashField = params.get('hash') || '';
+        // ── 1. Read body robustly ──
+        const ct = req.headers.get('content-type') || '';
+        console.log('[OSB] content-type', ct);
+
+        let resField = '';
+        let hashField = '';
+
+        if (ct.includes('multipart/form-data')) {
+            const fd = await req.formData();
+            resField = fd.get('res')?.toString() ?? fd.get('RES')?.toString() ?? '';
+            hashField = fd.get('hash')?.toString() ?? fd.get('HASH')?.toString() ?? '';
+            console.log('[OSB] parsed via formData, keys:', Array.from(fd.keys()));
+        } else {
+            const raw = await req.text();
+            console.log('[OSB] raw len', raw.length);
+            const params = new URLSearchParams(raw);
+            console.log('[OSB] keys', Array.from(params.keys()));
+            resField = params.get('res') || params.get('RES') || '';
+            hashField = params.get('hash') || params.get('HASH') || '';
+        }
+
+        console.log('[OSB] parsed', {
+            hasRes: !!resField, resLen: resField.length,
+            hasHash: !!hashField, hashLen: hashField.length,
+        });
 
         if (!resField || !hashField) {
-            console.error('[OSB] Missing res or hash');
+            console.error('[OSB] Missing res or hash after parsing');
             return new Response('success', { status: 200 });
         }
 
@@ -33,9 +53,7 @@ export async function POST(req: Request) {
             .update(resField + osbUsername)
             .digest('hex');
 
-        const hashOk = expected === hashField;
-        console.log('[OSB] hash', { ok: hashOk });
-        // Allow mismatch for now (debugging)
+        console.log('[OSB] hash', { ok: expected === hashField });
 
         // ── 3. Decode base64 → JSON ──
         const decoded = JSON.parse(Buffer.from(resField, 'base64').toString('utf-8'));
@@ -47,7 +65,7 @@ export async function POST(req: Request) {
         const productName = String(decoded.product_name || decoded.productname || '');
         const istest = decoded.istest === 1 || decoded.istest === '1';
 
-        console.log('[OSB] POST received', { orderid, email, price, productid, productName, istest });
+        console.log('[OSB] decoded', { orderid, email, price, productid, productName, istest });
 
         // ── 4. Determine plan ──
         const yearlyPid = process.env.SHOPIER_YEARLY_PRODUCT_ID || '';
@@ -59,11 +77,8 @@ export async function POST(req: Request) {
         if (productid === yearlyPid || productName.toLowerCase().includes('yıllık') || price >= 2000) {
             plan = 'pro_yearly';
             days = 365;
-        } else {
-            plan = 'pro_monthly';
-            days = 30;
         }
-        console.log('[OSB] determined plan', { plan, days });
+        console.log('[OSB] plan', { plan, days });
 
         // ── 5. Supabase admin client ──
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -89,17 +104,6 @@ export async function POST(req: Request) {
 
         if (!profile) {
             console.error('[OSB] ❌ No profile for email:', email);
-            // Still insert a payment record for tracking
-            await supabase.from('payments').insert({
-                user_id: '00000000-0000-0000-0000-000000000000',
-                provider_order_id: orderid || crypto.randomUUID(),
-                provider: 'shopier',
-                plan,
-                amount_try: Math.round(price),
-                status: 'paid',
-                paid_at: new Date().toISOString(),
-                raw_payload: decoded,
-            });
             return new Response('success', { status: 200 });
         }
 
@@ -108,7 +112,7 @@ export async function POST(req: Request) {
         // ── 7. Find latest 'created' payment for this user+plan in last 60 min ──
         const sixtyMinAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-        const { data: existingPayment, error: payErr } = await supabase
+        const { data: existingPayment } = await supabase
             .from('payments')
             .select('*')
             .eq('user_id', userId)
@@ -119,12 +123,11 @@ export async function POST(req: Request) {
             .limit(1)
             .maybeSingle();
 
-        console.log('[OSB] payment lookup', { found: !!existingPayment, paymentId: existingPayment?.id, error: payErr?.message });
+        console.log('[OSB] payment lookup', { found: !!existingPayment, id: existingPayment?.id });
 
         const now = new Date().toISOString();
 
         if (existingPayment) {
-            // Update existing payment
             const { error: updateErr } = await supabase
                 .from('payments')
                 .update({
@@ -137,7 +140,6 @@ export async function POST(req: Request) {
 
             console.log('[OSB] payment updated', { id: existingPayment.id, error: updateErr?.message || 'ok' });
         } else {
-            // Insert new paid payment
             const { error: insertErr } = await supabase
                 .from('payments')
                 .insert({
@@ -160,18 +162,12 @@ export async function POST(req: Request) {
 
         const { error: profileErr } = await supabase
             .from('profiles')
-            .update({
-                plan: 'pro',
-                plan_expires_at: proUntil.toISOString(),
-            })
+            .update({ plan: 'pro', plan_expires_at: proUntil.toISOString() })
             .eq('id', userId);
 
         console.log('[OSB] profile updated', {
-            userId,
-            plan,
-            until: proUntil.toISOString(),
-            error: profileErr?.message || 'ok',
-            istest,
+            userId, plan, until: proUntil.toISOString(),
+            error: profileErr?.message || 'ok', istest,
         });
 
         return new Response('success', { status: 200 });
