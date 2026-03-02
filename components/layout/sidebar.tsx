@@ -165,14 +165,8 @@ export function Sidebar() {
 
             if (isPremium) {
               if (isPro) {
-                return (
-                  <div key={item.href} className="px-1 py-1 mb-1">
-                    <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 px-3 py-2.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm overflow-hidden">
-                      <Crown className="h-4 w-4 fill-current shrink-0" />
-                      <span className="truncate whitespace-nowrap">Pro Plan Aktif</span>
-                    </div>
-                  </div>
-                );
+                // Already showing a big ProStatusCard at the top, no need to show it again here
+                return null;
               }
 
               return (
