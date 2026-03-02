@@ -358,19 +358,10 @@ export default function PricingPage() {
                           try { localStorage.setItem('karnet_paymentId', data.paymentId); } catch { }
                         }
 
-                        if (data.formHtml) {
-                          const container = document.createElement('div');
-                          container.innerHTML = data.formHtml;
-                          document.body.appendChild(container);
-                          const form = container.querySelector('form');
-                          if (form) {
-                            form.submit();
-                            return;
-                          }
-                        } else if (data.redirectUrl) {
+                        if (data.redirectUrl) {
                           window.location.href = data.redirectUrl;
                         } else {
-                          throw new Error('Ödeme başlatılamadı (formHtml eksik)');
+                          throw new Error('Ödeme başlatılamadı (redirectUrl eksik)');
                         }
                       } catch (err: any) {
                         console.error('[PRICING] Error:', err);
