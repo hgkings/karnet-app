@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-        const apiKey = process.env.SHOPIER_API_KEY || '70de4ee88fca7cc1296ff79ae86eebd5';
+        const apiKey = process.env.SHOPIER_API_KEY || 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJmNDRiYmZmOTExZTNlZWE4YTFmN2ZlNTVlOTI1MDRlYSIsImp0aSI6IjNmZjdhNDlmNmU1ZGY5NjhkYmJkZTJiMzFiNDdmMGIwN2M2NzI0NzA4OTdmYWFjMWI5ZTAwZWY2NmU1YzI5NTYxMTM5NjJkZTkwMTE5ODU3OWJhODljZWU0ZjA5NDM4MjY5ZjYzN2ViMDQ1ZmU1YzA2YTZlODhkZGQ4NjFmOGUxNDBkYzZmZDc1ZWUwOGQ3NjQ3ZTg0NDM5M2ZhOTlkOTYiLCJpYXQiOjE3NzI0ODQwMDcsIm5iZiI6MTc3MjQ4NDAwNywiZXhwIjoxOTMwMjY4NzY3LCJzdWIiOiI4MTY0NDEiLCJzY29wZXMiOlsib3JkZXJzOnJlYWQiLCJvcmRlcnM6d3JpdGUiLCJwcm9kdWN0czpyZWFkIiwicHJvZHVjdHM6d3JpdGUiLCJzaGlwcGluZ3M6cmVhZCIsInNoaXBwaW5nczp3cml0ZSIsImRpc2NvdW50czpyZWFkIiwiZGlzY291bnRzOndyaXRlIiwicGF5b3V0czpyZWFkIiwicmVmdW5kczpyZWFkIiwicmVmdW5kczp3cml0ZSIsInNob3A6cmVhZCIsInNob3A6d3JpdGUiXX0.l2D_YDyUSm-hYMNmqxl8ZFnbC3pfqAe3XElIY2A6UjY4WZHSoityepEKFi9WZsTPH-RQxNptWuDBB1Qid4TEf6YP4_u7wrUNTpcNBxuu6MZgFV8wj2TCrLPi3R53SOx-5ABND0RF9o1SgCC6nmDPlr7lBngTiRQISOZGOiXR_ARizGOeOyxcfdoVl35S3J47l-1hDT0U6D3FBJPfs1kDw0aRKsKsS-KIb0eiYumN5Vhoq7LLh3dBlpKTbP3HvqlYL5-G8R_9LMW1ydZmj4axE_1aTM0kekUUovKiXzcylftDwqImCQuae96RWXp74BXKQqauocOECX2O_H259_gsig';
         const apiSecret = process.env.SHOPIER_API_SECRET || '6f0a13e0a08fdb6e30355cf0694b41b3';
 
         if (!supabaseUrl || !supabaseAnonKey || !serviceKey) {
