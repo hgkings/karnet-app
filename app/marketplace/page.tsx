@@ -16,6 +16,10 @@ import {
     EyeOff,
     ShieldCheck,
     ExternalLink,
+    RefreshCw,
+    Package,
+    ShoppingCart,
+    Plug,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,6 +39,12 @@ export default function MarketplacePage() {
     const [saving, setSaving] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
     const [connection, setConnection] = useState<ConnectionState | null>(null);
+
+    // Sync states
+    const [testing, setTesting] = useState(false);
+    const [syncingProducts, setSyncingProducts] = useState(false);
+    const [syncingOrders, setSyncingOrders] = useState(false);
+    const [lastLog, setLastLog] = useState<string | null>(null);
 
     // Form fields
     const [apiKey, setApiKey] = useState('');
@@ -121,7 +131,75 @@ export default function MarketplacePage() {
         }
     };
 
+    const handleTestConnection = async () => {
+        setTesting(true);
+        setLastLog(null);
+        try {
+            const res = await fetch('/api/marketplace/trendyol/test', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message || 'Bağlantı başarılı!');
+                setLastLog(data.message);
+            } else {
+                toast.error(data.message || data.error || 'Bağlantı testi başarısız.');
+                setLastLog(data.message || data.error);
+            }
+            fetchStatus();
+        } catch {
+            toast.error('Bağlantı testi sırasında hata oluştu.');
+        } finally {
+            setTesting(false);
+        }
+    };
+
+    const handleSyncProducts = async () => {
+        setSyncingProducts(true);
+        setLastLog(null);
+        try {
+            const res = await fetch('/api/marketplace/trendyol/sync-products', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message || 'Ürünler senkronize edildi!');
+                setLastLog(data.message);
+            } else {
+                toast.error(data.error || 'Ürün senkronizasyonu başarısız.');
+                setLastLog(data.error);
+            }
+            fetchStatus();
+        } catch {
+            toast.error('Ürün senkronizasyonu sırasında hata oluştu.');
+        } finally {
+            setSyncingProducts(false);
+        }
+    };
+
+    const handleSyncOrders = async () => {
+        setSyncingOrders(true);
+        setLastLog(null);
+        try {
+            const res = await fetch('/api/marketplace/trendyol/sync-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message || 'Siparişler senkronize edildi!');
+                setLastLog(data.message);
+            } else {
+                toast.error(data.error || 'Sipariş senkronizasyonu başarısız.');
+                setLastLog(data.error);
+            }
+            fetchStatus();
+        } catch {
+            toast.error('Sipariş senkronizasyonu sırasında hata oluştu.');
+        } finally {
+            setSyncingOrders(false);
+        }
+    };
+
     const isConnected = connection?.status === 'connected';
+    const isSyncing = syncingProducts || syncingOrders || testing;
 
     const statusConfig: Record<ConnectionStatus, { icon: React.ReactNode; label: string; color: string }> = {
         connected: {
@@ -219,9 +297,48 @@ export default function MarketplacePage() {
                                     </div>
                                 </div>
 
+                                {/* Sync Actions */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleTestConnection}
+                                        disabled={isSyncing}
+                                        className="gap-2 h-12"
+                                    >
+                                        {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
+                                        Bağlantıyı Test Et
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleSyncProducts}
+                                        disabled={isSyncing}
+                                        className="gap-2 h-12"
+                                    >
+                                        {syncingProducts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+                                        Ürünleri Senkronla
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleSyncOrders}
+                                        disabled={isSyncing}
+                                        className="gap-2 h-12"
+                                    >
+                                        {syncingOrders ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                                        Siparişleri Senkronla
+                                    </Button>
+                                </div>
+
+                                {/* Last Log */}
+                                {lastLog && (
+                                    <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+                                        <RefreshCw className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        <p className="text-xs text-muted-foreground truncate">{lastLog}</p>
+                                    </div>
+                                )}
+
                                 {/* Disconnect Button */}
                                 <div className="flex justify-end">
-                                    <Button variant="destructive" size="sm" onClick={handleDisconnect} disabled={disconnecting} className="gap-2">
+                                    <Button variant="destructive" size="sm" onClick={handleDisconnect} disabled={disconnecting || isSyncing} className="gap-2">
                                         {disconnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                         Bağlantıyı Kaldır
                                     </Button>

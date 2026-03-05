@@ -1,0 +1,115 @@
+/**
+ * Shared helpers for marketplace sync API routes.
+ * Handles auth, ownership, credential decryption, and sync locking.
+ */
+
+import { createClient, getSupabaseAdmin } from '@/lib/supabase-server-client';
+import { decryptCredentials } from '@/lib/marketplace-crypto';
+import type { TrendyolCredentials } from '@/lib/trendyol-api';
+
+export interface SyncContext {
+    userId: string;
+    connectionId: string;
+    sellerId: string;
+    credentials: TrendyolCredentials;
+    admin: ReturnType<typeof getSupabaseAdmin>;
+}
+
+/**
+ * Authenticate user, verify connection ownership, decrypt credentials.
+ * Returns null + error string if any step fails.
+ */
+export async function prepareSyncContext(
+    connectionId?: string
+): Promise<{ ctx: SyncContext | null; error: string | null; status: number }> {
+    const supabase = createClient();
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) {
+        return { ctx: null, error: 'Not authenticated', status: 401 };
+    }
+
+    const admin = getSupabaseAdmin();
+
+    // If no connectionId, find user's Trendyol connection
+    let connId = connectionId;
+    if (!connId) {
+        const { data: conn } = await admin
+            .from('marketplace_connections')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('marketplace', 'trendyol')
+            .maybeSingle();
+        connId = conn?.id;
+    }
+
+    if (!connId) {
+        return { ctx: null, error: 'Trendyol bağlantısı bulunamadı.', status: 404 };
+    }
+
+    // Verify ownership
+    const { data: connection } = await admin
+        .from('marketplace_connections')
+        .select('id, user_id, seller_id')
+        .eq('id', connId)
+        .single();
+
+    if (!connection || connection.user_id !== user.id) {
+        return { ctx: null, error: 'Bu bağlantıya erişim yetkiniz yok.', status: 403 };
+    }
+
+    // Decrypt credentials
+    const { data: secret } = await admin
+        .from('marketplace_secrets')
+        .select('encrypted_blob')
+        .eq('connection_id', connId)
+        .single();
+
+    if (!secret?.encrypted_blob) {
+        return { ctx: null, error: 'Kimlik bilgileri bulunamadı.', status: 404 };
+    }
+
+    const decrypted = decryptCredentials(secret.encrypted_blob);
+    const sellerId = decrypted.sellerId || connection.seller_id || '';
+
+    if (!sellerId) {
+        return { ctx: null, error: 'Seller ID bulunamadı.', status: 400 };
+    }
+
+    return {
+        ctx: {
+            userId: user.id,
+            connectionId: connId,
+            sellerId,
+            credentials: {
+                apiKey: decrypted.apiKey,
+                apiSecret: decrypted.apiSecret,
+                sellerId,
+            },
+            admin,
+        },
+        error: null,
+        status: 200,
+    };
+}
+
+/**
+ * Write a sync log entry (never include secrets in message!)
+ */
+export async function writeSyncLog(
+    admin: ReturnType<typeof getSupabaseAdmin>,
+    connectionId: string,
+    syncType: 'test' | 'products' | 'orders',
+    status: 'success' | 'failed' | 'running',
+    message: string,
+    startedAt: string,
+    finishedAt?: string
+) {
+    await admin.from('marketplace_sync_logs').insert({
+        connection_id: connectionId,
+        sync_type: syncType,
+        status,
+        message: message.slice(0, 500), // truncate
+        started_at: startedAt,
+        finished_at: finishedAt || null,
+    });
+}
