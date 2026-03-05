@@ -1,0 +1,351 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Store,
+    Loader2,
+    CheckCircle2,
+    XCircle,
+    AlertTriangle,
+    Trash2,
+    Eye,
+    EyeOff,
+    ShieldCheck,
+    ExternalLink,
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+type ConnectionStatus = 'disconnected' | 'connected' | 'pending_test' | 'error';
+
+interface ConnectionState {
+    connected: boolean;
+    connection_id?: string;
+    status: ConnectionStatus;
+    store_name?: string;
+    seller_id?: string;
+    last_sync_at?: string;
+}
+
+export default function MarketplacePage() {
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [disconnecting, setDisconnecting] = useState(false);
+    const [connection, setConnection] = useState<ConnectionState | null>(null);
+
+    // Form fields
+    const [apiKey, setApiKey] = useState('');
+    const [apiSecret, setApiSecret] = useState('');
+    const [sellerId, setSellerId] = useState('');
+    const [storeName, setStoreName] = useState('');
+
+    // Show/hide password fields
+    const [showApiKey, setShowApiKey] = useState(false);
+    const [showApiSecret, setShowApiSecret] = useState(false);
+
+    const fetchStatus = useCallback(async () => {
+        try {
+            const res = await fetch('/api/marketplace/trendyol');
+            if (res.ok) {
+                const data = await res.json();
+                setConnection(data);
+            }
+        } catch {
+            // silent
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchStatus();
+    }, [fetchStatus]);
+
+    const handleSave = async () => {
+        if (!apiKey.trim() || !apiSecret.trim()) {
+            toast.error('API Key ve API Secret zorunludur.');
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const res = await fetch('/api/marketplace/trendyol', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    apiKey: apiKey.trim(),
+                    apiSecret: apiSecret.trim(),
+                    sellerId: sellerId.trim() || undefined,
+                    storeName: storeName.trim() || undefined,
+                }),
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast.success('Trendyol bağlantısı başarıyla kaydedildi! ✅');
+                setApiKey('');
+                setApiSecret('');
+                setSellerId('');
+                setStoreName('');
+                fetchStatus();
+            } else {
+                toast.error(data.error || 'Bağlantı kaydedilemedi.');
+            }
+        } catch {
+            toast.error('Sunucu hatası oluştu.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDisconnect = async () => {
+        if (!confirm('Trendyol bağlantısını kaldırmak istediğinize emin misiniz? Tüm API bilgileri silinecektir.')) return;
+
+        setDisconnecting(true);
+        try {
+            const res = await fetch('/api/marketplace/trendyol', { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast.success('Trendyol bağlantısı kaldırıldı.');
+                fetchStatus();
+            } else {
+                toast.error(data.error || 'Bağlantı kaldırılamadı.');
+            }
+        } catch {
+            toast.error('Sunucu hatası oluştu.');
+        } finally {
+            setDisconnecting(false);
+        }
+    };
+
+    const isConnected = connection?.status === 'connected';
+
+    const statusConfig: Record<ConnectionStatus, { icon: React.ReactNode; label: string; color: string }> = {
+        connected: {
+            icon: <CheckCircle2 className="h-5 w-5" />,
+            label: 'Bağlı',
+            color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800',
+        },
+        disconnected: {
+            icon: <XCircle className="h-5 w-5" />,
+            label: 'Bağlı Değil',
+            color: 'text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-700',
+        },
+        pending_test: {
+            icon: <Loader2 className="h-5 w-5 animate-spin" />,
+            label: 'Test Ediliyor',
+            color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800',
+        },
+        error: {
+            icon: <AlertTriangle className="h-5 w-5" />,
+            label: 'Hata',
+            color: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800',
+        },
+    };
+
+    const currentStatus = statusConfig[connection?.status || 'disconnected'];
+
+    return (
+        <DashboardLayout>
+            <div className="space-y-8">
+                {/* Header */}
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Pazaryeri Bağlantıları</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Pazaryeri hesaplarınızı bağlayarak ürün ve sipariş verilerinizi otomatik senkronize edin.
+                    </p>
+                </div>
+
+                {/* Trendyol Card */}
+                <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-orange-50/50 to-transparent dark:from-orange-950/20">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/20">
+                                <Store className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold">Trendyol</h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">Türkiye'nin en büyük pazaryeri</p>
+                            </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        {!loading && (
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium ${currentStatus.color}`}>
+                                {currentStatus.icon}
+                                <span>{currentStatus.label}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-6">
+                        {loading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : isConnected ? (
+                            /* ─── Connected State ─── */
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="rounded-lg border p-4 space-y-1">
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Mağaza Adı</p>
+                                        <p className="text-sm font-semibold truncate">{connection?.store_name || '—'}</p>
+                                    </div>
+                                    <div className="rounded-lg border p-4 space-y-1">
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Satıcı ID</p>
+                                        <p className="text-sm font-semibold truncate">{connection?.seller_id || '—'}</p>
+                                    </div>
+                                    <div className="rounded-lg border p-4 space-y-1">
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Son Senkronizasyon</p>
+                                        <p className="text-sm font-semibold">
+                                            {connection?.last_sync_at
+                                                ? new Date(connection.last_sync_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                                : 'Henüz yok'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Security Notice */}
+                                <div className="flex items-start gap-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
+                                    <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                    <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                        <p className="font-semibold">API bilgileriniz güvende</p>
+                                        <p className="mt-0.5 opacity-80">Tüm kimlik bilgileri AES-256-GCM ile şifreli olarak saklanır. Hiçbir zaman düz metin olarak depolanmaz.</p>
+                                    </div>
+                                </div>
+
+                                {/* Disconnect Button */}
+                                <div className="flex justify-end">
+                                    <Button variant="destructive" size="sm" onClick={handleDisconnect} disabled={disconnecting} className="gap-2">
+                                        {disconnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        Bağlantıyı Kaldır
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            /* ─── Disconnected State — Show Form ─── */
+                            <div className="space-y-6">
+                                {/* Info Banner */}
+                                <div className="flex items-start gap-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-4">
+                                    <ExternalLink className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                                    <div className="text-xs text-blue-700 dark:text-blue-300">
+                                        <p className="font-semibold">API bilgilerinizi nereden bulabilirsiniz?</p>
+                                        <p className="mt-0.5 opacity-80">
+                                            Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından API Key, API Secret ve Satıcı ID
+                                            bilgilerinizi alabilirsiniz.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Form */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* API Key */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="apiKey" className="text-sm font-medium">
+                                            API Key <span className="text-red-500">*</span>
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="apiKey"
+                                                type={showApiKey ? 'text' : 'password'}
+                                                placeholder="API Key giriniz"
+                                                value={apiKey}
+                                                onChange={(e) => setApiKey(e.target.value)}
+                                                className="pr-10"
+                                                autoComplete="off"
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                onClick={() => setShowApiKey(!showApiKey)}
+                                            >
+                                                {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* API Secret */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="apiSecret" className="text-sm font-medium">
+                                            API Secret <span className="text-red-500">*</span>
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="apiSecret"
+                                                type={showApiSecret ? 'text' : 'password'}
+                                                placeholder="API Secret giriniz"
+                                                value={apiSecret}
+                                                onChange={(e) => setApiSecret(e.target.value)}
+                                                className="pr-10"
+                                                autoComplete="off"
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                                onClick={() => setShowApiSecret(!showApiSecret)}
+                                            >
+                                                {showApiSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Seller ID */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="sellerId" className="text-sm font-medium">
+                                            Satıcı ID <span className="text-muted-foreground text-xs">(opsiyonel)</span>
+                                        </Label>
+                                        <Input
+                                            id="sellerId"
+                                            type="text"
+                                            placeholder="Satıcı ID giriniz"
+                                            value={sellerId}
+                                            onChange={(e) => setSellerId(e.target.value)}
+                                            autoComplete="off"
+                                        />
+                                    </div>
+
+                                    {/* Store Name */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="storeName" className="text-sm font-medium">
+                                            Mağaza Adı <span className="text-muted-foreground text-xs">(opsiyonel)</span>
+                                        </Label>
+                                        <Input
+                                            id="storeName"
+                                            type="text"
+                                            placeholder="Ör: Mağazam"
+                                            value={storeName}
+                                            onChange={(e) => setStoreName(e.target.value)}
+                                            autoComplete="off"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Security Notice */}
+                                <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+                                    <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-muted-foreground">
+                                        API bilgileriniz AES-256-GCM ile şifrelenerek güvenli sunucularımızda saklanır.
+                                        Bilgileriniz hiçbir zaman tarayıcınızda depolanmaz veya loglara yazılmaz.
+                                    </p>
+                                </div>
+
+                                {/* Save Button */}
+                                <div className="flex justify-end">
+                                    <Button onClick={handleSave} disabled={saving || !apiKey || !apiSecret} className="gap-2 min-w-[200px]">
+                                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Store className="h-4 w-4" />}
+                                        Kaydet & Bağlantıyı Test Et
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+}

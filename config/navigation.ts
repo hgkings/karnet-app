@@ -5,6 +5,7 @@ import {
     Package,
     Target,
     Landmark,
+    Store,
     User,
     Settings,
     Crown,
@@ -20,6 +21,7 @@ export const NAV_ITEMS = [
     { label: 'Ürünler', href: '/products', icon: Package },
     { label: 'Başabaş', href: '/break-even', icon: Target, restricted: true },
     { label: 'Nakit Planı', href: '/cash-plan', icon: Landmark, restricted: true },
+    { label: 'Pazaryeri', href: '/marketplace', icon: Store, restricted: true },
 ];
 
 export const BOTTOM_NAV_ITEMS = [
