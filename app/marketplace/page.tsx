@@ -388,77 +388,74 @@ export default function MarketplacePage() {
                                     </div>
                                 </div>
 
-                                {/* Security Notice */}
-                                <div className="flex items-start gap-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
-                                    <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                                    <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                                        <p className="font-semibold">API bilgileriniz güvende</p>
-                                        <p className="mt-0.5 opacity-80">Tüm kimlik bilgileri AES-256-GCM ile şifreli olarak saklanır. Hiçbir zaman düz metin olarak depolanmaz.</p>
+                                {/* Security Notice — only for real connections */}
+                                {!isDemo && (
+                                    <div className="flex items-start gap-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
+                                        <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                        <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                            <p className="font-semibold">API bilgileriniz güvende</p>
+                                            <p className="mt-0.5 opacity-80">Tüm kimlik bilgileri AES-256-GCM ile şifreli olarak saklanır. Hiçbir zaman düz metin olarak depolanmaz.</p>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
-                                {/* Sync Actions */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleTestConnection}
-                                        disabled={isSyncing}
-                                        className="gap-2 h-12"
-                                    >
-                                        {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
-                                        Bağlantıyı Test Et
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleSyncProducts}
-                                        disabled={isSyncing}
-                                        className="gap-2 h-12"
-                                    >
-                                        {syncingProducts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
-                                        Ürünleri Senkronla
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleSyncOrders}
-                                        disabled={isSyncing}
-                                        className="gap-2 h-12"
-                                    >
-                                        {syncingOrders ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-                                        Siparişleri Senkronla
-                                    </Button>
-                                </div>
+                                {/* Sync/Test/Normalize — ONLY for real connections, not demo */}
+                                {!isDemo ? (
+                                    <>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <Button variant="outline" onClick={handleTestConnection} disabled={isSyncing} className="gap-2 h-12">
+                                                {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
+                                                Bağlantıyı Test Et
+                                            </Button>
+                                            <Button variant="outline" onClick={handleSyncProducts} disabled={isSyncing} className="gap-2 h-12">
+                                                {syncingProducts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+                                                Ürünleri Senkronla
+                                            </Button>
+                                            <Button variant="outline" onClick={handleSyncOrders} disabled={isSyncing} className="gap-2 h-12">
+                                                {syncingOrders ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                                                Siparişleri Senkronla
+                                            </Button>
+                                        </div>
 
-                                {/* Normalize & Match Actions */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleNormalize}
-                                        disabled={isSyncing}
-                                        className="gap-2 h-12"
-                                    >
-                                        {normalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                                        Ürünleri Kârnet'e Aktar
-                                    </Button>
-                                    <Link href="/marketplace/matching">
-                                        <Button variant="outline" className="gap-2 h-12 w-full">
-                                            <Link2 className="h-4 w-4" />
-                                            Eşleştirme Merkezi
-                                        </Button>
-                                    </Link>
-                                </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <Button variant="outline" onClick={handleNormalize} disabled={isSyncing} className="gap-2 h-12">
+                                                {normalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                                                Ürünleri Kârnet'e Aktar
+                                            </Button>
+                                            <Link href="/marketplace/matching">
+                                                <Button variant="outline" className="gap-2 h-12 w-full">
+                                                    <Link2 className="h-4 w-4" />
+                                                    Eşleştirme Merkezi
+                                                </Button>
+                                            </Link>
+                                        </div>
 
-                                {/* Order Metrics Actions */}
-                                <div className="grid grid-cols-1 gap-3">
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleNormalizeOrders}
-                                        disabled={isSyncing}
-                                        className="gap-2 h-12"
-                                    >
-                                        {normalizingOrders ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
-                                        Siparişleri İşle (Metrik Üret)
-                                    </Button>
-                                </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            <Button variant="outline" onClick={handleNormalizeOrders} disabled={isSyncing} className="gap-2 h-12">
+                                                {normalizingOrders ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
+                                                Siparişleri İşle (Metrik Üret)
+                                            </Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex items-start gap-3 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 p-4">
+                                        <FlaskConical className="h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+                                        <div className="text-xs text-purple-700 dark:text-purple-300">
+                                            <p className="font-semibold">Demo veriler hazır</p>
+                                            <p className="mt-0.5 opacity-80">5 demo ürün ve 10 demo sipariş oluşturuldu. Normalizasyon ve eşleştirme işlemleri için Ürünleri Kârnet'e Aktar ve Eşleştirme Merkezi'ni kullanabilirsiniz.</p>
+                                            <div className="mt-3 flex gap-2">
+                                                <Button variant="outline" size="sm" onClick={handleNormalize} disabled={isSyncing} className="gap-1.5">
+                                                    {normalizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                                                    Ürünleri Aktar
+                                                </Button>
+                                                <Button variant="outline" size="sm" onClick={handleNormalizeOrders} disabled={isSyncing} className="gap-1.5">
+                                                    {normalizingOrders ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BarChart3 className="h-3.5 w-3.5" />}
+                                                    Metrikleri Üret
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Metrics Panel */}
                                 {orderMetrics && (
@@ -506,7 +503,7 @@ export default function MarketplacePage() {
                             </div>
                         ) : (
                             /* ─── Disconnected State — Show Form ─── */
-                            <div className="space-y-6">
+                            <form onSubmit={(e) => { e.preventDefault(); if (demoMode) { handleDemoTest(); } else { handleSave(); } }} className="space-y-6">
                                 {!demoMode && (
                                     <>
                                         {/* Info Banner */}
@@ -652,18 +649,18 @@ export default function MarketplacePage() {
                                 {/* Save / Demo Test Button */}
                                 <div className="flex justify-end">
                                     {demoMode ? (
-                                        <Button onClick={handleDemoTest} disabled={demoTesting} className="gap-2 min-w-[200px] bg-purple-600 hover:bg-purple-700">
+                                        <Button type="submit" disabled={demoTesting} className="gap-2 min-w-[200px] bg-purple-600 hover:bg-purple-700">
                                             {demoTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlaskConical className="h-4 w-4" />}
                                             Demo Bağlantıyı Kur
                                         </Button>
                                     ) : (
-                                        <Button onClick={handleSave} disabled={saving || !apiKey || !apiSecret} className="gap-2 min-w-[200px]">
+                                        <Button type="submit" disabled={saving || !apiKey || !apiSecret} className="gap-2 min-w-[200px]">
                                             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Store className="h-4 w-4" />}
                                             Kaydet & Bağlantıyı Test Et
                                         </Button>
                                     )}
                                 </div>
-                            </div>
+                            </form>
                         )}
                     </div>
                 </div>

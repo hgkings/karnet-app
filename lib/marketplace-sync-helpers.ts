@@ -1,18 +1,31 @@
 /**
  * Shared helpers for marketplace sync API routes.
  * Handles auth, ownership, credential decryption, and sync locking.
+ *
+ * Uses @supabase/supabase-js directly (NOT SSR createServerClient)
+ * to guarantee RLS bypass on marketplace_secrets.
  */
 
-import { createClient, getSupabaseAdmin } from '@/lib/supabase-server-client';
+import { createClient } from '@/lib/supabase-server-client';
 import { decryptCredentials } from '@/lib/marketplace-crypto';
 import type { TrendyolCredentials } from '@/lib/trendyol-api';
+import { createClient as createDirectClient } from '@supabase/supabase-js';
+
+/** Create a direct admin client that guarantees RLS bypass */
+function getDirectAdmin() {
+    return createDirectClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+}
 
 export interface SyncContext {
     userId: string;
     connectionId: string;
     sellerId: string;
     credentials: TrendyolCredentials;
-    admin: ReturnType<typeof getSupabaseAdmin>;
+    admin: ReturnType<typeof getDirectAdmin>;
 }
 
 /**
@@ -28,7 +41,7 @@ export async function prepareSyncContext(
         return { ctx: null, error: 'Not authenticated', status: 401 };
     }
 
-    const admin = getSupabaseAdmin();
+    const admin = getDirectAdmin();
 
     // If no connectionId, find user's Trendyol connection
     let connId = connectionId;
@@ -57,7 +70,7 @@ export async function prepareSyncContext(
         return { ctx: null, error: 'Bu bağlantıya erişim yetkiniz yok.', status: 403 };
     }
 
-    // Decrypt credentials
+    // Decrypt credentials (direct admin bypasses RLS on marketplace_secrets)
     const { data: secret } = await admin
         .from('marketplace_secrets')
         .select('encrypted_blob')
@@ -65,7 +78,7 @@ export async function prepareSyncContext(
         .single();
 
     if (!secret?.encrypted_blob) {
-        return { ctx: null, error: 'Kimlik bilgileri bulunamadı.', status: 404 };
+        return { ctx: null, error: 'Kimlik bilgileri bulunamadı. Lütfen API anahtarlarınızı tekrar kaydedin.', status: 404 };
     }
 
     const decrypted = decryptCredentials(secret.encrypted_blob);
@@ -96,7 +109,7 @@ export async function prepareSyncContext(
  * Write a sync log entry (never include secrets in message!)
  */
 export async function writeSyncLog(
-    admin: ReturnType<typeof getSupabaseAdmin>,
+    admin: any,
     connectionId: string,
     syncType: 'test' | 'products' | 'orders',
     status: 'success' | 'failed' | 'running',
