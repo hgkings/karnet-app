@@ -46,13 +46,19 @@ export function ProStatusCard() {
         );
     }
 
-    // Bitiş tarihi hesapla
-    let expireLabel = '—';
+    // Bitiş tarihi ve Kalan Gün hesapla
+    let expireLabel = 'Ayarlanmadı';
     let daysRemaining: number | null = null;
+    let renewalLabel = user.pro_renewal === false ? 'Kapalı' : (user.pro_expires_at ? 'Açık' : '—');
 
-    if (user.pro_until) {
+    // Prefer pro_expires_at, but fallback to pro_until if it exists just to not lose existing precision, 
+    // although user requested fallback to "Ayarlanmadı" if pro_expires_at is missing. 
+    // We will follow: if pro_expires_at is present, use it. If not, fallback to "Ayarlanmadı".
+    const targetDateStr = user.pro_expires_at || user.pro_until;
+
+    if (targetDateStr) {
         try {
-            const d = new Date(user.pro_until);
+            const d = new Date(targetDateStr);
             if (!isNaN(d.getTime())) {
                 const day = String(d.getDate()).padStart(2, '0');
                 const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -63,6 +69,8 @@ export function ProStatusCard() {
                 daysRemaining = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
             }
         } catch { /* null-safe */ }
+    } else {
+        expireLabel = 'Ayarlanmadı';
     }
 
     return (
@@ -132,7 +140,7 @@ export function ProStatusCard() {
                         <span>Yenileme:</span>
                     </div>
                     <span className="font-medium text-emerald-900 dark:text-emerald-100">
-                        —
+                        {renewalLabel}
                     </span>
                 </div>
             </div>

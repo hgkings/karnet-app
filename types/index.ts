@@ -9,6 +9,9 @@ export interface User {
   pro_until?: string | null;
   email_alerts_enabled?: boolean;
   email_notifications_enabled?: boolean;
+  pro_expires_at?: string | null;
+  pro_renewal?: boolean;
+  pro_started_at?: string | null;
   // Account preferences
   target_margin?: number;
   margin_alert?: boolean;
