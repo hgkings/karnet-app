@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient, getSupabaseAdmin } from '@/lib/supabase-server-client';
+import { createClient } from '@/lib/supabase-server-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +43,13 @@ export async function POST() {
             return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
         }
 
-        const admin = getSupabaseAdmin();
+        // Use @supabase/supabase-js directly (NOT SSR) for guaranteed RLS bypass
+        const { createClient: createDirectClient } = await import('@supabase/supabase-js');
+        const admin = createDirectClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            { auth: { autoRefreshToken: false, persistSession: false } }
+        );
 
         // 1) Upsert connection as demo
         const { data: connection, error: connErr } = await admin
