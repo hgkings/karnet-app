@@ -92,6 +92,7 @@ export default function MarketplacePage() {
         }
 
         setSaving(true);
+        setLastLog(null);
         try {
             const res = await fetch('/api/marketplace/trendyol', {
                 method: 'POST',
@@ -105,24 +106,32 @@ export default function MarketplacePage() {
             });
 
             const data = await res.json();
-            if (res.ok && data.success) {
-                if (data.secrets_saved) {
-                    toast.success('Trendyol bağlantısı ve güvenli anahtarlar başarıyla kaydedildi! ✅');
-                } else {
-                    toast.warning('Bağlantı kaydedildi ancak güvenli anahtar kaydı doğrulanamadı.');
-                }
+
+            if (res.ok && data.success && data.secrets_saved) {
+                toast.success('Trendyol bağlantısı ve güvenli anahtarlar başarıyla kaydedildi! ✅');
+                setLastLog('Bağlantı ve anahtarlar kaydedildi.');
                 setApiKey('');
                 setApiSecret('');
                 setSellerId('');
                 setStoreName('');
                 fetchStatus();
+            } else if (res.ok && data.success && !data.secrets_saved) {
+                toast.warning('Bağlantı oluşturuldu ancak güvenli anahtar kaydı doğrulanamadı. Tekrar deneyin.');
+                setLastLog('Anahtar doğrulama başarısız.');
+                fetchStatus();
             } else {
-                const errorMsg = data.error_code === 'secrets_write_failed'
-                    ? 'Güvenli anahtar kaydı başarısız. Lütfen tekrar deneyin.'
-                    : data.error_code === 'encryption_key_missing'
-                        ? 'Sunucu şifreleme yapılandırması eksik. Yöneticinize başvurun.'
-                        : data.error || 'Bağlantı kaydedilemedi.';
-                toast.error(errorMsg);
+                // Error — show specific message per error_code
+                const codeMap: Record<string, string> = {
+                    secrets_write_failed: 'Güvenli anahtar kaydı başarısız. DB policy veya service role kontrol edin.',
+                    secrets_verify_failed: 'Anahtar yazılmış gibi görünüyor ama doğrulanamadı.',
+                    encryption_key_missing: 'Sunucu şifreleme anahtarı (MARKETPLACE_SECRET_KEY) ayarlanmamış.',
+                    service_role_missing: 'SUPABASE_SERVICE_ROLE_KEY ayarlanmamış.',
+                    encryption_failed: 'Şifreleme başarısız — anahtar formatı hatalı olabilir.',
+                    connection_upsert_failed: 'Bağlantı kaydı oluşturulamadı.',
+                };
+                const friendlyMsg = codeMap[data.error_code] || data.error || 'Bilinmeyen hata.';
+                toast.error(friendlyMsg);
+                setLastLog(`Hata [${data.error_code || 'unknown'}]: ${data.error || friendlyMsg}${data.debug ? ` | PG: ${data.debug.pg_code} - ${data.debug.pg_message}` : ''}`);
             }
         } catch {
             toast.error('Sunucu hatası oluştu.');

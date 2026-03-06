@@ -40,7 +40,10 @@ export async function GET() {
 
 // ─── POST: Save credentials (encrypt & store) ───
 export async function POST(req: Request) {
+    let connectionId: string | null = null;
+
     try {
+        // A) User auth via SSR client (JWT)
         const supabase = createClient();
         const { data: { user }, error: authErr } = await supabase.auth.getUser();
         if (authErr || !user) {
@@ -50,7 +53,6 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { apiKey, apiSecret, sellerId, storeName } = body;
 
-        // Validate required fields
         if (!apiKey || !apiSecret) {
             return NextResponse.json(
                 { error: 'API Key ve API Secret zorunludur.' },
@@ -58,19 +60,33 @@ export async function POST(req: Request) {
             );
         }
 
-        // Check encryption key availability BEFORE doing anything
+        // Check env vars
         if (!process.env.MARKETPLACE_SECRET_KEY) {
-            console.error('[marketplace/trendyol POST] MARKETPLACE_SECRET_KEY env variable is not set!');
+            console.error('[trendyol POST] MARKETPLACE_SECRET_KEY is NOT SET');
             return NextResponse.json(
                 { error: 'Sunucu yapılandırma hatası: şifreleme anahtarı bulunamadı.', error_code: 'encryption_key_missing' },
                 { status: 500 }
             );
         }
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.error('[trendyol POST] SUPABASE_SERVICE_ROLE_KEY is NOT SET');
+            return NextResponse.json(
+                { error: 'Sunucu yapılandırma hatası: service role key bulunamadı.', error_code: 'service_role_missing' },
+                { status: 500 }
+            );
+        }
 
-        const admin = getSupabaseAdmin();
+        // B) Create a DIRECT admin client using @supabase/supabase-js (NOT SSR)
+        //    This guarantees RLS bypass for marketplace_secrets which has zero client policies.
+        const { createClient: createDirectClient } = await import('@supabase/supabase-js');
+        const adminDirect = createDirectClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            { auth: { autoRefreshToken: false, persistSession: false } }
+        );
 
-        // 1) Upsert marketplace_connections
-        const { data: connection, error: connErr } = await admin
+        // Step 1: Upsert marketplace_connections
+        const { data: connection, error: connErr } = await adminDirect
             .from('marketplace_connections')
             .upsert(
                 {
@@ -86,14 +102,18 @@ export async function POST(req: Request) {
             .single();
 
         if (connErr || !connection) {
-            console.error('[marketplace/trendyol POST] Connection upsert failed:', connErr?.message);
+            console.error('[trendyol POST] Step 1 FAILED — connection upsert:', connErr?.message, connErr?.code);
+            await logStep(adminDirect, null, 'connections_upserted', 'failed', `Connection upsert error: ${connErr?.message || 'no data'}`);
             return NextResponse.json(
-                { error: 'Bağlantı oluşturulamadı.', error_code: 'connection_upsert_failed' },
+                { error: 'Bağlantı oluşturulamadı.', error_code: 'connection_upsert_failed', details: connErr?.message },
                 { status: 500 }
             );
         }
 
-        // 2) Encrypt credentials (NEVER log the plaintext!)
+        connectionId = connection.id;
+        await logStep(adminDirect, connectionId, 'connections_upserted', 'success', `Connection OK: ${connectionId}`);
+
+        // Step 2: Encrypt credentials
         let encryptedBlob: string;
         try {
             encryptedBlob = encryptCredentials({
@@ -102,73 +122,107 @@ export async function POST(req: Request) {
                 ...(sellerId ? { sellerId } : {}),
             });
         } catch (encErr: any) {
-            console.error('[marketplace/trendyol POST] Encryption failed:', encErr?.message);
+            console.error('[trendyol POST] Step 2 FAILED — encryption:', encErr?.message);
+            await logStep(adminDirect, connectionId, 'secrets_saved', 'failed', `Encryption error: ${encErr?.message}`);
             return NextResponse.json(
                 { error: 'Kimlik bilgileri şifrelenemedi.', error_code: 'encryption_failed' },
                 { status: 500 }
             );
         }
 
-        // 3) Upsert marketplace_secrets via service role
-        const { error: secretErr } = await admin
+        // Step 3: Check if secret row already exists
+        const { data: existingSecret } = await adminDirect
             .from('marketplace_secrets')
-            .upsert(
-                {
-                    connection_id: connection.id,
+            .select('id')
+            .eq('connection_id', connectionId)
+            .maybeSingle();
+
+        let secretErr: any = null;
+
+        if (existingSecret) {
+            // UPDATE existing row
+            const { error } = await adminDirect
+                .from('marketplace_secrets')
+                .update({
                     encrypted_blob: encryptedBlob,
                     key_version: 1,
-                },
-                { onConflict: 'connection_id' }
-            );
+                })
+                .eq('connection_id', connectionId);
+            secretErr = error;
+        } else {
+            // INSERT new row
+            const { error } = await adminDirect
+                .from('marketplace_secrets')
+                .insert({
+                    connection_id: connectionId,
+                    encrypted_blob: encryptedBlob,
+                    key_version: 1,
+                });
+            secretErr = error;
+        }
 
         if (secretErr) {
-            console.error('[marketplace/trendyol POST] Secrets upsert error:', secretErr.message, 'code:', secretErr.code);
+            console.error('[trendyol POST] Step 3 FAILED — secrets write:', secretErr.message, 'code:', secretErr.code, 'details:', secretErr.details);
+            await logStep(adminDirect, connectionId, 'secrets_saved', 'failed', `Secrets write error: ${secretErr.message} (code: ${secretErr.code})`);
             return NextResponse.json(
-                { error: 'Güvenli anahtar kaydı başarısız.', error_code: 'secrets_write_failed', secrets_saved: false },
+                {
+                    error: 'Güvenli anahtar kaydı başarısız.',
+                    error_code: 'secrets_write_failed',
+                    secrets_saved: false,
+                    debug: { pg_code: secretErr.code, pg_message: secretErr.message },
+                },
                 { status: 500 }
             );
         }
 
-        // 4) Verify the secret was actually written
-        const { data: verifySecret } = await admin
+        // Step 4: Verify the secret row exists
+        const { data: verifySecret, error: verifyErr } = await adminDirect
             .from('marketplace_secrets')
-            .select('id')
-            .eq('connection_id', connection.id)
+            .select('id, connection_id')
+            .eq('connection_id', connectionId)
             .maybeSingle();
 
-        const secretsSaved = !!verifySecret;
-
-        if (!secretsSaved) {
-            console.error('[marketplace/trendyol POST] Secret verification failed — row not found after upsert');
+        if (!verifySecret) {
+            console.error('[trendyol POST] Step 4 FAILED — verification:', verifyErr?.message);
+            await logStep(adminDirect, connectionId, 'secrets_saved', 'failed', `Verify failed: row not found after write. verifyErr: ${verifyErr?.message || 'none'}`);
             return NextResponse.json(
                 { error: 'Güvenli anahtar kaydı doğrulanamadı.', error_code: 'secrets_verify_failed', secrets_saved: false },
                 { status: 500 }
             );
         }
 
-        // 5) Log the save event (no secrets in message!)
-        await admin.from('marketplace_sync_logs').insert({
-            connection_id: connection.id,
-            sync_type: 'test',
-            status: 'success',
-            message: 'Trendyol bağlantı bilgileri kaydedildi ve doğrulandı.',
-            started_at: new Date().toISOString(),
-            finished_at: new Date().toISOString(),
-        });
+        await logStep(adminDirect, connectionId, 'secrets_saved', 'success', `Secret saved OK, secret_id: ${verifySecret.id}`);
 
         return NextResponse.json({
             success: true,
-            connection_id: connection.id,
+            connection_id: connectionId,
             status: connection.status,
             store_name: connection.store_name,
             secrets_saved: true,
         });
     } catch (err: any) {
-        console.error('[marketplace/trendyol POST] Unexpected error:', err?.message);
+        console.error('[trendyol POST] Unexpected error:', err?.message, err?.stack);
         return NextResponse.json(
-            { error: 'Beklenmeyen sunucu hatası.', error_code: 'unexpected_error' },
+            { error: 'Beklenmeyen sunucu hatası.', error_code: 'unexpected_error', details: err?.message },
             { status: 500 }
         );
+    }
+}
+
+/** Write a step-level debug log entry (no secrets!) */
+async function logStep(admin: any, connectionId: string | null, step: string, status: string, message: string) {
+    try {
+        if (!connectionId) return;
+        await admin.from('marketplace_sync_logs').insert({
+            connection_id: connectionId,
+            sync_type: 'test',
+            status: status === 'success' ? 'success' : 'failed',
+            message: `[${step}] ${message}`,
+            started_at: new Date().toISOString(),
+            finished_at: new Date().toISOString(),
+        });
+    } catch {
+        // Never let logging break the main flow
     }
 }
 
