@@ -360,8 +360,15 @@ export default function PricingPage() {
                             errData = {};
                           }
 
-                          if (errData.error_code === 'server_config_missing' && errData.missing_keys) {
-                            throw new Error(`Sunucu yapılandırması eksik: ${errData.missing_keys.join(', ')}`);
+                          if (errData.error_code === 'server_config_missing') {
+                            // Developer console'a detay yaz (kullanıcıya gösterme)
+                            console.error('[PRICING] server_config_missing:', {
+                              missing_keys: errData.missing_keys,
+                              env_seen: errData.env_seen,
+                              vercel_env: errData.vercel_env,
+                            });
+                            const keys = errData.missing_keys?.join(', ') || 'bilinmiyor';
+                            throw new Error(`Ödeme yapılandırması eksik: ${keys}`);
                           }
                           throw new Error(errData.error || `HTTP ${res.status}`);
                         }
