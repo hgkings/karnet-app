@@ -371,18 +371,31 @@ export default function PricingPage() {
                           try { localStorage.setItem('karnet_paymentId', data.paymentId); } catch { }
                         }
 
-                        if (data.redirectUrl) {
-                          // Tab 2: Shopier checkout opens via pre-opened window
+                        if (data.formHtml) {
+                          // Tab 2: Shopier checkout form
                           if (paymentWindow) {
-                            paymentWindow.location.href = data.redirectUrl;
+                            paymentWindow.document.open();
+                            paymentWindow.document.write(data.formHtml);
+                            paymentWindow.document.close();
                           } else {
                             // Fallback if blocked
-                            window.open(data.redirectUrl, '_blank');
+                            document.open();
+                            document.write(data.formHtml);
+                            document.close();
+                            return;
                           }
                           // Tab 1: Kârnet goes to the polling success page
                           window.location.href = `/payment/success?paymentId=${data.paymentId || ''}`;
+                        } else if (data.redirectUrl) {
+                          // Fallback to older static redirectUrl logic if returned
+                          if (paymentWindow) {
+                            paymentWindow.location.href = data.redirectUrl;
+                          } else {
+                            window.open(data.redirectUrl, '_blank');
+                          }
+                          window.location.href = `/payment/success?paymentId=${data.paymentId || ''}`;
                         } else {
-                          throw new Error('Ödeme başlatılamadı (redirectUrl eksik)');
+                          throw new Error('Ödeme başlatılamadı (Checkout verisi eksik)');
                         }
                       } catch (err: any) {
                         if (paymentWindow) paymentWindow.close();

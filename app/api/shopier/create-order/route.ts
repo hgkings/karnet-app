@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPlanAmount, PlanId } from '@/config/pricing';
+import { Shopier, Buyer, Address, ProductType, AutoSubmitFormRenderer } from 'shopier';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -15,18 +16,20 @@ export async function POST(req: Request) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        const shopierMonthlyUrl = process.env.SHOPIER_PRO_MONTHLY_URL;
-        const shopierYearlyUrl = process.env.SHOPIER_PRO_YEARLY_URL;
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL;
+
+        // Önceki versiyonda olduğu gibi API Key ve Secret kullanıyoruz
+        const apiKey = process.env.SHOPIER_API_KEY;
+        const apiSecret = process.env.SHOPIER_API_SECRET;
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://karnet.com';
 
         // Configuration verification logic
         const requiredEnvs: Record<string, string | undefined> = {
             'NEXT_PUBLIC_SUPABASE_URL': supabaseUrl,
             'NEXT_PUBLIC_SUPABASE_ANON_KEY': supabaseAnonKey,
             'SUPABASE_SERVICE_ROLE_KEY': serviceKey,
-            'SHOPIER_PRO_MONTHLY_URL': shopierMonthlyUrl,
-            'SHOPIER_PRO_YEARLY_URL': shopierYearlyUrl,
-            'NEXT_PUBLIC_SITE_URL': siteUrl,
+            'SHOPIER_API_KEY': apiKey,
+            'SHOPIER_API_SECRET': apiSecret,
+            'NEXT_PUBLIC_SITE_URL (or APP_URL)': siteUrl,
         };
 
         const missingKeys = Object.entries(requiredEnvs)
@@ -96,10 +99,48 @@ export async function POST(req: Request) {
         const paymentId = payment.id;
         console.log('[create-order] db payment created:', paymentId);
 
-        // API iptal edildiği için doğrudan Shopier Ürün Linklerine yönlendiriyoruz
-        const redirectUrl = plan === 'pro_monthly' ? shopierMonthlyUrl : shopierYearlyUrl;
+        // Shopier API Initialization
+        const shopier = new Shopier(apiKey!, apiSecret!);
 
-        return NextResponse.json({ redirectUrl, paymentId });
+        // Setup buyer details
+        const email = user.email || 'bilgi@karnet.com';
+        const phone = user.user_metadata?.phone || '05555555555';
+        const name = user.user_metadata?.first_name || 'Karnet';
+        const surname = user.user_metadata?.last_name || 'Kullanıcısı';
+
+        const buyer = new Buyer({
+            id: user.id.substring(0, 10),
+            name: name,
+            surname: surname,
+            email: email,
+            phone: phone,
+        });
+
+        const address = new Address({
+            address: 'Bilinmeyen Adres',
+            city: 'İstanbul',
+            country: 'Türkiye',
+            postcode: '34000',
+        });
+
+        const params = shopier.getParams();
+        params.setBuyer(buyer);
+        params.setAddress(address);
+
+        // Base domain (to create return url)
+        const returnUrl = `${siteUrl}/api/shopier/callback?paymentId=${paymentId}`;
+
+        params.setOrderData(paymentId, amount.toString(), returnUrl);
+        params.setProductData(
+            plan === 'pro_monthly' ? 'Kârnet Pro Aylık' : 'Kârnet Pro Yıllık',
+            ProductType.DEFAULT_TYPE
+        );
+
+        // Generate HTML with Shopier AutoSubmit Form
+        const renderer = new AutoSubmitFormRenderer(shopier);
+        const formHtml = shopier.goWith(renderer);
+
+        return NextResponse.json({ formHtml, paymentId });
 
     } catch (error: any) {
         console.error('[create-order] error:', error?.message);

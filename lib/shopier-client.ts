@@ -1,14 +1,14 @@
 /**
  * Client-side helper to initiate Shopier checkout.
  * 
- * Calls POST /api/shopier/create-order → gets { redirectUrl }
- * Then redirects the browser to the Shopier product page.
+ * Calls POST /api/shopier/create-order → gets { formHtml }
+ * Returns the data object so the caller can open a popup / redirect.
  * 
- * VERSION: 2026-02-26-v2
+ * VERSION: 2026-03-08-v3
  */
-export async function startShopierCheckout(plan: 'pro_monthly' | 'pro_yearly'): Promise<void> {
+export async function startShopierCheckout(plan: 'pro_monthly' | 'pro_yearly'): Promise<{ formHtml?: string, redirectUrl?: string, paymentId?: string }> {
     // Alert to prove this code is running (temporary debug)
-    console.log('[shopier-client v2] ▶ START plan=' + plan);
+    console.log('[shopier-client v3] ▶ START plan=' + plan);
 
     const url = '/api/shopier/create-order';
 
@@ -25,11 +25,11 @@ export async function startShopierCheckout(plan: 'pro_monthly' | 'pro_yearly'): 
         throw new Error('Sunucuya bağlanılamadı. Lütfen tekrar deneyin.');
     }
 
-    console.log('[shopier-client v2] Response status:', res.status);
+    console.log('[shopier-client v3] Response status:', res.status);
 
     if (!res.ok) {
         const errText = await res.text();
-        console.error('[shopier-client v2] Error body:', errText);
+        console.error('[shopier-client v3] Error body:', errText);
         let errMsg = 'Ödeme başlatılamadı.';
         try {
             const errJson = JSON.parse(errText);
@@ -39,13 +39,12 @@ export async function startShopierCheckout(plan: 'pro_monthly' | 'pro_yearly'): 
     }
 
     const data = await res.json();
-    console.log('[shopier-client v2] Got data:', JSON.stringify(data));
+    console.log('[shopier-client v3] Got data:', JSON.stringify({ ...data, formHtml: data.formHtml ? '(HTML string)' : undefined }));
 
-    if (!data.redirectUrl) {
-        console.error('[shopier-client v2] Missing redirectUrl');
-        throw new Error('Ödeme bağlantısı alınamadı.');
+    if (!data.formHtml && !data.redirectUrl) {
+        console.error('[shopier-client v3] Missing formHtml and redirectUrl');
+        throw new Error('Ödeme bağlantısı veya formu alınamadı.');
     }
 
-    console.log('[shopier-client v2] ▶ REDIRECTING to:', data.redirectUrl);
-    window.location.href = data.redirectUrl;
+    return data;
 }
