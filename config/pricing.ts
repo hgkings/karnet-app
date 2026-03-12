@@ -9,7 +9,7 @@ export const PRICING = {
     symbol: "₺",
     // PayTR Link ile Ödeme URLs
     paytrLinkMonthly: 'https://www.paytr.com/link/Haw8DWP',
-    paytrLinkYearly: null as string | null, // Henüz oluşturulmadı
+    paytrLinkYearly: 'https://www.paytr.com/link/mJh6qJB',
 };
 
 export type PlanId = typeof PRICING.proMonthlyId | typeof PRICING.proYearlyId;

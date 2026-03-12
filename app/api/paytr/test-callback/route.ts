@@ -45,14 +45,18 @@ export async function GET() {
 
         console.log('[Test Callback] ✅ Payment güncellendi (paid_at + raw_payload)');
 
-        // 3. Profili Pro yap
+        // 3. Profili Pro yap (plan_type'ı payment kaydından al)
+        const planType = payment.plan || 'pro_monthly';
+        const daysToAdd = planType === 'pro_yearly' ? 365 : 30;
+        const proUntil = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000).toISOString();
+
         const { error: profileErr } = await supabase
             .from('profiles')
             .update({
                 plan: 'pro',
                 is_pro: true,
-                plan_type: 'pro_monthly',
-                pro_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                plan_type: planType,
+                pro_until: proUntil,
             })
             .eq('id', payment.user_id);
 
@@ -61,7 +65,7 @@ export async function GET() {
             return NextResponse.json({ success: false, message: 'Profil güncellenemedi', error: profileErr }, { status: 500 });
         }
 
-        console.log(`[Test Callback] ✅ Profil Pro yapıldı: user_id=${payment.user_id}`);
+        console.log(`[Test Callback] ✅ Profil Pro yapıldı: user_id=${payment.user_id}, plan_type=${planType}`);
 
         return NextResponse.json({
             success: true,

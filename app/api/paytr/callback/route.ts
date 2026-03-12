@@ -115,20 +115,24 @@ export async function POST(req: Request) {
             }
 
             // ── STEP 5: Profili Pro yap ─────────────────────────
+            const planType = payment.plan || 'pro_monthly'; // 'pro_monthly' or 'pro_yearly'
+            const daysToAdd = planType === 'pro_yearly' ? 365 : 30;
+            const proUntil = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000).toISOString();
+
             const { error: profileErr } = await supabase
                 .from('profiles')
                 .update({
                     plan: 'pro',
                     is_pro: true,
-                    plan_type: 'pro_monthly',
-                    pro_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    plan_type: planType,
+                    pro_until: proUntil,
                 })
                 .eq('id', payment.user_id);
 
             if (profileErr) {
                 console.error('[PayTR Callback] ❌ Profil güncelleme hatası:', JSON.stringify(profileErr));
             } else {
-                console.log(`[PayTR Callback] ✅ Profil Pro yapıldı: user_id=${payment.user_id}, is_pro=true, plan_type=pro_monthly`);
+                console.log(`[PayTR Callback] ✅ Profil Pro yapıldı: user_id=${payment.user_id}, is_pro=true, plan_type=${planType}, pro_until=${proUntil}`);
             }
         } else {
             console.log(`[PayTR Callback] ⚠️ Status success değil: "${status}"`);
