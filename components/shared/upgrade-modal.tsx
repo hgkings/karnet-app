@@ -29,24 +29,9 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      console.log('[UPGRADE-MODAL v3] Calling POST /api/shopier/create-order...');
-      const res = await fetch('/api/shopier/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: 'pro_monthly' }),
-        credentials: 'same-origin',
-      });
-      console.log('[UPGRADE-MODAL v3] Response status:', res.status);
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
-      console.log('[UPGRADE-MODAL v3] Got redirectUrl:', data.redirectUrl);
-      if (!data.redirectUrl) throw new Error('redirectUrl eksik');
-      window.location.href = data.redirectUrl;
+      window.location.href = '/api/paytr/create-payment-link?plan=pro_monthly';
     } catch (err: any) {
-      console.error('[UPGRADE-MODAL v3] Error:', err);
+      console.error('[UPGRADE-MODAL] Error:', err);
       toast.error(err.message || 'Ödeme başlatılamadı.');
       setLoading(false);
     }
@@ -98,7 +83,7 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Güvenli ödeme Shopier altyapısı ile gerçekleştirilir.
+          Güvenli ödeme PayTR altyapısı ile gerçekleştirilir.
         </p>
       </div>
     </div>

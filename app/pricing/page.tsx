@@ -336,84 +336,21 @@ export default function PricingPage() {
                 <div className="space-y-3">
                   <Button
                     className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-premium-md hover:shadow-premium-lg hover:scale-[1.02] transition-all duration-300 active:scale-95"
-                    disabled={loading}
-                    onClick={async () => {
-                      const selectedPlan = isAnnual ? 'pro_yearly' : 'pro_monthly';
+                    disabled={loading || (isAnnual && !PRICING.paytrLinkYearly)}
+                    onClick={() => {
                       if (!user) { window.location.href = '/auth'; return; }
-
-                      // Open window synchronously to avoid popup blockers
-                      const paymentWindow = window.open('about:blank', '_blank');
-
+                      const link = isAnnual ? PRICING.paytrLinkYearly : PRICING.paytrLinkMonthly;
+                      if (!link) return;
                       setLoading(true);
-                      try {
-                        const res = await fetch('/api/shopier/create-order', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ plan: selectedPlan }),
-                          credentials: 'same-origin',
-                        });
-                        if (!res.ok) {
-                          let errData;
-                          try {
-                            errData = await res.json();
-                          } catch {
-                            errData = {};
-                          }
-
-                          if (errData.error_code === 'server_config_missing') {
-                            // Developer console'a detay yaz (kullanıcıya gösterme)
-                            console.error('[PRICING] server_config_missing:', {
-                              missing_keys: errData.missing_keys,
-                              env_seen: errData.env_seen,
-                              vercel_env: errData.vercel_env,
-                            });
-                            const keys = errData.missing_keys?.join(', ') || 'bilinmiyor';
-                            throw new Error(`Ödeme yapılandırması eksik: ${keys}`);
-                          }
-                          throw new Error(errData.error || `HTTP ${res.status}`);
-                        }
-                        const data = await res.json();
-                        // Store paymentId for success/fail pages
-                        if (data.paymentId) {
-                          try { localStorage.setItem('karnet_paymentId', data.paymentId); } catch { }
-                        }
-
-                        if (data.formHtml) {
-                          // Tab 2: Shopier checkout form
-                          if (paymentWindow) {
-                            paymentWindow.document.open();
-                            paymentWindow.document.write(data.formHtml);
-                            paymentWindow.document.close();
-                          } else {
-                            // Fallback if blocked
-                            document.open();
-                            document.write(data.formHtml);
-                            document.close();
-                            return;
-                          }
-                          // Tab 1: Kârnet goes to the polling success page
-                          window.location.href = `/payment/success?paymentId=${data.paymentId || ''}`;
-                        } else if (data.redirectUrl) {
-                          // Fallback to older static redirectUrl logic if returned
-                          if (paymentWindow) {
-                            paymentWindow.location.href = data.redirectUrl;
-                          } else {
-                            window.open(data.redirectUrl, '_blank');
-                          }
-                          window.location.href = `/payment/success?paymentId=${data.paymentId || ''}`;
-                        } else {
-                          throw new Error('Ödeme başlatılamadı (Checkout verisi eksik)');
-                        }
-                      } catch (err: any) {
-                        if (paymentWindow) paymentWindow.close();
-                        console.error('[PRICING] Error:', err);
-                        toast.error(err.message || 'Ödeme başlatılamadı.');
-                        setLoading(false);
-                      }
+                      window.open(link, '_blank');
+                      // Redirect current page to success polling page
+                      window.location.href = '/basari';
                     }}
                   >
                     {loading ? (
                       <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Yönlendiriliyor…</>
+                    ) : isAnnual && !PRICING.paytrLinkYearly ? (
+                      "Yakında"
                     ) : (
                       user ? "Pro'ya Yükselt" : "Pro ile Başla"
                     )}
@@ -429,7 +366,7 @@ export default function PricingPage() {
         </div>
 
         <p className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          Güvenli ödeme Shopier altyapısı ile gerçekleştirilir. Kart bilgileriniz tarafımızca saklanmaz.
+          Güvenli ödeme PayTR altyapısı ile gerçekleştirilir. Kart bilgileriniz tarafımızca saklanmaz.
         </p>
 
       </div>
