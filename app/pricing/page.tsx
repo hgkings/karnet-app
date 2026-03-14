@@ -339,23 +339,25 @@ export default function PricingPage() {
                     disabled={loading || (isAnnual && !PRICING.paytrLinkYearly)}
                     onClick={async () => {
                       if (!user) { window.location.href = '/auth'; return; }
-                      const link = isAnnual ? PRICING.paytrLinkYearly : PRICING.paytrLinkMonthly;
-                      if (!link) return;
                       setLoading(true);
                       try {
-                        // Create pending payment record before redirecting
                         const selectedPlan = isAnnual ? 'pro_yearly' : 'pro_monthly';
-                        await fetch('/api/paytr/create-payment', {
+                        const res = await fetch('/api/paytr/create-payment', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ plan: selectedPlan }),
                         });
+                        const data = await res.json();
+                        if (data.paymentUrl) {
+                          window.location.href = data.paymentUrl;
+                        } else {
+                          console.error('PayTR URL alınamadı:', data.error);
+                          setLoading(false);
+                        }
                       } catch (e) {
-                        console.error('Payment record creation failed:', e);
+                        console.error('Payment error:', e);
+                        setLoading(false);
                       }
-                      window.open(link, '_blank');
-                      // Redirect current page to success polling page
-                      window.location.href = '/basari';
                     }}
                   >
                     {loading ? (
