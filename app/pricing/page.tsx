@@ -349,7 +349,8 @@ export default function PricingPage() {
                         });
                         const data = await res.json();
                         if (data.paymentUrl) {
-                          window.location.href = data.paymentUrl;
+                          window.open(data.paymentUrl, '_blank');
+                          window.location.href = `/basari?paymentId=${data.paymentId}`;
                         } else {
                           console.error('PayTR URL alınamadı:', data.error);
                           setLoading(false);
