@@ -107,7 +107,7 @@ export async function POST(req: Request) {
             paytr_token: paytrToken,
         });
 
-        console.log('[PayTR] Link oluşturuluyor, callback_id:', callbackId, 'amount:', amountKurus);
+        console.log('[PayTR] Link oluşturuluyor, callback_id:', callbackId, 'amount:', amountKurus, 'callback_link:', callbackLink);
 
         const paytrRes = await fetch('https://www.paytr.com/odeme/api/link/create', {
             method: 'POST',
