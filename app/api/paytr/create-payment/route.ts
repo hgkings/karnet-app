@@ -65,7 +65,7 @@ export async function POST(req: Request) {
                 currency: 'TRY',
                 status: 'created',
                 provider: 'paytr',
-                provider_order_id: `PENDING_${Date.now()}`,
+                provider_order_id: 'PENDING',
             })
             .select('id')
             .single();
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Ödeme kaydı oluşturulamadı' }, { status: 500 });
         }
 
-        const callbackId = payment.id; // UUID — used to match callback to payment
+        const callbackId = payment.id.replace(/-/g, ''); // alphanumeric, no hyphens
         const planName = plan === 'pro_yearly' ? 'Karnet Pro Yillik' : 'Karnet Pro Aylik';
         const currency = 'TL';
         const maxInstallment = '1';
@@ -132,6 +132,13 @@ export async function POST(req: Request) {
         }
 
         const paymentUrl = paytrData.link;
+
+        // Update provider_order_id to callbackId so callback can find it
+        await adminSupabase
+            .from('payments')
+            .update({ provider_order_id: callbackId })
+            .eq('id', payment.id);
+
         console.log(`[PayTR] ✅ Link oluşturuldu: ${paymentUrl}, callback_id=${callbackId}`);
 
         return NextResponse.json({ success: true, paymentId: payment.id, paymentUrl });

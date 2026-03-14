@@ -60,10 +60,11 @@ export async function POST(req: Request) {
         // ── STEP 3: Payment kaydını bul (callback_id = payment.id) ──
         let payment: any = null;
 
+        // callback_id = payment.id without hyphens, stored in provider_order_id
         const { data: byId } = await supabase
             .from('payments')
             .select('*')
-            .eq('id', callback_id)
+            .eq('provider_order_id', callback_id)
             .single();
 
         if (byId) {
