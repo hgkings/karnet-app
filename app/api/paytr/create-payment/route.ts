@@ -107,31 +107,43 @@ export async function POST(req: Request) {
             paytr_token: paytrToken,
         });
 
-        console.log('[PayTR] Link oluşturuluyor, callback_id:', callbackId, 'amount:', amountKurus, 'callback_link:', callbackLink);
+        // Statik link varsa (test amaçlı) direkt kullan
+        const staticMonthlyLink = process.env.PAYTR_MONTHLY_STATIC_LINK;
+        const staticYearlyLink = process.env.PAYTR_YEARLY_STATIC_LINK;
+        const staticLink = plan === 'pro_monthly' ? staticMonthlyLink : staticYearlyLink;
 
-        const paytrRes = await fetch('https://www.paytr.com/odeme/api/link/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formParams.toString(),
-        });
+        let paymentUrl: string;
 
-        const rawText = await paytrRes.text();
-        console.log('[PayTR] Ham yanıt:', rawText);
+        if (staticLink) {
+            paymentUrl = staticLink;
+            console.log(`[PayTR] Statik link kullanılıyor: ${paymentUrl}`);
+        } else {
+            console.log('[PayTR] Link oluşturuluyor, callback_id:', callbackId, 'amount:', amountKurus, 'callback_link:', callbackLink);
 
-        let paytrData: any;
-        try {
-            paytrData = JSON.parse(rawText);
-        } catch {
-            console.error('[PayTR] JSON parse hatası:', rawText);
-            return NextResponse.json({ error: 'PayTR geçersiz yanıt döndü' }, { status: 500 });
+            const paytrRes = await fetch('https://www.paytr.com/odeme/api/link/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formParams.toString(),
+            });
+
+            const rawText = await paytrRes.text();
+            console.log('[PayTR] Ham yanıt:', rawText);
+
+            let paytrData: any;
+            try {
+                paytrData = JSON.parse(rawText);
+            } catch {
+                console.error('[PayTR] JSON parse hatası:', rawText);
+                return NextResponse.json({ error: 'PayTR geçersiz yanıt döndü' }, { status: 500 });
+            }
+
+            if (paytrData.status === 'error' || paytrData.status === 'failed') {
+                console.error('[PayTR] Link oluşturulamadı:', paytrData.err_msg || JSON.stringify(paytrData));
+                return NextResponse.json({ error: paytrData.err_msg || 'PayTR link oluşturulamadı' }, { status: 500 });
+            }
+
+            paymentUrl = paytrData.link;
         }
-
-        if (paytrData.status === 'error' || paytrData.status === 'failed') {
-            console.error('[PayTR] Link oluşturulamadı:', paytrData.err_msg || JSON.stringify(paytrData));
-            return NextResponse.json({ error: paytrData.err_msg || 'PayTR link oluşturulamadı' }, { status: 500 });
-        }
-
-        const paymentUrl = paytrData.link;
 
         // Update provider_order_id to callbackId so callback can find it
         await adminSupabase
