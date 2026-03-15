@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
 import { Suspense } from 'react';
 
 function BasariContent() {
@@ -14,34 +13,17 @@ function BasariContent() {
     const [status, setStatus] = useState<'checking' | 'active' | 'pending'>('checking');
     const [pollCount, setPollCount] = useState(0);
 
-    const checkIsPro = useCallback(async (): Promise<boolean> => {
+    const verify = async (): Promise<boolean> => {
+        if (!paymentId) return false;
         try {
-            // 1. Supabase profil kontrolü
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return false;
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('is_pro, plan')
-                .eq('id', user.id)
-                .single();
-
-            if (profile?.is_pro === true || profile?.plan === 'pro') return true;
-
-            // 2. PayTR Transaction Query ile aktif et
-            if (paymentId) {
-                const res = await fetch(`/api/paytr/check-payment?paymentId=${paymentId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.isPro) return true;
-                }
-            }
-
-            return false;
+            const res = await fetch(`/api/verify-payment?paymentId=${paymentId}`);
+            if (!res.ok) return false;
+            const data = await res.json();
+            return data.success === true;
         } catch {
             return false;
         }
-    }, [paymentId]);
+    };
 
     useEffect(() => {
         let attempt = 0;
@@ -51,9 +33,9 @@ function BasariContent() {
         const poll = async () => {
             attempt++;
             setPollCount(attempt);
-            const isPro = await checkIsPro();
 
-            if (isPro) {
+            const success = await verify();
+            if (success) {
                 setStatus('active');
                 return;
             }
@@ -65,21 +47,19 @@ function BasariContent() {
             }
         };
 
-        timeoutId = setTimeout(poll, 2000);
-
+        timeoutId = setTimeout(poll, 3000);
         return () => clearTimeout(timeoutId);
-    }, [checkIsPro]);
+    }, [paymentId]);
 
     return (
         <div className="min-h-screen bg-background">
             <Navbar />
             <div className="mx-auto max-w-lg px-4 py-24 text-center space-y-6">
 
-
                 {status === 'checking' && (
                     <>
                         <Loader2 className="h-16 w-16 text-primary animate-spin mx-auto" />
-                        <h1 className="text-2xl font-bold">Ödemeniz İşleniyor... 💳</h1>
+                        <h1 className="text-2xl font-bold">Ödemeniz Doğrulanıyor...</h1>
                         <p className="text-muted-foreground">
                             Ödeme sayfasında işleminizi tamamladıysanız lütfen bekleyin.<br /><br />
                             Ödemeniz onaylandığında bu sayfa <b>otomatik</b> olarak güncellenecektir.
@@ -95,7 +75,7 @@ function BasariContent() {
                         <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
                         <h1 className="text-2xl font-bold text-emerald-600">🎉 Pro Planınız Aktif!</h1>
                         <p className="text-muted-foreground">
-                            Pro planınız başarıyla aktif edildi! Tüm özelliklere erişebilirsiniz.
+                            Pro planınız başarıyla aktif edildi. Tüm özelliklere erişebilirsiniz.
                         </p>
                         <Button
                             className="mt-4"
@@ -111,7 +91,7 @@ function BasariContent() {
                         <Loader2 className="h-16 w-16 text-amber-500 mx-auto" />
                         <h1 className="text-2xl font-bold text-amber-600">Ödeme Bekleniyor ⏳</h1>
                         <p className="text-muted-foreground">
-                            Ödeme işleminiz henüz bize ulaşmadı. Eğer ödemeyi tamamladıysanız biraz daha bekleyip tekrar kontrol edebilirsiniz.
+                            Ödeme işleminiz henüz onaylanmadı. Ödemeyi tamamladıysanız biraz bekleyip tekrar kontrol edebilirsiniz.
                         </p>
                         <div className="flex gap-3 justify-center mt-4">
                             <Button
@@ -119,8 +99,8 @@ function BasariContent() {
                                 onClick={async () => {
                                     setStatus('checking');
                                     setPollCount(0);
-                                    const isPro = await checkIsPro();
-                                    setStatus(isPro ? 'active' : 'pending');
+                                    const success = await verify();
+                                    setStatus(success ? 'active' : 'pending');
                                 }}
                             >
                                 <RefreshCw className="h-4 w-4 mr-2" />
