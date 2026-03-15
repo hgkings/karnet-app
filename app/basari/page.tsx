@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { Suspense } from 'react';
 
-export default function BasariPage() {
+function BasariContent() {
+    const searchParams = useSearchParams();
+    const paymentId = searchParams.get('paymentId');
     const [status, setStatus] = useState<'checking' | 'active' | 'pending'>('checking');
     const [pollCount, setPollCount] = useState(0);
 
     const checkIsPro = useCallback(async (): Promise<boolean> => {
         try {
+            // 1. Supabase profil kontrolü
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return false;
 
@@ -21,18 +26,26 @@ export default function BasariPage() {
                 .eq('id', user.id)
                 .single();
 
-            if (!profile) return false;
+            if (profile?.is_pro === true || profile?.plan === 'pro') return true;
 
-            // Check is_pro field first, fallback to plan field
-            return profile.is_pro === true || profile.plan === 'pro';
+            // 2. PayTR Transaction Query ile aktif et
+            if (paymentId) {
+                const res = await fetch(`/api/paytr/check-payment?paymentId=${paymentId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.isPro) return true;
+                }
+            }
+
+            return false;
         } catch {
             return false;
         }
-    }, []);
+    }, [paymentId]);
 
     useEffect(() => {
         let attempt = 0;
-        const maxAttempts = 60; // 5 dakika (5s x 60)
+        const maxAttempts = 60;
         let timeoutId: NodeJS.Timeout;
 
         const poll = async () => {
@@ -52,7 +65,6 @@ export default function BasariPage() {
             }
         };
 
-        // İlk kontrolü 2 saniye sonra başlat
         timeoutId = setTimeout(poll, 2000);
 
         return () => clearTimeout(timeoutId);
@@ -62,6 +74,7 @@ export default function BasariPage() {
         <div className="min-h-screen bg-background">
             <Navbar />
             <div className="mx-auto max-w-lg px-4 py-24 text-center space-y-6">
+
 
                 {status === 'checking' && (
                     <>
@@ -121,5 +134,17 @@ export default function BasariPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function BasariPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        }>
+            <BasariContent />
+        </Suspense>
     );
 }
