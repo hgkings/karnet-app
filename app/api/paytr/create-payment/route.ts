@@ -66,7 +66,7 @@ export async function POST(req: Request) {
                 currency: 'TRY',
                 status: 'created',
                 provider: 'paytr',
-                provider_order_id: 'PENDING',
+                provider_order_id: `PENDING_${Date.now()}`,
             })
             .select('id')
             .single();
