@@ -107,7 +107,7 @@ export async function POST(req: Request) {
             min_count: minCount,
             callback_link: callbackLink,
             callback_id: callbackId,
-            debug_on: '1',
+            debug_on: '0',
             get_qr: '0',
             paytr_token: paytrToken,
         });
