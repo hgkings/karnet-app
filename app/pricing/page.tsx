@@ -350,7 +350,9 @@ export default function PricingPage() {
                         const data = await res.json();
                         if (data.paymentUrl) {
                           window.open(data.paymentUrl, '_blank');
-                          window.location.href = `/basari?paymentId=${data.paymentId}`;
+                          const params = new URLSearchParams({ paymentId: data.paymentId });
+                          if (data.token) params.set('token', data.token);
+                          window.location.href = `/basari?${params.toString()}`;
                         } else {
                           console.error('PayTR URL alınamadı:', data.error);
                           toast.error(data.error || 'Ödeme başlatılamadı.');

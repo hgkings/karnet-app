@@ -59,6 +59,10 @@ export async function POST(req: Request) {
         const amount = testPrice ?? (plan === 'pro_yearly' ? PRICING.proYearly : PRICING.proMonthly);
         const amountKurus = Math.round(amount * 100);
 
+        // Generate secure one-time token (96 hex chars = 48 random bytes)
+        const secureToken = crypto.randomBytes(48).toString('hex');
+        const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
         // Create payment record first — its ID becomes callback_id
         const { data: payment, error: insertError } = await adminSupabase
             .from('payments')
@@ -71,6 +75,8 @@ export async function POST(req: Request) {
                 status: 'created',
                 provider: 'paytr',
                 provider_order_id: `PENDING_${Date.now()}`,
+                token: secureToken,
+                token_expires_at: tokenExpiresAt,
             })
             .select('id')
             .single();
@@ -161,7 +167,7 @@ export async function POST(req: Request) {
             else console.log(`[PayTR] 🧪 Test modu: Pro otomatik aktif edildi, user=${user.id}`);
         }
 
-        return NextResponse.json({ success: true, paymentId: payment.id, paymentUrl });
+        return NextResponse.json({ success: true, paymentId: payment.id, paymentUrl, token: secureToken });
 
     } catch (error: any) {
         console.error('[PayTR] Create payment error:', error?.message || error);
