@@ -98,6 +98,14 @@ function BasariContent() {
                             Ödeme sayfasında işleminizi tamamladıysanız lütfen bekleyin.<br /><br />
                             Ödemeniz onaylandığında bu sayfa <b>otomatik</b> olarak güncellenecektir.
                         </p>
+                        <p className="text-sm text-muted-foreground border border-border rounded-lg px-4 py-3 bg-muted/40">
+                            ⏳ Bu işlem <b>5 ila 10 dakika</b> sürebilir.<br />
+                            Pro plana geçmekte sorun yaşıyorsanız{' '}
+                            <a href="/support" className="underline text-primary hover:text-primary/80">
+                                destek bölümünden
+                            </a>{' '}
+                            iletişime geçin.
+                        </p>
                         <p className="text-xs text-muted-foreground">
                             Kontrol ediliyor... ({pollCount})
                         </p>
