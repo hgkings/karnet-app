@@ -18,11 +18,16 @@ export async function POST(req: Request) {
         const merchantId = process.env.PAYTR_MERCHANT_ID;
         const merchantKey = process.env.PAYTR_MERCHANT_KEY;
         const merchantSalt = process.env.PAYTR_MERCHANT_SALT;
-        const appUrl = (
+        // PAYTR_CALLBACK_URL allows overriding the callback domain independently.
+        // Use this to set the exact URL PayTR is allowed to POST to (e.g. https://www.xn--krnet-3qa.com)
+        // without affecting NEXT_PUBLIC_APP_URL used elsewhere.
+        const callbackBase = (
+            process.env.PAYTR_CALLBACK_URL ||
             process.env.NEXT_PUBLIC_APP_URL ||
             (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null) ||
             'https://trendyol-p73m.vercel.app'
         ).trim().replace(/\/$/, '');
+
 
         if (!supabaseUrl || !supabaseAnonKey || !serviceKey) {
             return NextResponse.json({ error: 'Config missing' }, { status: 500 });
@@ -93,7 +98,7 @@ export async function POST(req: Request) {
         const linkType = 'product';
         const lang = 'tr';
         const minCount = '1';
-        const callbackLink = `${appUrl}/api/paytr/callback`;
+        const callbackLink = `${callbackBase}/api/paytr/callback`;
 
         // Link API hash: base64(HMAC-SHA256(name+price+currency+max_installment+link_type+lang+min_count+salt, key))
         const required = planName + String(amountKurus) + currency + maxInstallment + linkType + lang + minCount;
