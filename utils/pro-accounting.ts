@@ -84,6 +84,7 @@ export function calculateProAccounting(input: ProductInput): CalculationResult {
         commission_amount: Number.isFinite(commNet) ? commNet : 0,
         vat_amount: Number.isFinite(sales.vat) ? sales.vat : 0, // Unit Output VAT
         expected_return_loss: Number.isFinite(return_loss_net) ? return_loss_net : 0,
+        service_fee_amount: 0, // PRO modda servis bedeli standart moddan geliyor
         unit_variable_cost: Number.isFinite(unit_variable_cost) ? unit_variable_cost : 0,
         unit_total_cost: Number.isFinite(unit_total_cost) ? unit_total_cost : 0,
         unit_net_profit: Number.isFinite(unit_net_profit) ? unit_net_profit : 0,

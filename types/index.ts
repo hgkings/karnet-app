@@ -98,6 +98,9 @@ export interface ProductInput {
   // n11 extra fees: +1.20% marketing + 0.67% marketplace = 1.87%
   n11_extra_pct?: number;
 
+  // Trendyol sabit servis bedeli (sipariş tutarına göre dilimli)
+  trendyol_service_fee?: number;
+
   // Legacy/Standard fields keep compatibility
   accounting_mode?: 'standard' | 'pro';
   income_tax_pct?: number;
@@ -107,6 +110,7 @@ export interface CalculationResult {
   commission_amount: number;
   vat_amount: number; // Unit Output VAT
   expected_return_loss: number;
+  service_fee_amount: number; // Trendyol sabit servis bedeli
   unit_variable_cost: number;
   unit_total_cost: number;
   unit_net_profit: number;

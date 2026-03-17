@@ -9,7 +9,7 @@ import { marketplaces, getMarketplaceDefaults } from '@/lib/marketplace-data';
 import { getMarketplaceCategories, getCategoryCommission, N11_EXTRA_FEE_PCT, N11_MARKETING_FEE_PCT, N11_MARKETPLACE_FEE_PCT } from '@/lib/commission-categories';
 import { getUserCommissionRates, getLastRatesUpdate, buildRateMap, lookupRate } from '@/lib/commission-rates';
 import type { CommissionRate } from '@/lib/commission-rates';
-import { calculateProfit, calculateRequiredPrice, n } from '@/utils/calculations';
+import { calculateProfit, calculateRequiredPrice, calculateTrendyolServiceFee, n } from '@/utils/calculations';
 import { calculateProAccounting } from '@/utils/pro-accounting';
 import { calculateRisk } from '@/utils/risk-engine';
 import { saveAnalysis, generateId, getUserAnalysisCount } from '@/lib/storage';
@@ -41,6 +41,7 @@ const defaultInput: ProductInput = {
   other_cost: 0,
   payout_delay_days: 28,
   n11_extra_pct: 0,
+  trendyol_service_fee: 0,
   // PRO defaults
   pro_mode: false,
   sale_price_includes_vat: true,
@@ -153,6 +154,14 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
     })();
   }, [user, isDemo]);
 
+  // Satış fiyatı değişince Trendyol servis bedelini otomatik güncelle
+  useEffect(() => {
+    if (input.marketplace !== 'trendyol') return;
+    const autoFee = calculateTrendyolServiceFee(n(input.sale_price));
+    setInput((prev) => ({ ...prev, trendyol_service_fee: autoFee }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input.sale_price, input.marketplace]);
+
   const handleMarketplaceChange = (mp: Marketplace) => {
     const defaults = getMarketplaceDefaults(mp);
     setInput((prev) => ({
@@ -167,6 +176,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
       marketplace_category: undefined,
       trendyol_category: undefined,
       n11_extra_pct: mp === 'n11' ? N11_EXTRA_FEE_PCT : 0,
+      trendyol_service_fee: mp === 'trendyol' ? calculateTrendyolServiceFee(0) : 0,
     }));
   };
 
@@ -597,6 +607,37 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Trendyol Servis Bedeli */}
+        {input.marketplace === 'trendyol' && (
+          <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="trendyol_service_fee" className="text-sm font-medium">Servis Bedeli</Label>
+              <span
+                title="Trendyol'un sipariş tutarına göre kestiği sabit servis bedeli: 0–150₺ → 6₺ | 151–300₺ → 8₺ | 301–500₺ → 10₺ | 501₺+ → 15₺"
+                className="cursor-help text-muted-foreground"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </span>
+            </div>
+            <div className="relative">
+              <Input
+                id="trendyol_service_fee"
+                type="number"
+                value={(input.trendyol_service_fee as number) || ''}
+                onChange={(e) => handleFieldChange('trendyol_service_fee', parseFloat(e.target.value) || 0)}
+                min={0}
+                step={1}
+                className="h-11 pr-8"
+                placeholder="0"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">₺</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Satış fiyatına göre otomatik hesaplandı. Dilediğinizde manuel değiştirebilirsiniz.
+            </p>
           </div>
         )}
 

@@ -1,5 +1,13 @@
 import { ProductInput, CalculationResult } from '@/types';
 
+/** Trendyol sipariş tutarına göre sabit servis bedeli dilimi */
+export function calculateTrendyolServiceFee(salePrice: number): number {
+  if (salePrice <= 150) return 6;
+  if (salePrice <= 300) return 8;
+  if (salePrice <= 500) return 10;
+  return 15;
+}
+
 export const n = (v: any, fallback = 0) => {
   if (v === null || v === undefined) return fallback;
   const num = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
@@ -40,16 +48,19 @@ export function calculateProfit(input: ProductInput): CalculationResult {
   // 1.3 İade kaybı
   const expected_return_loss = (return_rate_pct / 100) * sale_price;
 
-  // 1.4 Birim değişken gider toplamı
-  const unit_variable_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
+  // 1.4 Trendyol servis bedeli (sadece Trendyol'da uygulanır)
+  const service_fee_amount = input.marketplace === 'trendyol' ? n(input.trendyol_service_fee, 0) : 0;
 
-  // 1.5 Birim toplam maliyet
+  // 1.5 Birim değişken gider toplamı
+  const unit_variable_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost + service_fee_amount;
+
+  // 1.6 Birim toplam maliyet
   const unit_total_cost = unit_variable_cost + commission_amount + vat_amount + expected_return_loss;
 
-  // 1.6 Birim net kâr
+  // 1.7 Birim net kâr
   const unit_net_profit = sale_price - unit_total_cost;
 
-  // 1.7 Net kâr marjı
+  // 1.8 Net kâr marjı
   const margin_pct = sale_price > 0 ? (unit_net_profit / sale_price) * 100 : 0;
 
   // 2.1 Aylık net kâr
@@ -68,6 +79,7 @@ export function calculateProfit(input: ProductInput): CalculationResult {
     commission_amount,
     vat_amount,
     expected_return_loss,
+    service_fee_amount,
     unit_variable_cost,
     unit_total_cost,
     unit_net_profit,
@@ -97,7 +109,8 @@ export function calculateBreakevenPrice(input: ProductInput): number {
   const vat_pct = n(input.vat_pct, 20);
   const return_rate_pct = n(input.return_rate_pct);
 
-  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
+  const service_fee_amount = input.marketplace === 'trendyol' ? n(input.trendyol_service_fee, 0) : 0;
+  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost + service_fee_amount;
 
   // KDV dahil mantığına göre paydadaki vergi çarpanı: 1 / (1 + KDV/100)
   const vat_factor = 1 / (1 + vat_pct / 100);
@@ -133,7 +146,8 @@ export function calculateRequiredPrice(
   const vat_pct = n(input.vat_pct, 20);
   const return_rate_pct = n(input.return_rate_pct);
 
-  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
+  const service_fee_amount = input.marketplace === 'trendyol' ? n(input.trendyol_service_fee, 0) : 0;
+  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost + service_fee_amount;
   const vat_factor = 1 / (1 + vat_pct / 100);
   const commission_factor = (commission_pct + n11_extra_pct) / 100;
   const return_factor = return_rate_pct / 100;

@@ -25,6 +25,9 @@ export function CostBreakdown({ input, result }: CostBreakdownProps) {
       value: getNet(input.product_cost, input.product_cost_includes_vat, input.purchase_vat_pct ?? input.vat_pct)
     },
     { label: 'Komisyon (Net)', value: n(result.commission_amount) },
+    ...(input.marketplace === 'trendyol' && n(result.service_fee_amount) > 0
+      ? [{ label: 'Trendyol Servis Bedeli', value: n(result.service_fee_amount) }]
+      : []),
     { label: isProMode ? 'Satış KDV (Çıkış)' : 'KDV', value: n(result.vat_amount) },
     { label: 'İade Kaybı (Net)', value: n(result.expected_return_loss) },
     {
