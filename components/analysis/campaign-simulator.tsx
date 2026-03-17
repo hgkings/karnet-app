@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ProductInput, CalculationResult } from '@/types';
 import { calculateProfit, n } from '@/utils/calculations';
-import { formatCurrency, formatPercent } from '@/components/shared/format';
+import { formatCurrency } from '@/components/shared/format';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -272,6 +272,11 @@ export function CampaignSimulator({ input, originalResult }: Props) {
             enabled={trendyolFreeShipping}
             onChange={setTrendyolFreeShipping}
           />
+          {trendyolFreeShipping && (
+            <div className="ml-12 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
+              ✓ {shippingCost > 0 ? `${formatCurrency(shippingCost)} kargo bedeli` : 'Kargo bedeli'} maliyet hesabına dahildir. Müşteri 0₺ öder.
+            </div>
+          )}
           <ToggleRow
             label='"Bugün Kargoda" Etiketi'
             description="Platform hizmet bedeli 8,49₺'den 5,49₺'ye düşer. Tasarruf: +3₺"
@@ -300,6 +305,11 @@ export function CampaignSimulator({ input, originalResult }: Props) {
             enabled={hepFreeShipping}
             onChange={setHepFreeShipping}
           />
+          {hepFreeShipping && (
+            <div className="ml-12 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
+              ✓ {shippingCost > 0 ? `${formatCurrency(shippingCost)} kargo bedeli` : 'Kargo bedeli'} maliyet hesabına dahildir. Müşteri 0₺ öder.
+            </div>
+          )}
           <ToggleRow
             label="Hızlı Teslimat (0-1 gün)"
             description="Servis bedeli 9,50₺ kalkar. Tasarruf: +9,50₺"
@@ -346,6 +356,11 @@ export function CampaignSimulator({ input, originalResult }: Props) {
             enabled={n11FreeShipping}
             onChange={setN11FreeShipping}
           />
+          {n11FreeShipping && (
+            <div className="ml-12 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
+              ✓ {shippingCost > 0 ? `${formatCurrency(shippingCost)} kargo bedeli` : 'Kargo bedeli'} maliyet hesabına dahildir. Müşteri 0₺ öder.
+            </div>
+          )}
         </div>
       )}
 
