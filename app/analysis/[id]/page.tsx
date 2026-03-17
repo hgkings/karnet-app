@@ -16,6 +16,7 @@ import { CashflowEstimator } from '@/components/analysis/cashflow-estimator';
 import { VatImpactCard } from '@/components/analysis/vat-impact-card';
 import { MinPriceCards } from '@/components/analysis/min-price-cards';
 import { ScenarioSimulator } from '@/components/analysis/scenario-simulator';
+import { CampaignSimulator } from '@/components/analysis/campaign-simulator';
 import { formatCurrency, formatPercent } from '@/components/shared/format';
 import { getMarketplaceLabel } from '@/lib/marketplace-data';
 import { Button } from '@/components/ui/button';
@@ -485,6 +486,11 @@ export default function AnalysisResultPage() {
             {/* Scenario Simulator */}
             <div className="min-w-0">
               <ScenarioSimulator input={input} />
+            </div>
+
+            {/* Kampanya Simülatörü */}
+            <div className="min-w-0">
+              <CampaignSimulator input={input} originalResult={result} />
             </div>
 
             {/* Collapsible Heavy Data Sections */}
