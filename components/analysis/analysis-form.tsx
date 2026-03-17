@@ -594,21 +594,6 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
               </p>
             </div>
 
-            {/* n11 Extra Fees Info */}
-            {input.marketplace === 'n11' && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/10 dark:border-blue-800 p-3 text-xs space-y-1 animate-in fade-in duration-200">
-                <p className="font-semibold text-blue-800 dark:text-blue-300">
-                  ℹ️ n11, komisyon üstüne ayrıca şu bedelleri de keser:
-                </p>
-                <ul className="space-y-0.5 text-blue-700 dark:text-blue-400">
-                  <li>+%{N11_MARKETING_FEE_PCT} Pazarlama Hizmet Bedeli (her satıştan)</li>
-                  <li>+%{N11_MARKETPLACE_FEE_PCT} Pazaryeri Hizmet Bedeli (her satıştan)</li>
-                </ul>
-                <p className="font-medium text-blue-800 dark:text-blue-300">
-                  Toplam ek kesinti: ~%{N11_EXTRA_FEE_PCT} — hesaba otomatik dahil edildi.
-                </p>
-              </div>
-            )}
           </div>
         )}
 
@@ -646,18 +631,27 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
         </div>
 
         {/* Platform Servis Bedeli — pazaryerine göre farklı davranır */}
-        {input.marketplace !== 'amazon_tr' && input.marketplace !== 'n11' && (
+        {input.marketplace !== 'amazon_tr' && (
           <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="flex items-center gap-1.5">
-              <Label htmlFor="trendyol_service_fee" className="text-sm font-medium">
-                {input.marketplace === 'custom' ? 'Platform Hizmet Bedeli' : 'Servis Bedeli'}
+              <Label
+                htmlFor={input.marketplace === 'n11' ? 'n11_extra_pct' : 'trendyol_service_fee'}
+                className="text-sm font-medium"
+              >
+                {input.marketplace === 'n11'
+                  ? 'Hizmet Bedeli (%)'
+                  : input.marketplace === 'custom'
+                  ? 'Platform Hizmet Bedeli (₺)'
+                  : 'Servis Bedeli'}
               </Label>
               <span
                 title={
                   input.marketplace === 'trendyol'
                     ? "Trendyol'un her gönderi için aldığı sabit platform hizmet bedeli. Normal kargolarda 8,49 TL + KDV, 'Bugün Kargoda' etiketiyle 5,49 TL + KDV olarak uygulanır. Komisyondan bağımsız, her siparişten ayrıca kesilir."
                     : input.marketplace === 'hepsiburada'
-                    ? "Hepsiburada'nın her gönderi için kestiği iki ayrı bedel: İşlem Bedeli 7₺ + Hizmet Bedeli 2,5₺ = toplam 9,5₺ + KDV. Siparişi 0-1 gün içinde kargoya verirsen Temmuz 2025'ten bu bedel alınmıyor."
+                    ? "Hepsiburada'nın her gönderi için kestiği iki ayrı bedel: İşlem Bedeli 7₺ + Hizmet Bedeli 2,5₺ = toplam 9,5₺ + KDV. Siparişi 0-1 gün içinde kargoya verirsen bu bedel alınmıyor."
+                    : input.marketplace === 'n11'
+                    ? 'Satış tutarı üzerinden kesilen Pazarlama (%1,20) + Pazaryeri (%0,67) hizmet bedeli toplamı.'
                     : 'Pazaryerinin her sipariş için kestiği platform hizmet bedeli.'
                 }
                 className="cursor-help text-muted-foreground"
@@ -666,21 +660,37 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
               </span>
             </div>
             <div className="relative">
-              <Input
-                id="trendyol_service_fee"
-                type="number"
-                value={(input.trendyol_service_fee as number) || ''}
-                onChange={(e) => handleFieldChange('trendyol_service_fee', parseFloat(e.target.value) || 0)}
-                min={0}
-                step={0.01}
-                className="h-11 pr-8"
-                placeholder="0"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">₺</span>
+              {input.marketplace === 'n11' ? (
+                <Input
+                  id="n11_extra_pct"
+                  type="number"
+                  value={(input.n11_extra_pct as number) ?? ''}
+                  onChange={(e) => handleFieldChange('n11_extra_pct', parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step={0.01}
+                  className="h-11 pr-8"
+                  placeholder="1.87"
+                />
+              ) : (
+                <Input
+                  id="trendyol_service_fee"
+                  type="number"
+                  value={(input.trendyol_service_fee as number) || ''}
+                  onChange={(e) => handleFieldChange('trendyol_service_fee', parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step={0.01}
+                  className="h-11 pr-8"
+                  placeholder="0"
+                />
+              )}
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">
+                {input.marketplace === 'n11' ? '%' : '₺'}
+              </span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              {input.marketplace === 'trendyol' && 'Otomatik 8,49 ₺ olarak ayarlandı. Dilediğinizde manuel değiştirebilirsiniz.'}
-              {input.marketplace === 'hepsiburada' && 'İşlem Bedeli (7₺) + Hizmet Bedeli (2,5₺) toplamı. Manuel değiştirebilirsiniz.'}
+              {input.marketplace === 'trendyol' && "Trendyol Platform Hizmet Bedeli (gönderi başına). 'Bugün Kargoda' etiketiyle 5,49₺'ye düşer."}
+              {input.marketplace === 'hepsiburada' && 'İşlem Bedeli (7₺) + Hizmet Bedeli (2,5₺). Hızlı kargoda (0-1 gün) bu bedel alınmıyor.'}
+              {input.marketplace === 'n11' && 'Pazarlama (%1,20) + Pazaryeri (%0,67) hizmet bedeli. Satış tutarı üzerinden kesilir.'}
               {input.marketplace === 'custom' && 'Platform hizmet bedelini manuel girin.'}
             </p>
           </div>
@@ -690,7 +700,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
         {input.marketplace === 'amazon_tr' && (
           <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/10 dark:border-blue-800 p-3 text-xs animate-in fade-in duration-200">
             <p className="text-blue-700 dark:text-blue-400">
-              ℹ️ Amazon TR'de sipariş başı servis bedeli uygulanmaz. Aylık 99₺ abonelik şu an kampanya kapsamında ücretsizdir.
+              ℹ️ Amazon TR&apos;de ayrı bir sipariş başı servis bedeli uygulanmaz.
             </p>
           </div>
         )}
