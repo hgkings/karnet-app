@@ -4,54 +4,47 @@
 
 @layer base {
   :root {
-    /* Background & Surface */
-    --background: 210 20% 98%;
-    /* #F8FAFC */
-    --foreground: 222 47% 11%;
-    /* #0F172A */
+    /* ── Light Mode ── */
+    --background: 0 0% 100%;
+    --foreground: 222 84% 5%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222 84% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 222 84% 5%;
 
-    /* Primary (Premium Blue) */
+    /* Primary — Kârnet Mavisi #2563EB */
     --primary: 221 83% 53%;
-    /* #2563EB */
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
+    /* Secondary — Turuncu/Amber */
+    --secondary: 35 92% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Muted */
-    --muted: 210 40% 96.1%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent */
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
+    /* Accent — Yeşil (kâr) */
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Semantic */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
+    --warning: 35 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    /* Borders & Input */
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
 
-    /* Charts */
     --chart-1: 142 71% 45%;
-    --chart-2: 217 91% 60%;
-    --chart-3: 38 92% 50%;
+    --chart-2: 221 83% 53%;
+    --chart-3: 35 92% 50%;
     --chart-4: 340 65% 55%;
     --chart-5: 45 90% 55%;
 
@@ -59,26 +52,27 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
+    /* ── Dark Mode ── */
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
 
-    --card: 222 30% 10%;
-    --card-foreground: 210 40% 96%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 222 30% 10%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 14%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 35 92% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 222 30% 14%;
+    --muted: 217 33% 12%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 222 30% 14%;
-    --accent-foreground: 210 40% 96%;
+    --accent: 142 71% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
@@ -86,16 +80,16 @@
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 35 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 222 20% 18%;
-    --input: 222 20% 18%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
     --ring: 217 91% 60%;
 
     --chart-1: 142 71% 45%;
     --chart-2: 217 91% 60%;
-    --chart-3: 38 92% 50%;
+    --chart-3: 35 92% 50%;
     --chart-4: 340 65% 60%;
     --chart-5: 45 90% 60%;
   }
@@ -110,17 +104,143 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-geist-sans, 'Inter', system-ui, sans-serif);
+    font-feature-settings: "ss01", "ss02";
+  }
 }
 
 html {
   scroll-behavior: smooth;
 }
 
-/* Sonner Toast Fix: Ensure container doesn't block clicks */
-[data-sonner-toaster] {
-  pointer-events: none !important;
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+/* ── Gradient Hero Background ── */
+.hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.25), transparent),
+    radial-gradient(ellipse 40% 30% at 80% 60%, hsl(35 92% 50% / 0.08), transparent),
+    hsl(var(--background));
 }
 
-[data-sonner-toast] {
-  pointer-events: auto !important;
+.dark .hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.2), transparent),
+    radial-gradient(ellipse 40% 30% at 80% 60%, hsl(35 92% 50% / 0.05), transparent),
+    hsl(var(--background));
 }
+
+/* ── Glass utility ── */
+@layer utilities {
+  .glass {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  .glass-dark {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-orange-400 dark:from-blue-400 dark:to-orange-400;
+  }
+  .gradient-text-blue {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400;
+  }
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+  }
+  .btn-shine:hover::after {
+    left: 125%;
+  }
+}
+
+/* ── Marquee (sonsuz kayan şerit) ── */
+.marquee-container {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Bento grid ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto;
+  gap: 1rem;
+}
+@media (max-width: 1024px) {
+  .bento-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .bento-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Gradient border card ── */
+.gradient-border-card {
+  background: hsl(var(--card));
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+.gradient-border-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.4), transparent 50%, hsl(var(--secondary) / 0.2));
+  z-index: -1;
+}
+
+/* ── Animated underline ── */
+.animated-underline {
+  background-image: linear-gradient(hsl(var(--primary)), hsl(var(--primary)));
+  background-size: 0% 2px;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  transition: background-size 0.3s ease;
+}
+.animated-underline:hover {
+  background-size: 100% 2px;
+}
+
+/* ── Sonner toast fix ── */
+[data-sonner-toaster] { pointer-events: none !important; }
+[data-sonner-toast] { pointer-events: auto !important; }
+
+/* ── Dashboard sidebar scrollbar thin ── */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }

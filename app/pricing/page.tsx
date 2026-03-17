@@ -68,18 +68,18 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
 
 function FeatureRow({ text, included, highlight = false }: { text: string; included: boolean; highlight?: boolean }) {
   return (
-    <div className={cn('flex items-start gap-3', !included && 'opacity-40')}>
+    <div className={cn('flex items-start gap-3', !included && 'opacity-35')}>
       <div className={cn(
         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full mt-0.5',
         included
-          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-          : 'bg-muted text-muted-foreground',
+          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400'
+          : 'bg-muted/50 text-muted-foreground',
       )}>
         {included ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
       </div>
       <span className={cn(
         'text-sm leading-6',
-        included && highlight ? 'font-medium text-foreground' : 'text-muted-foreground',
+        included && highlight ? 'font-semibold text-foreground' : 'text-muted-foreground',
       )}>
         {text}
       </span>
@@ -197,7 +197,7 @@ function PricingContent() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 space-y-24">
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 space-y-20">
 
         {/* ─ Payment Return Banners ─────────────────────────────────────────── */}
         {paymentStatus === 'success' && (
@@ -242,7 +242,10 @@ function PricingContent() {
 
         {/* ─ Header ────────────────────────────────────────────────────────── */}
         <div className="text-center space-y-5">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <span className="inline-block mb-1 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+            Fiyatlandırma
+          </span>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl font-geist">
             Sade ve Şeffaf Fiyatlandırma
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
@@ -251,12 +254,12 @@ function PricingContent() {
 
           {/* Billing Toggle */}
           <div className="flex items-center justify-center mt-6">
-            <div className="relative flex items-center bg-muted p-1 rounded-xl border">
+            <div className="relative flex items-center bg-muted/60 p-1 rounded-xl border border-border/60">
               <button
                 onClick={() => setBilling('monthly')}
                 className={cn(
-                  'px-6 py-2.5 text-sm font-medium rounded-[10px] transition-all duration-200',
-                  billing === 'monthly' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                  'px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
+                  billing === 'monthly' ? 'bg-card text-foreground shadow-sm border border-border/60' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 Aylık
@@ -264,12 +267,12 @@ function PricingContent() {
               <button
                 onClick={() => setBilling('yearly')}
                 className={cn(
-                  'px-6 py-2.5 text-sm font-medium rounded-[10px] transition-all duration-200 relative',
-                  billing === 'yearly' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                  'px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative',
+                  billing === 'yearly' ? 'bg-card text-foreground shadow-sm border border-border/60' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 Yıllık
-                <span className="absolute -top-2.5 -right-3 bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded shadow-sm border border-white/20 font-semibold tracking-wide rotate-3 transform">
+                <span className="absolute -top-2.5 -right-3 bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm border border-white/20 font-bold tracking-wide rotate-3 transform">
                   %17
                 </span>
               </button>
@@ -286,7 +289,7 @@ function PricingContent() {
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
 
           {/* FREE */}
-          <div className="relative rounded-2xl border bg-card p-8 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col">
+          <div className="relative rounded-2xl border border-border/60 bg-card p-8 shadow-sm hover:shadow-md hover:border-border transition-all duration-300 flex flex-col">
             <div className="mb-6">
               <h3 className="text-xl font-bold">Başlangıç</h3>
               <p className="text-sm text-muted-foreground mt-2">Yeni başlayanlar ve denemek isteyenler için ideal.</p>
@@ -325,9 +328,9 @@ function PricingContent() {
           </div>
 
           {/* PRO */}
-          <div className="relative rounded-2xl border-2 border-primary/30 bg-gradient-to-b from-primary/[0.03] to-card p-8 shadow-lg hover:scale-[1.01] transition-all duration-300 flex flex-col">
+          <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-b from-primary/5 via-card to-card p-8 shadow-xl hover:scale-[1.01] hover:shadow-2xl transition-all duration-300 flex flex-col">
             {/* Badge */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground px-5 py-2 rounded-full text-xs font-bold shadow-md flex items-center gap-1.5 whitespace-nowrap">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-blue-500 text-white px-5 py-2 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 whitespace-nowrap border border-primary/20">
               <Sparkles className="h-3.5 w-3.5 fill-current" />
               EN ÇOK TERCİH EDİLEN
             </div>
@@ -400,7 +403,7 @@ function PricingContent() {
               ) : (
                 <>
                   <Button
-                    className="w-full h-14 rounded-xl text-lg font-bold shadow-md hover:scale-[1.01] transition-all duration-300 active:scale-95"
+                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg hover:scale-[1.01] btn-shine transition-all duration-300 active:scale-95"
                     disabled={loading}
                     onClick={handleUpgrade}
                   >
