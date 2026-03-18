@@ -52,7 +52,13 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={`${inter.variable} ${GeistSans.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        {/* Aurora animated background — all pages */}
+        <div className="aurora-bg">
+          <div className="aurora-orb orb-1" />
+          <div className="aurora-orb orb-2" />
+          <div className="aurora-orb orb-3" />
+        </div>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <AuthProvider>
             <AlertProvider>
               {children}

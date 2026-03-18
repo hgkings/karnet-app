@@ -38,7 +38,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-muted/20">
+    <section id="how-it-works" className="py-24 bg-white/[0.02]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         <motion.div
@@ -48,7 +48,7 @@ export function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             Nasıl Çalışır?
           </span>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">
@@ -68,10 +68,10 @@ export function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="group flex flex-col items-center text-center w-full h-full rounded-2xl border border-border/60 bg-card p-8 hover:border-primary/20 hover:shadow-md transition-all duration-300"
+                className="group flex flex-col items-center text-center w-full h-full rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-8 hover:border-primary/30 hover:shadow-md transition-all duration-300"
               >
                 {/* Numara badge */}
-                <span className={`text-5xl font-black mb-5 leading-none select-none ${step.numColor} opacity-90`}>
+                <span className={`text-5xl font-black mb-5 leading-none select-none bg-gradient-to-b from-primary to-primary/20 bg-clip-text text-transparent`}>
                   {step.number}
                 </span>
 
@@ -91,7 +91,7 @@ export function HowItWorks() {
 
               {/* Ok — sağ kenar, son kartta yok */}
               {i < steps.length - 1 && (
-                <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 items-center justify-center rounded-full bg-card border border-border shadow-sm">
+                <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 items-center justify-center rounded-full bg-[hsl(222,47%,10%)] border border-white/10 shadow-sm">
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}

@@ -45,7 +45,7 @@ export function Testimonials() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             Yorumlar
           </span>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">
@@ -64,7 +64,7 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group relative rounded-2xl border border-border/60 bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/20 hover:scale-[1.02] transition-all duration-300"
+              className="group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 shadow-sm hover:shadow-md hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
             >
               {/* Stars */}
               <div className="flex gap-0.5 mb-4">
@@ -73,7 +73,7 @@ export function Testimonials() {
                 ))}
               </div>
 
-              <blockquote className="mb-6 text-[15px] leading-relaxed text-foreground/85">
+              <blockquote className="mb-6 text-[15px] leading-relaxed text-white/80 italic">
                 &ldquo;{t.quote}&rdquo;
               </blockquote>
 

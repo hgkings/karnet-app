@@ -24,7 +24,7 @@ export function Features() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             Özellikler
           </span>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">
@@ -41,7 +41,7 @@ export function Features() {
           {/* Large card — col span 2 */}
           <motion.div
             custom={0} initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true }}
-            className="lg:col-span-2 group relative rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
+            className="lg:col-span-2 group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 hover:border-primary/40 hover:shadow-lg transition-all duration-300 overflow-hidden"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-primary/3 via-transparent to-transparent" />
             <div className="relative">
@@ -68,7 +68,7 @@ export function Features() {
           {/* Risk Analysis */}
           <motion.div
             custom={1} initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true }}
-            className="group relative rounded-2xl border border-border/60 bg-card p-6 hover:border-red-500/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
+            className="group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 hover:border-red-500/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-red-500/3 via-transparent to-transparent" />
             <div className="relative">
@@ -100,7 +100,7 @@ export function Features() {
           {/* Sensitivity */}
           <motion.div
             custom={2} initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true }}
-            className="group relative rounded-2xl border border-border/60 bg-card p-6 hover:border-orange-500/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
+            className="group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 hover:border-orange-500/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-orange-500/3 via-transparent to-transparent" />
             <div className="relative">
@@ -130,7 +130,7 @@ export function Features() {
           {/* 4 Marketplaces */}
           <motion.div
             custom={3} initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true }}
-            className="group relative rounded-2xl border border-border/60 bg-card p-6 hover:border-purple-500/30 hover:shadow-lg transition-all duration-300"
+            className="group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 hover:border-purple-500/30 hover:shadow-lg transition-all duration-300"
           >
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 transition-colors group-hover:bg-purple-500 group-hover:text-white">
               <Target className="h-6 w-6" />
@@ -156,7 +156,7 @@ export function Features() {
           {/* KDV — Pro */}
           <motion.div
             custom={4} initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true }}
-            className="group relative rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-card p-6 hover:border-primary/40 hover:shadow-lg transition-all duration-300"
+            className="group relative rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-[hsl(222,47%,7%)] to-[hsl(222,47%,7%)] p-6 hover:border-primary/40 hover:shadow-lg transition-all duration-300"
           >
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
               <FileSpreadsheet className="h-6 w-6" />
@@ -175,7 +175,7 @@ export function Features() {
           {/* Marketplace comparison — large */}
           <motion.div
             custom={5} initial="hidden" whileInView="visible" variants={fadeUp} viewport={{ once: true }}
-            className="lg:col-span-2 group relative rounded-2xl border border-border/60 bg-card p-6 hover:border-emerald-500/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
+            className="lg:col-span-2 group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 hover:border-emerald-500/30 hover:shadow-lg transition-all duration-300 overflow-hidden"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-emerald-500/3 via-transparent to-transparent" />
             <div className="relative">

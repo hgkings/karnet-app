@@ -48,7 +48,7 @@ function CountUp({ target, suffix, duration }: { target: number; suffix: string;
 
 export function SuccessMetrics() {
   return (
-    <section className="py-16 px-4 bg-primary/5">
+    <section className="py-16 px-4 bg-primary/10 rounded-3xl mx-4">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {metrics.map((m) => (
@@ -60,7 +60,7 @@ export function SuccessMetrics() {
               <span className="text-4xl md:text-5xl font-bold text-primary leading-none">
                 <CountUp target={m.number} suffix={m.suffix} duration={m.duration} />
               </span>
-              <span className="text-sm text-muted-foreground font-medium">
+              <span className="text-sm text-white/60 font-medium">
                 {m.label}
               </span>
             </div>

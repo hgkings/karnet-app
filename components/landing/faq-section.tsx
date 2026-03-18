@@ -37,7 +37,7 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section id="faq" className="py-24 bg-muted/20 border-y border-border/40">
+    <section id="faq" className="py-24 bg-white/[0.02] border-y border-white/5">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
 
         <motion.div
@@ -47,7 +47,7 @@ export function FAQSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-14"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             SSS
           </span>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">
@@ -69,12 +69,12 @@ export function FAQSection() {
             >
               <AccordionItem
                 value={`faq-${i}`}
-                className="rounded-xl border border-border/60 bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-sm transition-all"
+                className="rounded-xl border border-white/8 bg-[hsl(222,47%,7%)] px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-sm transition-all"
               >
-                <AccordionTrigger className="py-4 text-[15px] font-semibold hover:no-underline hover:text-primary text-left gap-4">
+                <AccordionTrigger className="py-4 text-[15px] font-semibold text-white/80 hover:no-underline hover:text-primary text-left gap-4">
                   {faq.q}
                 </AccordionTrigger>
-                <AccordionContent className="pb-4 text-sm text-muted-foreground leading-relaxed">
+                <AccordionContent className="pb-4 text-sm text-white/55 leading-relaxed">
                   {faq.a}
                 </AccordionContent>
               </AccordionItem>

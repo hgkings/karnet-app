@@ -20,7 +20,7 @@ const benefits = [
 
 export function BenefitsList() {
   return (
-    <section className="py-24 bg-card/50 border-y border-border/40">
+    <section className="py-24 bg-white/[0.02] border-y border-white/5">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -29,7 +29,7 @@ export function BenefitsList() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-14"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             Kapsam
           </span>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">

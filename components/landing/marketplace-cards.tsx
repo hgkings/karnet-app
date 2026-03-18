@@ -58,9 +58,9 @@ export function MarketplaceCards() {
             <div
               key={mp.name}
               className={`
-                group relative rounded-2xl border border-border/50 bg-card p-6
+                group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6
                 border-t-2 ${mp.topBorder}
-                hover:scale-[1.02] hover:border-primary/40 hover:shadow-lg
+                hover:scale-[1.02] hover:border-primary/40 hover:shadow-lg hover:shadow-black/30
                 transition-all duration-300 cursor-default
               `}
             >
@@ -74,8 +74,8 @@ export function MarketplaceCards() {
               {/* Emoji logo */}
               <div className="text-4xl mb-4">{mp.emoji}</div>
 
-              <h3 className="font-bold text-foreground mb-2">{mp.name}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{mp.desc}</p>
+              <h3 className="font-bold text-white mb-2">{mp.name}</h3>
+              <p className="text-sm text-white/60 leading-relaxed">{mp.desc}</p>
             </div>
           ))}
         </div>

@@ -19,14 +19,6 @@ import { MarketplaceCards } from '@/components/landing/marketplace-cards';
 export default function LandingPage() {
   return (
     <div className="min-h-screen text-foreground font-sans selection:bg-primary/20">
-      {/* Animated background orbs */}
-      <div className="bg-animated">
-        <div className="bg-orb bg-orb-1" />
-        <div className="bg-orb bg-orb-2" />
-        <div className="bg-orb bg-orb-3" />
-        <div className="bg-orb bg-orb-4" />
-      </div>
-
       <Header />
 
       <main>

@@ -71,12 +71,12 @@ export function ComparisonTable() {
         </div>
 
         {/* Tablo — yatay scroll mobilde */}
-        <div className="overflow-x-auto rounded-2xl border border-border/60 shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border border-white/8 shadow-sm bg-[hsl(222,47%,7%)]">
           <table className="w-full min-w-[560px]">
             {/* Başlık satırı */}
             <thead>
               <tr>
-                <th className="text-left px-6 py-5 text-sm font-semibold text-muted-foreground bg-muted/40 w-1/2 rounded-tl-2xl">
+                <th className="text-left px-6 py-5 text-sm font-semibold text-white/50 bg-white/[0.03] w-1/2 rounded-tl-2xl">
                   Özellik
                 </th>
                 {/* Kârnet sütunu — highlighted */}
@@ -89,21 +89,21 @@ export function ComparisonTable() {
                     <span className="text-sm font-bold text-primary">Kârnet</span>
                   </div>
                 </th>
-                <th className="px-6 py-5 bg-muted/40 text-sm font-semibold text-muted-foreground text-center w-[16%]">
+                <th className="px-6 py-5 bg-white/[0.03] text-sm font-semibold text-white/50 text-center w-[16%]">
                   Excel 📊
                 </th>
-                <th className="px-6 py-5 bg-muted/40 text-sm font-semibold text-muted-foreground text-center w-[16%] rounded-tr-2xl">
+                <th className="px-6 py-5 bg-white/[0.03] text-sm font-semibold text-white/50 text-center w-[16%] rounded-tr-2xl">
                   Rakip Araçlar
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40">
+            <tbody className="divide-y divide-white/5">
               {rows.map((row, i) => (
                 <tr
                   key={row.label}
-                  className="hover:bg-muted/20 transition-colors duration-150"
+                  className="hover:bg-white/[0.03] transition-colors duration-150"
                 >
-                  <td className="px-6 py-4 text-sm font-medium text-foreground">
+                  <td className="px-6 py-4 text-sm font-medium text-white/80">
                     {row.label}
                   </td>
                   <td className="px-6 py-4 text-center bg-primary/5 border-x border-primary/10">
