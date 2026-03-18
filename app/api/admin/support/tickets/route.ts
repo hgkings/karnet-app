@@ -1,28 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server-client'
+import { verifyAdmin } from '@/lib/admin-auth'
 import { getAllTickets, getTicketStats } from '@/lib/support-service'
 import { TicketFilterSchema } from '@/lib/validations/support'
 
-async function requireAdmin() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
-  if (profile?.plan !== 'admin') return null
-  return user
-}
-
 export async function GET(request: NextRequest) {
-  try {
-    const user = await requireAdmin()
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Yetkiniz yok' }, { status: 403 })
-    }
+  const auth = await verifyAdmin()
+  if (!auth.authorized) return auth.response
 
+  try {
     const { searchParams } = new URL(request.url)
 
     if (searchParams.get('stats') === '1') {
