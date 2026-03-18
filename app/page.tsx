@@ -12,6 +12,10 @@ import { TrustStrip } from '@/components/landing/trust-strip';
 import { FAQSection } from '@/components/landing/faq-section';
 import { CTASection } from '@/components/landing/cta-section';
 import { Footer } from '@/components/layout/footer';
+import { ComparisonTable } from '@/components/landing/comparison-table';
+import { TrustTech } from '@/components/landing/trust-tech';
+import { SuccessMetrics } from '@/components/landing/success-metrics';
+import { MarketplaceCards } from '@/components/landing/marketplace-cards';
 export default function LandingPage() {
   return (
     <div className="min-h-screen text-foreground font-sans selection:bg-primary/20">
@@ -28,8 +32,12 @@ export default function LandingPage() {
       <main>
         <Hero />
         <SocialProofBar />
+        <MarketplaceCards />
         <QuickCalc />
         <Features />
+        <ComparisonTable />
+        <TrustTech />
+        <SuccessMetrics />
         <Testimonials />
         <HowItWorks />
         <BenefitsList />
