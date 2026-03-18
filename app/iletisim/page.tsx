@@ -45,10 +45,7 @@ export default function IletisimPage() {
           <div>
             <h3 className="m-0 text-lg font-semibold text-foreground">Adres</h3>
             <p className="mt-1 text-base leading-relaxed text-muted-foreground">
-              Konya Seydişehir<br />
-              Ulukapı Mahallesi<br />
-              153103 Sokak No:52<br />
-              Türkiye
+              Konya, Türkiye
             </p>
           </div>
         </div>

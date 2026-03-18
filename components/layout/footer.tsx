@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Phone, MapPin, User, ShieldCheck } from 'lucide-react';
+import { Mail, MapPin, User, ShieldCheck } from 'lucide-react';
 
 const PRODUCT_LINKS = [
   { href: '/pricing', label: 'Fiyatlandırma' },
@@ -83,14 +83,10 @@ export function Footer() {
                   karnet.destek@gmail.com
                 </a>
               </li>
-              <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4 shrink-0 text-primary/70" />
-                <span>+90 543 382 45 21</span>
-              </li>
               <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 shrink-0 text-primary/70 mt-0.5" />
                 <span className="leading-relaxed">
-                  Konya Seydişehir, Türkiye
+                  Konya, Türkiye
                 </span>
               </li>
               <li className="flex items-center gap-2.5 text-sm text-muted-foreground">

@@ -29,9 +29,6 @@ export default function IadePolitikasiPage() {
           <strong>E-posta:</strong> karnet.destek@gmail.com
         </li>
         <li>
-          <strong>Telefon:</strong> +90 543 382 45 21
-        </li>
-        <li>
           <strong>Destek sayfası:</strong> Platform içi destek sistemi
         </li>
       </ul>

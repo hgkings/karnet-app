@@ -68,6 +68,44 @@ export default function SupportPage() {
             onSelectTicket={handleSelectTicket}
           />
         </div>
+
+        {/* Doğrudan İletişim */}
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Doğrudan İletişim
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Acil durumlar veya destek talebi dışındaki sorularınız için bize doğrudan ulaşabilirsiniz.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">E-posta</p>
+                <a href="mailto:karnet.destek@gmail.com" className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                  karnet.destek@gmail.com
+                </a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Telefon</p>
+                <a href="tel:+905433824521" className="text-sm font-medium text-gray-900 dark:text-white hover:underline">
+                  +90 543 382 45 21
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <TicketDetailDialog
