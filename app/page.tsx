@@ -16,7 +16,7 @@ import { TrendingUp } from 'lucide-react';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+    <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 page-hero-bg">
       <Header />
 
       <main>

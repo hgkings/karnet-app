@@ -67,10 +67,15 @@ export default function AuthPage() {
 
       {/* ── LEFT PANEL (desktop only) — dark gradient with product context ── */}
       <div className="hidden lg:flex w-[45%] relative flex-col justify-center px-10 xl:px-14 py-12 overflow-hidden">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-blue-700 to-blue-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
-        <div className="absolute inset-0 opacity-[0.04]"
+        {/* Gradient background — koyu lacivert */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(135deg, hsl(221 83% 20%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 28%) 100%)',
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_60%)]" />
+        <div className="absolute inset-0 opacity-[0.05]"
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         />
 
@@ -135,24 +140,31 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* Trust */}
-          <div className="space-y-2">
-            {[
-              { icon: CreditCard, text: 'Kredi kartı gerekmez' },
-              { icon: Users, text: '500+ satıcı kullanıyor' },
-              { icon: Star, text: 'Ücretsiz plan sonsuza kadar' },
-            ].map((item) => (
-              <div key={item.text} className="flex items-center gap-2 text-[11px] text-white/50">
-                <item.icon className="h-3.5 w-3.5 shrink-0" />
-                <span>{item.text}</span>
-              </div>
-            ))}
+          {/* Trust — ikon + yazı satırları (SORUN 6) */}
+          <div className="mt-8 flex flex-col gap-3">
+            <div className="flex items-center gap-3 text-white/90">
+              <span className="text-lg">🔒</span>
+              <span className="text-sm font-medium">Kredi kartı gerekmez</span>
+            </div>
+            <div className="flex items-center gap-3 text-white/90">
+              <span className="text-lg">👥</span>
+              <span className="text-sm font-medium">500+ aktif satıcı kullanıyor</span>
+            </div>
+            <div className="flex items-center gap-3 text-white/90">
+              <span className="text-lg">⭐</span>
+              <span className="text-sm font-medium">Ücretsiz plan sonsuza kadar ücretsiz</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── RIGHT PANEL — Auth form ── */}
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:py-12">
+      <div
+        className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:py-12"
+        style={{
+          background: 'radial-gradient(ellipse 80% 50% at 100% 0%, hsl(221 83% 53% / 0.06), transparent 60%), hsl(0 0% 99%)',
+        }}
+      >
 
         {/* Mobile logo */}
         <div className="lg:hidden w-full max-w-[420px] mb-8 text-center space-y-3">
@@ -170,7 +182,13 @@ export default function AuthPage() {
           className="w-full max-w-[420px] space-y-5"
         >
           {/* Auth card */}
-          <div className="rounded-2xl border border-border/60 bg-card shadow-premium-lg p-7 sm:p-8 relative overflow-hidden">
+          <div
+            className="rounded-2xl bg-card p-7 sm:p-8 relative overflow-hidden"
+            style={{
+              boxShadow: '0 20px 60px hsl(221 83% 53% / 0.08)',
+              border: '1px solid hsl(221 83% 53% / 0.1)',
+            }}
+          >
             <div className="pointer-events-none absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/5 blur-3xl" />
 
             <div className="relative z-10">

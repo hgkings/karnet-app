@@ -5,34 +5,34 @@ import { ClipboardList, BarChart2, CheckCircle2, ArrowRight } from 'lucide-react
 
 const steps = [
   {
-    number: '01',
+    number: '1',
     icon: ClipboardList,
     title: 'Ürün Bilgilerini Gir',
-    desc: 'Pazaryeri, satış fiyatı, ürün maliyeti, kargo ve reklam giderlerini girin.',
-    color: 'blue',
-    iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    iconHover: 'group-hover:bg-blue-500 group-hover:text-white',
-    numColor: 'text-blue-500/20',
+    desc: 'Pazaryeri, fiyat, maliyet ve gider bilgilerini girin.',
+    iconBg: 'bg-blue-500/10',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    numColor: 'text-blue-600 dark:text-blue-400',
+    hoverBg: 'group-hover:bg-blue-500',
   },
   {
-    number: '02',
+    number: '2',
     icon: BarChart2,
     title: 'Analiz Et',
-    desc: 'Sistem tüm gizli maliyetleri hesaplayarak gerçek kârınızı ve risk seviyenizi belirler.',
-    color: 'orange',
-    iconBg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-    iconHover: 'group-hover:bg-orange-500 group-hover:text-white',
-    numColor: 'text-orange-500/20',
+    desc: 'Sistem tüm maliyetleri hesaplayarak gerçek kârı ve risk seviyesini belirler.',
+    iconBg: 'bg-orange-500/10',
+    iconColor: 'text-orange-600 dark:text-orange-400',
+    numColor: 'text-orange-600 dark:text-orange-400',
+    hoverBg: 'group-hover:bg-orange-500',
   },
   {
-    number: '03',
+    number: '3',
     icon: CheckCircle2,
     title: 'Karar Ver',
-    desc: 'Detaylı rapor ve önerilere dayanarak stratejik kararlar alın, kârlı ürünleri ölçeklendirin.',
-    color: 'green',
-    iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    iconHover: 'group-hover:bg-emerald-500 group-hover:text-white',
-    numColor: 'text-emerald-500/20',
+    desc: 'Detaylı rapor ve önerilerle stratejik kararlar alın, kârlı ürünleri ölçeklendirin.',
+    iconBg: 'bg-emerald-500/10',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    numColor: 'text-emerald-600 dark:text-emerald-400',
+    hoverBg: 'group-hover:bg-emerald-500',
   },
 ];
 
@@ -59,41 +59,43 @@ export function HowItWorks() {
           </p>
         </motion.div>
 
-        <div className="relative grid gap-6 md:grid-cols-3">
-          {/* Connecting line (desktop) */}
-          <div className="hidden md:block absolute top-16 left-[22%] right-[22%] h-px bg-gradient-to-r from-blue-500/30 via-orange-500/30 to-emerald-500/30" />
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
           {steps.map((step, i) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
-              className="group relative flex flex-col items-center text-center"
-            >
-              {/* Arrow between steps */}
+            <div key={step.number} className="relative flex">
+              {/* Kart */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="group flex flex-col items-center text-center w-full h-full rounded-2xl border border-border/60 bg-card p-8 hover:border-primary/20 hover:shadow-md transition-all duration-300"
+              >
+                {/* Numara badge */}
+                <span className={`text-5xl font-black mb-5 leading-none select-none ${step.numColor} opacity-90`}>
+                  {step.number}
+                </span>
+
+                {/* İkon */}
+                <div className={`flex h-16 w-16 items-center justify-center rounded-2xl mb-5 transition-all duration-300 ${step.iconBg} ${step.iconColor} group-hover:scale-110 group-hover:shadow-lg ${step.hoverBg} group-hover:text-white`}>
+                  <step.icon className="h-8 w-8 transition-colors duration-300" />
+                </div>
+
+                {/* Başlık */}
+                <h3 className="text-lg font-semibold mb-3 text-foreground">{step.title}</h3>
+
+                {/* Açıklama */}
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px]">
+                  {step.desc}
+                </p>
+              </motion.div>
+
+              {/* Ok — sağ kenar, son kartta yok */}
               {i < steps.length - 1 && (
-                <div className="hidden md:flex absolute top-16 -right-3 z-10 items-center justify-center h-6 w-6 rounded-full bg-background border border-border">
+                <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 items-center justify-center rounded-full bg-card border border-border shadow-sm">
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}
-
-              {/* Number */}
-              <div className="relative mb-6">
-                <span className={`absolute -top-4 left-1/2 -translate-x-1/2 text-6xl font-black ${step.numColor} select-none`}>
-                  {step.number}
-                </span>
-                <div className={`relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border/60 bg-card transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg ${step.iconBg} ${step.iconHover}`}>
-                  <step.icon className="h-7 w-7 transition-colors duration-300" />
-                </div>
-              </div>
-
-              <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-              <p className="text-muted-foreground leading-relaxed max-w-xs text-sm">
-                {step.desc}
-              </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

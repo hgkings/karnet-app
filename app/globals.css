@@ -121,19 +121,29 @@ html {
 ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
 
-/* ── Gradient Hero Background ── */
-.hero-gradient {
+/* ── Page Hero Background (ana sayfa genel arka plan) ── */
+.page-hero-bg {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.25), transparent),
-    radial-gradient(ellipse 40% 30% at 80% 60%, hsl(35 92% 50% / 0.08), transparent),
+    radial-gradient(ellipse 100% 60% at 50% -10%,
+      hsl(221 83% 53% / 0.12) 0%,
+      hsl(35 92% 50% / 0.04) 50%,
+      transparent 100%
+    ),
+    white;
+}
+
+.dark .page-hero-bg {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -10%,
+      hsl(217 91% 60% / 0.10) 0%,
+      transparent 100%
+    ),
     hsl(var(--background));
 }
 
-.dark .hero-gradient {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.2), transparent),
-    radial-gradient(ellipse 40% 30% at 80% 60%, hsl(35 92% 50% / 0.05), transparent),
-    hsl(var(--background));
+/* ── Gradient Hero Background (hero section) ── */
+.hero-gradient {
+  background: transparent;
 }
 
 /* ── Glass utility ── */
