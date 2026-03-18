@@ -36,7 +36,7 @@ export function Hero() {
             {/* Badge */}
             <motion.div
               custom={0} initial="hidden" animate="visible" variants={fadeUp}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm px-3.5 py-1.5 text-sm font-medium text-white/70 shadow-sm"
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 backdrop-blur-sm px-3.5 py-1.5 text-sm font-medium text-muted-foreground shadow-sm"
             >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -48,13 +48,13 @@ export function Hero() {
             {/* H1 */}
             <motion.h1
               custom={1} initial="hidden" animate="visible" variants={fadeUp}
-              className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-[3.4rem] lg:leading-[1.1] mb-6 font-geist bg-gradient-to-r from-white via-blue-100 to-blue-300 bg-clip-text text-transparent"
+              className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-[3.4rem] lg:leading-[1.1] mb-6 font-geist text-foreground dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-blue-300 dark:bg-clip-text dark:text-transparent"
             >
               Pazaryerinde gerçekten{' '}
-              <span className="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 bg-clip-text text-transparent">
                 kâr ediyor
               </span>{' '}
-              <span className="bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-400 dark:to-orange-500 bg-clip-text text-transparent">
                 musun?
               </span>
             </motion.h1>
@@ -62,7 +62,7 @@ export function Hero() {
             {/* Subtitle */}
             <motion.p
               custom={2} initial="hidden" animate="visible" variants={fadeUp}
-              className="mb-8 text-lg text-white/60 leading-relaxed max-w-xl mx-auto lg:mx-0"
+              className="mb-8 text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
             >
               Komisyon, kargo, reklam, iade, KDV dahil — net kâr ve risk puanı.
               Ürün başı gerçek kârını <strong className="text-foreground">2 dakikada</strong> gör.
@@ -86,7 +86,7 @@ export function Hero() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto h-12 px-8 text-base font-medium rounded-xl border-white/20 text-white/80 hover:bg-white/10 gap-2 transition-all duration-300"
+                  className="w-full sm:w-auto h-12 px-8 text-base font-medium rounded-xl gap-2 transition-all duration-300"
                 >
                   <Play className="h-4 w-4 fill-current" />
                   Demo İzle
@@ -97,7 +97,7 @@ export function Hero() {
             {/* Trust row */}
             <motion.div
               custom={4} initial="hidden" animate="visible" variants={fadeUp}
-              className="flex flex-wrap items-center gap-x-5 gap-y-2 justify-center lg:justify-start text-sm text-white/50"
+              className="flex flex-wrap items-center gap-x-5 gap-y-2 justify-center lg:justify-start text-sm text-muted-foreground"
             >
               {[
                 { icon: '🔒', text: 'Kredi kartı gerekmez' },
@@ -121,7 +121,7 @@ export function Hero() {
           >
             <div className="relative animate-float">
               {/* Main card */}
-              <div className="rounded-2xl border border-white/10 bg-[hsl(222,47%,9%)] backdrop-blur-sm shadow-2xl shadow-black/50 p-6 max-w-sm ml-auto">
+              <div className="rounded-2xl border border-border bg-card backdrop-blur-sm shadow-2xl shadow-black/50 p-6 max-w-sm ml-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                   <div>
@@ -175,7 +175,7 @@ export function Hero() {
 
               {/* Floating risk badge */}
               <div
-                className="absolute -top-4 -left-8 rounded-xl bg-[hsl(222,47%,9%)] border border-white/10 px-3.5 py-2.5 shadow-xl shadow-black/40"
+                className="absolute -top-4 -left-8 rounded-xl bg-card border border-border px-3.5 py-2.5 shadow-xl shadow-black/40"
                 style={{ animationDelay: '1.5s' }}
               >
                 <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export function Hero() {
               </div>
 
               {/* Floating profit badge */}
-              <div className="absolute -bottom-4 -right-4 rounded-xl bg-[hsl(222,47%,9%)] border border-white/10 px-3.5 py-2.5 shadow-xl shadow-black/40">
+              <div className="absolute -bottom-4 -right-4 rounded-xl bg-card border border-border px-3.5 py-2.5 shadow-xl shadow-black/40">
                 <div className="flex items-center gap-2">
                   <div className="h-7 w-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                     <TrendingUp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />

@@ -58,7 +58,7 @@ export default function RootLayout({
           <div className="aurora-orb orb-2" />
           <div className="aurora-orb orb-3" />
         </div>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <AlertProvider>
               {children}
