@@ -40,27 +40,42 @@ const MARKETPLACE_CONFIG: Record<MarketplaceKey, {
     color: string;
     gradient: string;
     iconBg: string;
+    apiKeyLabel: string;
+    apiKeyPlaceholder: string;
+    apiSecretLabel: string;
+    apiSecretPlaceholder: string;
     sellerIdLabel: string;
     helpText: string;
     description: string;
+    testCredentials: { apiKey: string; apiSecret: string; sellerId: string };
 }> = {
     trendyol: {
         label: 'Trendyol',
         color: 'orange',
         gradient: 'from-orange-50/50 to-transparent dark:from-orange-950/20',
         iconBg: 'bg-orange-500 shadow-orange-500/20',
+        apiKeyLabel: 'API Key',
+        apiKeyPlaceholder: 'API Key giriniz',
+        apiSecretLabel: 'API Secret',
+        apiSecretPlaceholder: 'API Secret giriniz',
         sellerIdLabel: 'Satıcı ID',
         helpText: 'Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından API Key, API Secret ve Satıcı ID bilgilerinizi alabilirsiniz.',
         description: "Türkiye'nin en büyük pazaryeri",
+        testCredentials: { apiKey: 'TRENDYOL_TEST', apiSecret: 'TRENDYOL_SECRET', sellerId: '123456' },
     },
     hepsiburada: {
         label: 'Hepsiburada',
         color: 'purple',
         gradient: 'from-purple-50/50 to-transparent dark:from-purple-950/20',
         iconBg: 'bg-purple-600 shadow-purple-600/20',
+        apiKeyLabel: 'Kullanıcı Adı',
+        apiKeyPlaceholder: 'Merchant kullanıcı adınız',
+        apiSecretLabel: 'Şifre',
+        apiSecretPlaceholder: 'Merchant şifreniz',
         sellerIdLabel: 'Merchant ID',
-        helpText: 'Hepsiburada Satıcı Paneli → Hesap Bilgileri → Entegrasyon Bilgileri sayfasından API Key, API Secret ve Merchant ID bilgilerinizi alabilirsiniz.',
+        helpText: 'Hepsiburada Satıcı Paneli → Hesap Bilgileri → Entegrasyon Bilgileri sayfasından kullanıcı adı, şifre ve Merchant ID bilgilerinizi alabilirsiniz.',
         description: "Yüksek hacimli satıcı pazaryeri",
+        testCredentials: { apiKey: 'HB_TEST', apiSecret: 'HB_PASSWORD', sellerId: 'HB_MOCK_123' },
     },
 };
 
@@ -127,9 +142,19 @@ export default function MarketplacePage() {
         fetchStatus();
     }, [fetchStatus]);
 
+    const translateConnectionError = (status: number, message?: string): string => {
+        if (status === 401) return 'API bilgileri hatalı, lütfen kontrol edin.';
+        if (status === 403) return 'Bu hesabın API erişimi yok.';
+        if (status === 429) return 'İstek limiti aşıldı, lütfen bekleyip tekrar deneyin.';
+        if (message?.toLowerCase().includes('timeout') || message?.toLowerCase().includes('zaman aşım')) {
+            return 'Bağlantı zaman aşımına uğradı, tekrar deneyin.';
+        }
+        return message || 'Bağlantı testi başarısız.';
+    };
+
     const handleSave = async () => {
         if (!apiKey.trim() || !apiSecret.trim()) {
-            toast.error('API Key ve API Secret zorunludur.');
+            toast.error(`${mpConfig.apiKeyLabel} ve ${mpConfig.apiSecretLabel} zorunludur.`);
             return;
         }
 
@@ -212,12 +237,16 @@ export default function MarketplacePage() {
                 toast.success(data.message || 'Bağlantı başarılı!');
                 setLastLog(data.message);
             } else {
-                toast.error(data.message || data.error || 'Bağlantı testi başarısız.');
+                const friendlyMsg = translateConnectionError(res.status, data.message || data.error);
+                toast.error(friendlyMsg);
                 setLastLog(data.message || data.error);
             }
             fetchStatus();
-        } catch {
-            toast.error('Bağlantı testi sırasında hata oluştu.');
+        } catch (err: any) {
+            const msg = err?.message?.toLowerCase().includes('timeout')
+                ? 'Bağlantı zaman aşımına uğradı, tekrar deneyin.'
+                : 'Bağlantı testi sırasında hata oluştu.';
+            toast.error(msg);
         } finally {
             setTesting(false);
         }
@@ -387,7 +416,7 @@ export default function MarketplacePage() {
                                         </div>
                                         <div className="p-2 max-h-[300px] overflow-y-auto">
                                             {Object.entries(MARKETPLACE_CONFIG)
-                                                .filter(([k, v]) => v.label.toLowerCase().includes(searchQuery.toLowerCase()))
+                                                .filter(([, v]) => v.label.toLowerCase().includes(searchQuery.toLowerCase()))
                                                 .map(([key, config]) => {
                                                     const isSelected = selectedMarketplace === key;
                                                     return (
@@ -426,7 +455,12 @@ export default function MarketplacePage() {
                         {!loading && (
                             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium ${currentStatus.color}`}>
                                 {currentStatus.icon}
-                                <span>{currentStatus.label}</span>
+                                <span>
+                                    {currentStatus.label}
+                                    {isConnected && connection?.store_name && (
+                                        <span className="ml-1 opacity-75">— {connection.store_name}</span>
+                                    )}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -555,18 +589,34 @@ export default function MarketplacePage() {
                                     </div>
                                 </div>
 
+                                {/* Test Credentials Button */}
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const tc = mpConfig.testCredentials;
+                                            setApiKey(tc.apiKey);
+                                            setApiSecret(tc.apiSecret);
+                                            setSellerId(tc.sellerId);
+                                        }}
+                                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                                    >
+                                        Test kimlik bilgilerini kullan
+                                    </button>
+                                </div>
+
                                 {/* Form */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    {/* API Key */}
+                                    {/* API Key / Username */}
                                     <div className="space-y-2">
                                         <Label htmlFor="apiKey" className="text-sm font-medium">
-                                            API Key <span className="text-red-500">*</span>
+                                            {mpConfig.apiKeyLabel} <span className="text-red-500">*</span>
                                         </Label>
                                         <div className="relative">
                                             <Input
                                                 id="apiKey"
                                                 type={showApiKey ? 'text' : 'password'}
-                                                placeholder="API Key giriniz"
+                                                placeholder={mpConfig.apiKeyPlaceholder}
                                                 value={apiKey}
                                                 onChange={(e) => setApiKey(e.target.value)}
                                                 className="pr-10"
@@ -582,16 +632,16 @@ export default function MarketplacePage() {
                                         </div>
                                     </div>
 
-                                    {/* API Secret */}
+                                    {/* API Secret / Password */}
                                     <div className="space-y-2">
                                         <Label htmlFor="apiSecret" className="text-sm font-medium">
-                                            API Secret <span className="text-red-500">*</span>
+                                            {mpConfig.apiSecretLabel} <span className="text-red-500">*</span>
                                         </Label>
                                         <div className="relative">
                                             <Input
                                                 id="apiSecret"
                                                 type={showApiSecret ? 'text' : 'password'}
-                                                placeholder="API Secret giriniz"
+                                                placeholder={mpConfig.apiSecretPlaceholder}
                                                 value={apiSecret}
                                                 onChange={(e) => setApiSecret(e.target.value)}
                                                 className="pr-10"
