@@ -20,7 +20,7 @@ const LEGAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-[hsl(222,47%,3%)]">
+    <footer className="border-t border-border/50 bg-background">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -41,13 +41,13 @@ export function Footer() {
 
           {/* Ürün */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-white">Ürün</h4>
+            <h4 className="text-sm font-semibold text-foreground">Ürün</h4>
             <ul className="space-y-2.5">
               {PRODUCT_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/50 hover:text-white/80 transition-colors animated-underline inline-block"
+                    className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors animated-underline inline-block"
                   >
                     {link.label}
                   </Link>
@@ -58,13 +58,13 @@ export function Footer() {
 
           {/* Yasal */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-white">Yasal</h4>
+            <h4 className="text-sm font-semibold text-foreground">Yasal</h4>
             <ul className="space-y-2.5">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/50 hover:text-white/80 transition-colors animated-underline inline-block"
+                    className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors animated-underline inline-block"
                   >
                     {link.label}
                   </Link>
@@ -75,7 +75,7 @@ export function Footer() {
 
           {/* İletişim */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-white">İletişim</h4>
+            <h4 className="text-sm font-semibold text-foreground">İletişim</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 shrink-0 text-primary/70" />
@@ -102,11 +102,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/30">
+        <div className="mt-12 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground/60">
             © {new Date().getFullYear()} Kârnet · PayTR güvencesiyle · Veriler satılmaz
           </p>
-          <p className="text-xs text-white/30">
+          <p className="text-xs text-muted-foreground/60">
             Tüm hakları saklıdır.
           </p>
         </div>

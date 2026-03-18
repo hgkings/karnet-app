@@ -58,7 +58,7 @@ export function TrustTech() {
             <div
               key={card.title}
               className={`
-                group rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6
+                group rounded-2xl border border-border bg-card p-6
                 border-t-2 ${card.accent}
                 hover:border-primary/30 hover:shadow-md hover:shadow-black/20
                 transition-all duration-300
@@ -73,10 +73,10 @@ export function TrustTech() {
               >
                 {card.emoji}
               </div>
-              <h3 className="font-semibold text-white mb-2 text-sm md:text-base">
+              <h3 className="font-semibold text-foreground mb-2 text-sm md:text-base">
                 {card.title}
               </h3>
-              <p className="text-xs md:text-sm text-white/60 leading-relaxed">
+              <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
                 {card.desc}
               </p>
             </div>

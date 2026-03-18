@@ -64,7 +64,7 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group relative rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-6 shadow-sm hover:shadow-md hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
+              className="group relative rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
             >
               {/* Stars */}
               <div className="flex gap-0.5 mb-4">
@@ -73,7 +73,7 @@ export function Testimonials() {
                 ))}
               </div>
 
-              <blockquote className="mb-6 text-[15px] leading-relaxed text-white/80 italic">
+              <blockquote className="mb-6 text-[15px] leading-relaxed text-foreground/80 italic">
                 &ldquo;{t.quote}&rdquo;
               </blockquote>
 

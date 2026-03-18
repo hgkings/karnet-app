@@ -68,7 +68,7 @@ export function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="group flex flex-col items-center text-center w-full h-full rounded-2xl border border-white/8 bg-[hsl(222,47%,7%)] p-8 hover:border-primary/30 hover:shadow-md transition-all duration-300"
+                className="group flex flex-col items-center text-center w-full h-full rounded-2xl border border-border bg-card p-8 hover:border-primary/30 hover:shadow-md transition-all duration-300"
               >
                 {/* Numara badge */}
                 <span className={`text-5xl font-black mb-5 leading-none select-none bg-gradient-to-b from-primary to-primary/20 bg-clip-text text-transparent`}>
@@ -91,7 +91,7 @@ export function HowItWorks() {
 
               {/* Ok — sağ kenar, son kartta yok */}
               {i < steps.length - 1 && (
-                <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 items-center justify-center rounded-full bg-[hsl(222,47%,10%)] border border-white/10 shadow-sm">
+                <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 items-center justify-center rounded-full bg-muted border border-border shadow-sm">
                   <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}

@@ -37,7 +37,7 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section id="faq" className="py-24 bg-white/[0.02] border-y border-white/5">
+    <section id="faq" className="py-24 bg-muted/20 border-y border-border/50">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
 
         <motion.div
@@ -69,12 +69,12 @@ export function FAQSection() {
             >
               <AccordionItem
                 value={`faq-${i}`}
-                className="rounded-xl border border-white/8 bg-[hsl(222,47%,7%)] px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-sm transition-all"
+                className="rounded-xl border border-border bg-card px-5 data-[state=open]:border-primary/30 data-[state=open]:shadow-sm transition-all"
               >
-                <AccordionTrigger className="py-4 text-[15px] font-semibold text-white/80 hover:no-underline hover:text-primary text-left gap-4">
+                <AccordionTrigger className="py-4 text-[15px] font-semibold text-foreground/80 hover:no-underline hover:text-primary text-left gap-4">
                   {faq.q}
                 </AccordionTrigger>
-                <AccordionContent className="pb-4 text-sm text-white/55 leading-relaxed">
+                <AccordionContent className="pb-4 text-sm text-muted-foreground leading-relaxed">
                   {faq.a}
                 </AccordionContent>
               </AccordionItem>

@@ -60,7 +60,7 @@ export function SuccessMetrics() {
               <span className="text-4xl md:text-5xl font-bold text-primary leading-none">
                 <CountUp target={m.number} suffix={m.suffix} duration={m.duration} />
               </span>
-              <span className="text-sm text-white/60 font-medium">
+              <span className="text-sm text-muted-foreground font-medium">
                 {m.label}
               </span>
             </div>
