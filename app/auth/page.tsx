@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,44 +11,149 @@ import { LiveAnalysisShowcase } from '@/components/auth/live-analysis-showcase';
 import { Label } from '@/components/ui/label';
 import {
   Eye, EyeOff, HelpCircle, BarChart3, ShieldAlert, Layers,
-  Star, BadgeCheck, Zap, CreditCard, Lock as LockIcon, Users, ArrowRight,
+  Star, BadgeCheck, Zap, CreditCard, Lock as LockIcon, Users, ArrowRight, Check,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function AuthPage() {
+// ── Hata mesajları: Supabase error → Türkçe ──
+function translateError(err: string): string {
+  const e = err.toLowerCase();
+  if (e.includes('invalid login credentials') || e.includes('invalid credentials') || e.includes('giris hatasi')) {
+    return 'E-posta veya şifre hatalı.';
+  }
+  if (e.includes('email not confirmed') || e.includes('email_not_confirmed')) {
+    return 'E-postanızı doğrulamanız gerekiyor. Gelen kutunuzu kontrol edin.';
+  }
+  if (e.includes('too many requests') || e.includes('rate limit') || e.includes('over_email_send_rate_limit')) {
+    return 'Çok fazla deneme yaptınız. Lütfen bekleyin.';
+  }
+  if (e.includes('user already registered') || e.includes('already registered')) {
+    return 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
+  }
+  if (e.includes('password') && (e.includes('characters') || e.includes('karakter'))) {
+    return 'Şifre en az 8 karakter olmalıdır.';
+  }
+  if (e.includes('kayit hatasi') || e.includes('kayıt hatası')) {
+    return 'Kayıt başarısız. Lütfen tekrar deneyin.';
+  }
+  return 'Bir hata oluştu. Lütfen tekrar deneyin.';
+}
+
+// ── Şifre güç hesaplayıcı ──
+function getPasswordStrength(pwd: string): { level: 0 | 1 | 2 | 3; label: string } {
+  if (pwd.length === 0) return { level: 0, label: '' };
+  if (pwd.length < 8) return { level: 1, label: 'Zayıf' };
+  const hasUpper = /[A-Z]/.test(pwd);
+  const hasLower = /[a-z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  if (pwd.length >= 12 && hasUpper && hasLower && hasNumber) return { level: 3, label: 'Güçlü' };
+  return { level: 2, label: 'Orta' };
+}
+
+function AuthPageContent() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [capsLockOn, setCapsLockOn] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
   const { login, register, user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = (() => {
+    const next = searchParams.get('next') ?? '/dashboard';
+    return (next.startsWith('/') && !next.startsWith('//') && !next.includes('://')) ? next : '/dashboard';
+  })();
 
   if (user) {
-    router.push('/dashboard');
+    router.replace(returnUrl);
     return null;
   }
+
+  const switchMode = (m: 'login' | 'register') => {
+    setMode(m);
+    setError('');
+    setPassword('');
+    setConfirmPassword('');
+    setFullName('');
+    setAcceptTerms(false);
+  };
+
+  const handleCapsLockCheck = useCallback((e: React.KeyboardEvent) => {
+    setCapsLockOn(e.getModifierState('CapsLock'));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+
     const trimmedEmail = email.trim();
+    const trimmedName = fullName.trim();
+
     if (!trimmedEmail || !password) {
       setError('E-posta ve şifre gereklidir.');
-      setLoading(false);
       return;
     }
-    const result = mode === 'login'
-      ? await login(trimmedEmail, password)
-      : await register(trimmedEmail, password);
-    if (result.success) {
-      router.push('/dashboard');
-    } else {
-      setError(result.error || 'Bir hata oluştu.');
+
+    if (mode === 'register') {
+      if (!trimmedName) {
+        setError('Ad Soyad alanı zorunludur.');
+        return;
+      }
+      if (password.length < 8) {
+        setError('Şifre en az 8 karakter olmalıdır.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Şifreler eşleşmiyor.');
+        return;
+      }
+      if (!acceptTerms) {
+        setError('Devam etmek için kullanım şartlarını kabul etmeniz gerekiyor.');
+        return;
+      }
     }
+
+    setLoading(true);
+
+    if (mode === 'login') {
+      const result = await login(trimmedEmail, password);
+      if (result.success) {
+        router.push(returnUrl);
+      } else {
+        setError(translateError(result.error || ''));
+      }
+    } else {
+      const result = await register(trimmedEmail, password);
+      if (result.success) {
+        // Profili full_name ile güncelle (hata olursa sessizce geç)
+        try {
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (authUser) {
+            await supabase.from('profiles').update({ full_name: trimmedName }).eq('id', authUser.id);
+          }
+        } catch {}
+
+        // Oturum açıldı mı yoksa email doğrulaması mı gerekiyor?
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          router.push(returnUrl);
+        } else {
+          router.push(`/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
+        }
+      } else {
+        setError(translateError(result.error || ''));
+      }
+    }
+
     setLoading(false);
   };
 
@@ -57,9 +162,28 @@ export default function AuthPage() {
     setError('');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}` },
     });
-    if (error) { setError(error.message); setGoogleLoading(false); }
+    if (error) {
+      console.error('[Google OAuth]', error.message);
+      setError('Google ile giriş başarısız. Lütfen tekrar deneyin.');
+      setGoogleLoading(false);
+    }
+  };
+
+  const pwdStrength = mode === 'register' ? getPasswordStrength(password) : null;
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
+  const strengthColors: Record<1 | 2 | 3, string> = {
+    1: 'bg-red-500',
+    2: 'bg-amber-500',
+    3: 'bg-emerald-500',
+  };
+  const strengthTextColors: Record<1 | 2 | 3, string> = {
+    1: 'text-red-600 dark:text-red-400',
+    2: 'text-amber-600 dark:text-amber-400',
+    3: 'text-emerald-600 dark:text-emerald-400',
   };
 
   return (
@@ -67,7 +191,6 @@ export default function AuthPage() {
 
       {/* ── LEFT PANEL (desktop only) — dark gradient with product context ── */}
       <div className="hidden lg:flex w-[45%] relative flex-col justify-center px-10 xl:px-14 py-12 overflow-hidden">
-        {/* Gradient background — koyu lacivert */}
         <div
           className="absolute inset-0"
           style={{
@@ -80,12 +203,10 @@ export default function AuthPage() {
         />
 
         <div className="relative z-10 max-w-md mx-auto space-y-8">
-          {/* Logo */}
           <div>
             <img src="/brand/logo-dark.svg" alt="Kârnet" className="h-9 w-auto" />
           </div>
 
-          {/* Headline */}
           <div className="space-y-3">
             <h1 className="text-3xl font-bold text-white leading-tight font-geist">
               Pazaryerinde gerçekten<br />
@@ -96,7 +217,6 @@ export default function AuthPage() {
             </p>
           </div>
 
-          {/* Feature bullets */}
           <div className="space-y-3">
             {[
               { icon: BarChart3, text: 'Net kâr & kâr marjı', color: 'text-blue-300' },
@@ -112,10 +232,8 @@ export default function AuthPage() {
             ))}
           </div>
 
-          {/* Live Analysis Showcase */}
           <LiveAnalysisShowcase />
 
-          {/* Compact Testimonials */}
           <div className="space-y-3">
             <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Yorumlar</span>
             <div className="grid gap-3">
@@ -140,7 +258,6 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* Trust — ikon + yazı satırları (SORUN 6) */}
           <div className="mt-8 flex flex-col gap-3">
             <div className="flex items-center gap-3 text-white/90">
               <span className="text-lg">🔒</span>
@@ -209,7 +326,7 @@ export default function AuthPage() {
                 variant="outline"
                 className="w-full h-11 text-sm font-medium rounded-xl gap-3 border-border hover:bg-muted/60 transition-all mb-1"
                 onClick={handleGoogleSignIn}
-                disabled={googleLoading}
+                disabled={googleLoading || loading}
               >
                 {googleLoading ? (
                   <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -235,6 +352,26 @@ export default function AuthPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+
+                {/* Ad Soyad — sadece kayıt modunda */}
+                {mode === 'register' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-sm font-medium">Ad Soyad</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="Adınız Soyadınız"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="h-11 rounded-lg"
+                      autoComplete="name"
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+
+                {/* E-posta */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium">E-posta</Label>
                   <Input
@@ -246,14 +383,21 @@ export default function AuthPage() {
                     required
                     className="h-11 rounded-lg"
                     autoComplete="email"
+                    disabled={loading}
                   />
                 </div>
 
+                {/* Şifre */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="text-sm font-medium">Şifre</Label>
                     {mode === 'login' && (
-                      <Link href="#" className="text-xs text-primary hover:underline">Şifremi unuttum</Link>
+                      <Link
+                        href="/auth/forgot-password"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Şifremi unuttum
+                      </Link>
                     )}
                   </div>
                   <div className="relative">
@@ -262,21 +406,131 @@ export default function AuthPage() {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={handleCapsLockCheck}
+                      onKeyUp={handleCapsLockCheck}
                       required
-                      minLength={6}
+                      minLength={mode === 'register' ? 8 : 1}
                       className="h-11 rounded-lg pr-10"
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                      disabled={loading}
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+
+                  {/* Caps Lock uyarısı */}
+                  {capsLockOn && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      ⚠️ Caps Lock açık
+                    </p>
+                  )}
+
+                  {/* Şifre güç göstergesi — sadece kayıt modunda */}
+                  {mode === 'register' && pwdStrength && pwdStrength.level > 0 && (
+                    <div className="space-y-1 pt-0.5">
+                      <div className="flex gap-1">
+                        {([1, 2, 3] as const).map((n) => (
+                          <div
+                            key={n}
+                            className={`h-1 flex-1 rounded-full transition-all ${
+                              n <= pwdStrength.level
+                                ? strengthColors[pwdStrength.level as 1 | 2 | 3]
+                                : 'bg-muted'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className={`text-xs font-medium ${strengthTextColors[pwdStrength.level as 1 | 2 | 3]}`}>
+                        {pwdStrength.label}
+                        {pwdStrength.level === 1 && ' — 8+ karakter kullanın'}
+                        {pwdStrength.level === 2 && ' — büyük/küçük harf ve rakam ekleyin'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
+                {/* Şifre tekrar — sadece kayıt modunda */}
+                {mode === 'register' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-sm font-medium">Şifre Tekrar</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirm ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        className={`h-11 rounded-lg pr-10 ${
+                          passwordsMismatch ? 'border-red-400 dark:border-red-500 focus-visible:ring-red-400' : ''
+                        } ${
+                          passwordsMatch ? 'border-emerald-400 dark:border-emerald-500 focus-visible:ring-emerald-400' : ''
+                        }`}
+                        autoComplete="new-password"
+                        disabled={loading}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        tabIndex={-1}
+                      >
+                        {passwordsMatch ? (
+                          <Check className="h-4 w-4 text-emerald-500" />
+                        ) : showConfirm ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {passwordsMismatch && (
+                      <p className="text-xs text-red-600 dark:text-red-400">Şifreler eşleşmiyor.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Beni hatırla — sadece giriş modunda */}
+                {mode === 'login' && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="rememberMe"
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                    />
+                    <Label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer select-none">
+                      Beni hatırla
+                    </Label>
+                  </div>
+                )}
+
+                {/* Kullanım şartları — sadece kayıt modunda */}
+                {mode === 'register' && (
+                  <div className="flex items-start gap-2">
+                    <input
+                      id="acceptTerms"
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      className="h-4 w-4 mt-0.5 rounded border-border accent-primary cursor-pointer shrink-0"
+                    />
+                    <Label htmlFor="acceptTerms" className="text-sm text-muted-foreground cursor-pointer select-none leading-relaxed">
+                      <Link href="/kullanim-sartlari" className="text-primary hover:underline" target="_blank">Kullanım Şartları</Link>
+                      {' '}ve{' '}
+                      <Link href="/gizlilik-politikasi" className="text-primary hover:underline" target="_blank">Gizlilik Politikası</Link>
+                      &apos;nı okudum, kabul ediyorum.
+                    </Label>
+                  </div>
+                )}
+
+                {/* Hata mesajı */}
                 {error && (
                   <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2 dark:bg-red-950/50 dark:border-red-900 dark:text-red-400">
                     <HelpCircle className="h-4 w-4 shrink-0" />
@@ -287,16 +541,16 @@ export default function AuthPage() {
                 <Button
                   type="submit"
                   className="w-full h-11 text-sm font-semibold rounded-xl btn-shine shadow-sm transition-all gap-2"
-                  disabled={loading}
+                  disabled={loading || (mode === 'register' && !acceptTerms)}
                 >
                   {loading ? (
                     <>
                       <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      İşleniyor...
+                      {mode === 'login' ? 'Giriş Yapılıyor...' : 'Hesap Oluşturuluyor...'}
                     </>
                   ) : (
                     <>
-                      {mode === 'login' ? 'Giriş Yap' : 'Hemen Başla'}
+                      {mode === 'login' ? 'Giriş Yap' : 'Hesap Oluştur'}
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
@@ -308,14 +562,14 @@ export default function AuthPage() {
                 {mode === 'login' ? (
                   <p className="text-muted-foreground">
                     Hesabınız yok mu?{' '}
-                    <button onClick={() => setMode('register')} className="font-semibold text-primary hover:underline">
+                    <button onClick={() => switchMode('register')} className="font-semibold text-primary hover:underline">
                       Ücretsiz Kayıt Ol
                     </button>
                   </p>
                 ) : (
                   <p className="text-muted-foreground">
                     Zaten üye misiniz?{' '}
-                    <button onClick={() => setMode('login')} className="font-semibold text-primary hover:underline">
+                    <button onClick={() => switchMode('login')} className="font-semibold text-primary hover:underline">
                       Giriş Yap
                     </button>
                   </p>
@@ -361,5 +615,13 @@ export default function AuthPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthPageContent />
+    </Suspense>
   );
 }
