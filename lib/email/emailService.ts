@@ -6,7 +6,7 @@ async function getSupabaseAdmin() {
     return supabaseAdmin;
 }
 
-const MAIL_REPLY_TO = () => process.env.MAIL_REPLY_TO || 'destek@kârnet.com';
+const MAIL_REPLY_TO = () => process.env.MAIL_REPLY_TO || 'karnet.destek@gmail.com';
 
 export interface SendEmailOptions {
     to: string;

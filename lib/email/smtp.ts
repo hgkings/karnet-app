@@ -30,7 +30,7 @@ export async function sendEmail({
       subject,
       html,
       text,
-      replyTo: replyTo ?? 'destek@kârnet.com',
+      replyTo: replyTo ?? 'karnet.destek@gmail.com',
     })
     console.log('Email sent:', info.messageId)
     return { success: true, messageId: info.messageId }
