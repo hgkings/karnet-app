@@ -178,13 +178,14 @@ export async function register(
     // Force profile creation
     const user = await fetchProfile(data.user.id, data.user.email);
 
-    // Welcome email gönder (kayıt akışını etkilemez)
+    // Welcome email gönder (API üzerinden, kayıt akışını etkilemez)
     try {
-      const { emailService } = await import('./email/emailService');
-      await emailService.sendWelcomeEmail({ email: data.user.email, name: data.user.email.split('@')[0], id: data.user.id });
-    } catch (emailErr) {
-      console.error('[Register] Welcome email gönderilemedi:', emailErr);
-    }
+      fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: data.user.id, email: data.user.email }),
+      }).catch(() => {});
+    } catch {}
 
     return { success: true, user };
   } catch (err: any) {
