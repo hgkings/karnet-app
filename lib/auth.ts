@@ -1,13 +1,14 @@
 import { User, PlanType, Marketplace } from '@/types';
 import { supabase } from './supabaseClient';
 
-const PROFILE_SELECT_FULL = 'id, email, plan, pro_until, pro_expires_at, pro_renewal, pro_started_at, email_notifications_enabled, target_margin, margin_alert, default_marketplace, default_commission, default_vat, monthly_profit_target, default_return_rate, default_ads_cost, fixed_cost_monthly, target_profit_monthly';
+const PROFILE_SELECT_FULL = 'id, email, plan, pro_until, pro_expires_at, pro_renewal, pro_started_at, email_notifications_enabled, target_margin, margin_alert, default_marketplace, default_commission, default_vat, monthly_profit_target, default_return_rate, default_ads_cost, fixed_cost_monthly, target_profit_monthly, email_weekly_report, email_risk_alert, email_margin_alert, email_pro_expiry';
 const PROFILE_SELECT_CORE = 'id, email, plan, pro_until, pro_expires_at, pro_renewal, pro_started_at, email_notifications_enabled';
 
 // Preference keys that may not exist as DB columns yet
 const PREF_KEYS: (keyof User)[] = [
   'target_margin', 'margin_alert', 'default_marketplace', 'default_commission', 'default_vat', 'monthly_profit_target', 'default_return_rate', 'default_ads_cost',
-  'fixed_cost_monthly', 'target_profit_monthly'
+  'fixed_cost_monthly', 'target_profit_monthly',
+  'email_weekly_report', 'email_risk_alert', 'email_margin_alert', 'email_pro_expiry'
 ];
 
 function mapProfileRow(data: any): User {
@@ -30,6 +31,10 @@ function mapProfileRow(data: any): User {
     default_ads_cost: data.default_ads_cost ?? undefined,
     fixed_cost_monthly: data.fixed_cost_monthly ?? undefined,
     target_profit_monthly: data.target_profit_monthly ?? undefined,
+    email_weekly_report: data.email_weekly_report ?? true,
+    email_risk_alert: data.email_risk_alert ?? true,
+    email_margin_alert: data.email_margin_alert ?? true,
+    email_pro_expiry: data.email_pro_expiry ?? true,
   };
 }
 async function ensureProfile(userId: string, email: string): Promise<User> {
@@ -172,6 +177,15 @@ export async function register(
 
     // Force profile creation
     const user = await fetchProfile(data.user.id, data.user.email);
+
+    // Welcome email gönder (kayıt akışını etkilemez)
+    try {
+      const { emailService } = await import('./email/emailService');
+      await emailService.sendWelcomeEmail({ email: data.user.email, name: data.user.email.split('@')[0], id: data.user.id });
+    } catch (emailErr) {
+      console.error('[Register] Welcome email gönderilemedi:', emailErr);
+    }
+
     return { success: true, user };
   } catch (err: any) {
     return { success: false, error: `Beklenmeyen hata: ${err.message || err}` };
