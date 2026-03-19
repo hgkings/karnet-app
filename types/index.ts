@@ -15,6 +15,11 @@ export interface User {
   // Account preferences
   target_margin?: number;
   margin_alert?: boolean;
+  // Email preferences
+  email_weekly_report?: boolean;
+  email_risk_alert?: boolean;
+  email_margin_alert?: boolean;
+  email_pro_expiry?: boolean;
   default_marketplace?: Marketplace;
   default_commission?: number;
   default_vat?: number;

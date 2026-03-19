@@ -70,9 +70,11 @@ export default function SettingsPage() {
     // — Billing —
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
-    // — Notifications —
-    const [emailNotif, setEmailNotif] = useState(user?.email_notifications_enabled !== false);
-    const [marginAlert, setMarginAlert] = useState(user?.margin_alert ?? false);
+    // — Notifications (tercihli) —
+    const [weeklyReport, setWeeklyReport] = useState(user?.email_weekly_report !== false);
+    const [riskAlert, setRiskAlert] = useState(user?.email_risk_alert !== false);
+    const [marginAlert, setMarginAlert] = useState(user?.email_margin_alert !== false);
+    const [proExpiry, setProExpiry] = useState(user?.email_pro_expiry !== false);
 
     // — Analysis Defaults —
     const [defaultMp, setDefaultMp] = useState<Marketplace>(user?.default_marketplace ?? 'trendyol');
@@ -97,8 +99,10 @@ export default function SettingsPage() {
     // Seed state from user
     useEffect(() => {
         if (user) {
-            setEmailNotif(user.email_notifications_enabled !== false);
-            setMarginAlert(user.margin_alert ?? false);
+            setWeeklyReport(user.email_weekly_report !== false);
+            setRiskAlert(user.email_risk_alert !== false);
+            setMarginAlert(user.email_margin_alert !== false);
+            setProExpiry(user.email_pro_expiry !== false);
             setDefaultMp(user.default_marketplace ?? 'trendyol');
             setDefaultCommission(user.default_commission ?? 12);
             setDefaultVat(user.default_vat ?? 20);
@@ -368,50 +372,108 @@ export default function SettingsPage() {
                             <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="font-semibold">E-posta Sistemi (karnet.com)</h2>
-                            <p className="text-xs text-muted-foreground">Kârnet resmi e-posta bildirim sistemi ayarları.</p>
+                            <h2 className="font-semibold">E-posta Bildirimleri</h2>
+                            <p className="text-xs text-muted-foreground">Hangi e-postaları almak istediğinizi yönetin.</p>
                         </div>
                     </div>
 
-                    {/* Brevo DNS Setup Guide */}
-                    <div className="rounded-xl border bg-blue-50/50 dark:bg-blue-950/20 p-4 space-y-3">
-                        <div className="flex items-center gap-2">
-                            <Shield className="h-4 w-4 text-blue-600" />
-                            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Domain Doğrulaması (DNS)</p>
+                    {/* BÖLÜM 1 — Hesap Bildirimleri (zorunlu) */}
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pb-1">Hesap Bildirimleri</p>
+                        {[
+                            { label: 'Hoş geldin e-postası', desc: 'Kayıt olduğunuzda gönderilir.' },
+                            { label: 'E-posta doğrulama', desc: 'Hesap doğrulama linki.' },
+                            { label: 'Şifre sıfırlama', desc: 'Şifre sıfırlama linki.' },
+                            { label: 'Pro plan aktivasyonu', desc: 'Pro plan aktif olduğunda bildirim.' },
+                            { label: 'Pro plan sona erme', desc: 'Pro planınız sona erdiğinde bildirim.' },
+                        ].map((item, i) => (
+                            <div key={i} className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium flex items-center gap-2">
+                                        {item.label}
+                                        <span className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2 py-0.5">Zorunlu</span>
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                                </div>
+                                <Switch checked={true} disabled className="opacity-50" />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="divider border-t border-border" />
+
+                    {/* BÖLÜM 2 — Tercihli Bildirimler */}
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pb-1">Tercihli Bildirimler</p>
+
+                        {/* Haftalık Özet Raporu */}
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                            <div className="flex-1">
+                                <p className="text-sm font-medium">Haftalık Özet Raporu</p>
+                                <p className="text-xs text-muted-foreground">Her hafta performans özeti e-posta ile gönderilir.</p>
+                            </div>
+                            <Switch
+                                checked={weeklyReport}
+                                onCheckedChange={async (v) => {
+                                    setWeeklyReport(v);
+                                    await save({ email_weekly_report: v }, `Haftalık özet ${v ? 'açıldı' : 'kapatıldı'}.`);
+                                }}
+                            />
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
-                            Kârnet e-postalarının (örn. <code>no-reply@kârnet.com</code>) spam kutusuna düşmemesi için Brevo panelindeki aşağıdaki TXT kayıtlarının kârnet.com DNS ayarlarınıza (örn. Cloudflare) eklenmiş olması gerekir.
-                        </p>
-                        <div className="space-y-2 mt-2 font-mono text-[10px] bg-background/50 p-3 rounded-lg border border-border/50">
-                            <div className="flex justify-between items-center border-b pb-1">
-                                <span className="text-muted-foreground">Tür</span>
-                                <span className="text-muted-foreground">Ad (Host)</span>
-                                <span className="text-muted-foreground">Değer (Value)</span>
+
+                        {/* Zarar Eden Ürün Tespiti */}
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                            <div className="flex-1">
+                                <p className="text-sm font-medium">Zarar Eden Ürün Tespiti</p>
+                                <p className="text-xs text-muted-foreground">Zarar eden ürün tespit edildiğinde uyarı gönderir.</p>
                             </div>
-                            <div className="flex justify-between items-center py-1 border-b border-dashed border-border/50">
-                                <span>TXT</span>
-                                <span className="font-semibold px-2">mail._domainkey</span>
-                                <span className="truncate max-w-[200px] text-muted-foreground" title="Brevo panelinizden DKIM kaydını alın">p=MIGfMA0GCSqGSIb3...</span>
+                            <Switch
+                                checked={riskAlert}
+                                onCheckedChange={async (v) => {
+                                    setRiskAlert(v);
+                                    await save({ email_risk_alert: v }, `Zarar uyarısı ${v ? 'açıldı' : 'kapatıldı'}.`);
+                                }}
+                            />
+                        </div>
+
+                        {/* Hedef Marj Uyarısı */}
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                            <div className="flex-1">
+                                <p className="text-sm font-medium">Hedef Marj Uyarısı</p>
+                                <p className="text-xs text-muted-foreground">Marj, belirlediğiniz hedefin altına düşerse uyarır.</p>
                             </div>
-                            <div className="flex justify-between items-center py-1 border-b border-dashed border-border/50">
-                                <span>TXT</span>
-                                <span className="font-semibold px-2">_dmarc</span>
-                                <span className="truncate max-w-[200px] text-muted-foreground">v=DMARC1; p=none;</span>
+                            <Switch
+                                checked={marginAlert}
+                                onCheckedChange={async (v) => {
+                                    setMarginAlert(v);
+                                    await save({ email_margin_alert: v }, `Marj uyarısı ${v ? 'açıldı' : 'kapatıldı'}.`);
+                                }}
+                            />
+                        </div>
+
+                        {/* Pro Bitiş Hatırlatıcısı */}
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                            <div className="flex-1">
+                                <p className="text-sm font-medium">Pro Bitiş Hatırlatıcısı</p>
+                                <p className="text-xs text-muted-foreground">Pro planınız bitmeden 7 ve 1 gün önce hatırlatma gönderir.</p>
                             </div>
-                            <div className="flex justify-between items-center py-1">
-                                <span className="text-[9px] text-amber-600 flex items-center gap-1 mt-1">
-                                    <AlertTriangle className="h-3 w-3" />
-                                    Not: Kârnet.com üretim (prod) ortamı için bu ayarlar zorunludur.
-                                </span>
-                            </div>
+                            <Switch
+                                checked={proExpiry}
+                                onCheckedChange={async (v) => {
+                                    setProExpiry(v);
+                                    await save({ email_pro_expiry: v }, `Pro bitiş hatırlatıcısı ${v ? 'açıldı' : 'kapatıldı'}.`);
+                                }}
+                            />
                         </div>
                     </div>
 
-                    {/* Test Delivery */}
+                    <div className="divider border-t border-border" />
+
+                    {/* Sistem Testi */}
                     <div className="rounded-xl border border-border p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
                         <div>
                             <p className="text-sm font-medium flex items-center gap-1.5">Sistem Testi <CheckCircle2 className="h-4 w-4 text-emerald-500" /></p>
-                            <p className="text-xs text-muted-foreground"><strong>{user.email}</strong> adresinize test e-postası (Brevo SMTP üzerinden) gönderin.</p>
+                            <p className="text-xs text-muted-foreground">Test e-postası gönder (Brevo SMTP)</p>
                         </div>
                         <Button
                             variant="outline"
@@ -422,12 +484,7 @@ export default function SettingsPage() {
                                 try {
                                     const res = await fetch('/api/email/test', {
                                         method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            // In a real app we might pass the token directly if not using cookies properly, 
-                                            // but let's assume auth is somewhat handled or simulated here.
-                                            // We'll bypass auth for this specific test endpoint structure for demonstration if it fails.
-                                        },
+                                        headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ template: 'test_email' })
                                     });
                                     const data = await res.json();
@@ -445,61 +502,6 @@ export default function SettingsPage() {
                             <Mail className="h-4 w-4 mr-2" />
                             Test Gönder
                         </Button>
-                    </div>
-
-                    <div className="space-y-1">
-                        {/* Weekly report */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors group relative">
-                            <div className="flex-1">
-                                <p className="text-sm font-medium">Haftalık Özet Raporu</p>
-                                <p className="text-xs text-muted-foreground">Her hafta performans özeti e-posta ile gönderilir.</p>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                                {!isPro && (
-                                    <span className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                                        Pro&apos;da aktif
-                                    </span>
-                                )}
-                                <Switch
-                                    checked={emailNotif}
-                                    onCheckedChange={async (v) => {
-                                        setEmailNotif(v);
-                                        await save({ email_notifications_enabled: v }, `Haftalık özet ${v ? 'açıldı' : 'kapatıldı'}.`);
-                                    }}
-                                    disabled={!isPro}
-                                    className={!isPro ? "opacity-50" : ""}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Margin alert */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
-                            <div className="flex-1">
-                                <p className="text-sm font-medium">Hedef Marj Uyarısı</p>
-                                <p className="text-xs text-muted-foreground">Marj, belirlediğiniz hedefin altına düşerse uyarır.</p>
-                            </div>
-                            <Switch
-                                checked={marginAlert}
-                                onCheckedChange={async (v) => {
-                                    setMarginAlert(v);
-                                    await save({ margin_alert: v }, `Marj uyarısı ${v ? 'açıldı' : 'kapatıldı'}.`);
-                                }}
-                            />
-                        </div>
-
-                        {/* Loss detection */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
-                            <div className="flex-1">
-                                <p className="text-sm font-medium">Zarar Eden Ürün Tespiti</p>
-                                <p className="text-xs text-muted-foreground">Zarar eden ürün tespit edildiğinde ACİL uyarı gönderir.</p>
-                            </div>
-                            <Switch
-                                checked={true}
-                                disabled
-                                className="opacity-70"
-                                title="Bu özellik güvenlik nedeniyle her zaman aktiftir."
-                            />
-                        </div>
                     </div>
                 </section>
 

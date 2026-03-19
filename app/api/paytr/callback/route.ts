@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { emailService } from '@/lib/email/emailService';
 
 export async function POST(req: Request) {
     console.log('[PayTR Callback] ========== Callback alındı ==========');
@@ -124,6 +125,25 @@ export async function POST(req: Request) {
                 console.error('[PayTR Callback] ❌ Profil güncelleme hatası:', JSON.stringify(profileErr));
             } else {
                 console.log(`[PayTR Callback] ✅ Profil Pro yapıldı: user_id=${payment.user_id}, plan_type=${planType}, pro_until=${proUntil}`);
+
+                // Pro aktivasyon emaili gönder (ödeme akışını etkilemez, hata olsa bile devam eder)
+                try {
+                    const { data: userProfile } = await supabase
+                        .from('profiles')
+                        .select('email, name')
+                        .eq('id', payment.user_id)
+                        .single();
+
+                    if (userProfile?.email) {
+                        await emailService.sendProActivated(
+                            { email: userProfile.email, name: userProfile.name, id: payment.user_id },
+                            { planType, expiresAt: new Date(proUntil).toLocaleDateString('tr-TR') }
+                        );
+                        console.log(`[PayTR Callback] ✅ Pro aktivasyon emaili gönderildi: ${userProfile.email}`);
+                    }
+                } catch (emailErr: any) {
+                    console.error('[PayTR Callback] ⚠️ Pro aktivasyon emaili gönderilemedi (ödeme başarılı):', emailErr?.message);
+                }
             }
         } else {
             console.log(`[PayTR Callback] ⚠️ Status success değil: "${status}"`);
