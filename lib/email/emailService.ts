@@ -1,13 +1,4 @@
-import { Resend } from 'resend';
-
-// Lazy Resend instantiation — only create when actually needed
-let _resend: Resend | null = null;
-function getResend(): Resend {
-    if (!_resend) {
-        _resend = new Resend(process.env.RESEND_API_KEY || 'missing_key');
-    }
-    return _resend;
-}
+import { sendEmail as smtpSendEmail } from './smtp';
 
 // Lazy Supabase admin — only import when actually needed
 async function getSupabaseAdmin() {
@@ -15,8 +6,7 @@ async function getSupabaseAdmin() {
     return supabaseAdmin;
 }
 
-const MAIL_FROM = () => process.env.MAIL_FROM || 'Kârnet <no-reply@karnet.com>';
-const MAIL_REPLY_TO = () => process.env.MAIL_REPLY_TO || 'destek@karnet.com';
+const MAIL_REPLY_TO = () => process.env.MAIL_REPLY_TO || 'destek@kârnet.com';
 
 export interface SendEmailOptions {
     to: string;
@@ -29,43 +19,34 @@ export interface SendEmailOptions {
 }
 
 export const emailService = {
-    async sendEmail({ to, subject, html, text, tags = [], templateName, userId }: SendEmailOptions) {
+    async sendEmail({ to, subject, html, text, templateName, userId }: SendEmailOptions) {
 
-        if (!process.env.RESEND_API_KEY) {
-            const errorMsg = 'RESEND_API_KEY is missing. Cannot send email.';
+        if (!process.env.BREVO_SMTP_USER || !process.env.BREVO_SMTP_KEY) {
+            const errorMsg = 'BREVO_SMTP_USER veya BREVO_SMTP_KEY eksik. E-posta gönderilemez.';
             console.error(errorMsg);
             await this.logEmailAttempt(userId, to, templateName, subject, 'failed', null, errorMsg);
             throw new Error(errorMsg);
         }
 
-        const defaultTags = [{ name: 'template', value: templateName }];
-        const mergedTags = [...defaultTags, ...tags];
-
         try {
-            const resend = getResend();
-            const { data, error } = await resend.emails.send({
-                from: MAIL_FROM(),
+            const result = await smtpSendEmail({
                 to,
-                replyTo: MAIL_REPLY_TO(),
                 subject,
                 html,
-                text: text || '',
-                tags: mergedTags
+                text,
+                replyTo: MAIL_REPLY_TO(),
             });
 
-            if (error) {
-                console.error(`[Resend Error] Failed to send email to ${to}:`, error);
-                await this.logEmailAttempt(userId, to, templateName, subject, 'failed', null, error.message);
-                throw new Error(`Resend Error: ${error.message}`);
+            if (!result.success) {
+                const errorMsg = String(result.error) || 'SMTP gönderim hatası';
+                console.error(`[SMTP Error] Failed to send email to ${to}:`, result.error);
+                await this.logEmailAttempt(userId, to, templateName, subject, 'failed', null, errorMsg);
+                throw new Error(`SMTP Error: ${errorMsg}`);
             }
 
-            if (data && data.id) {
-                console.log(`[Email Sent] Successfully sent ${templateName} to ${to} (ID: ${data.id})`);
-                await this.logEmailAttempt(userId, to, templateName, subject, 'sent', data.id, null);
-                return { success: true, provider_message_id: data.id };
-            }
-
-            throw new Error('No data ID returned from Resend');
+            console.log(`[Email Sent] Successfully sent ${templateName} to ${to} (ID: ${result.messageId})`);
+            await this.logEmailAttempt(userId, to, templateName, subject, 'sent', result.messageId || null, null);
+            return { success: true, provider_message_id: result.messageId };
 
         } catch (err: any) {
             console.error(`[Email Service Exception] Failed to send email to ${to}:`, err);
@@ -80,7 +61,7 @@ export const emailService = {
         template: string,
         subject: string,
         status: 'sent' | 'failed',
-        providerId: string | null,
+        providerId: string | null | undefined,
         errorMsg: string | null
     ) {
         try {
@@ -93,8 +74,8 @@ export const emailService = {
                     template: template,
                     subject: subject,
                     status: status,
-                    provider: 'resend',
-                    provider_message_id: providerId,
+                    provider: 'brevo',
+                    provider_message_id: providerId || null,
                     error: errorMsg
                 });
 
