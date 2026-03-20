@@ -2,7 +2,7 @@
 
 import { useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Logo } from '@/components/shared/logo';
+import { KarnetLogo } from '@/components/shared/KarnetLogo';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabaseClient';
@@ -198,7 +198,7 @@ function AuthPageContent() {
 
         {/* Logo */}
         <div className="w-full max-w-[400px] mb-8">
-          <Logo size="large" />
+          <KarnetLogo size={48} />
         </div>
 
         {/* Tab Switcher */}

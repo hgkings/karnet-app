@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Mail, MapPin, User, ShieldCheck } from 'lucide-react';
-import { Logo } from '@/components/shared/logo';
+import { KarnetLogo } from '@/components/shared/KarnetLogo';
 
 const PRODUCT_LINKS = [
   { href: '/pricing', label: 'Fiyatlandırma' },
@@ -28,7 +28,7 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1 space-y-4">
             <div>
-              <Logo size="default" className="mb-3" />
+              <KarnetLogo size={32} className="mb-3" />
               <p className="text-sm text-[rgba(255,255,255,0.5)] leading-relaxed">
                 Pazaryeri satıcılarının gerçek kârını görmesini sağlayan analiz platformu.
               </p>

@@ -13,7 +13,7 @@ import {
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
-import { Logo } from '@/components/shared/logo';
+import { KarnetLogo } from '@/components/shared/KarnetLogo';
 
 export function Header() {
   const { user } = useAuth();
@@ -45,7 +45,7 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <Logo size="default" />
+          <KarnetLogo size={36} />
         </Link>
 
         {/* Desktop Nav */}
@@ -105,7 +105,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-[#0C0A09] border-[rgba(255,255,255,0.06)]">
               <SheetHeader className="text-left pb-2">
-                <Logo size="default" />
+                <KarnetLogo size={36} />
               </SheetHeader>
               <div className="mt-6 flex flex-col gap-1">
                 {navLinks.map((link) => (

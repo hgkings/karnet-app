@@ -10,7 +10,7 @@ import {
 import { NAV_ITEMS, BOTTOM_NAV_ITEMS } from '@/config/navigation';
 import { isProUser } from '@/utils/access';
 import { ProStatusCard } from '@/components/ProStatusCard';
-import { Logo } from '@/components/shared/logo';
+import { KarnetLogo } from '@/components/shared/KarnetLogo';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -23,7 +23,7 @@ export function Sidebar() {
 
         {/* Logo */}
         <div className="px-2 pb-2">
-          <Logo size="default" />
+          <KarnetLogo size={36} />
         </div>
 
         {/* Pro Status */}

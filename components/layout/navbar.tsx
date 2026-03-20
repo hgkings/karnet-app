@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { NAV_ITEMS, BOTTOM_NAV_ITEMS } from '@/config/navigation';
-import { Logo } from '@/components/shared/logo';
+import { KarnetLogo } from '@/components/shared/KarnetLogo';
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -18,7 +18,7 @@ export function Navbar() {
     <nav className="border-b border-[rgba(255,255,255,0.06)] bg-[rgba(12,10,9,0.85)] backdrop-blur-xl sticky top-0 z-50">
       <div className="mx-auto flex h-16 w-full items-center justify-between px-4 sm:px-6">
         <Link href={user ? '/dashboard' : '/'} className="flex items-center">
-          <Logo size="default" />
+          <KarnetLogo size={36} />
         </Link>
         <div className="flex flex-1" />
 

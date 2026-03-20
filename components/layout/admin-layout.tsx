@@ -11,8 +11,8 @@ import {
     CreditCard,
     MessageSquare,
     ArrowLeft,
-    Shield,
 } from 'lucide-react';
+import { KarnetLogo } from '@/components/shared/KarnetLogo';
 import { ThemeToggle } from './theme-toggle';
 
 const ADMIN_NAV = [
@@ -46,7 +46,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             {/* Sidebar */}
             <aside className="w-56 shrink-0 flex flex-col bg-[rgba(255,255,255,0.02)] border-r border-[rgba(255,255,255,0.06)]">
                 <div className="flex items-center gap-2 px-4 py-5 border-b">
-                    <Shield className="h-5 w-5 text-primary" />
+                    <KarnetLogo size={32} />
                     <span className="font-bold text-sm">Admin Panel</span>
                 </div>
 
