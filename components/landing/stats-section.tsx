@@ -14,19 +14,18 @@ function useCountUp(target: number, duration: number = 1500, start: boolean = fa
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      // easeOutExpo for smoother ending
       const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       setCount(Math.floor(easeOut * target));
-      
+
       if (progress < 1) {
         animationFrame = requestAnimationFrame(step);
       }
     };
-    
+
     animationFrame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(animationFrame);
   }, [target, duration, start]);
-  
+
   return count;
 }
 
@@ -58,22 +57,22 @@ export function StatsSection() {
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
-        <div 
+        <div
           ref={ref}
-          className="bg-muted/30 py-16 rounded-[2rem] mx-4 max-w-6xl md:mx-auto border border-border/50"
+          className="py-16 rounded-[2rem] mx-4 max-w-6xl md:mx-auto border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)]"
         >
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 px-6 text-center">
             {stats.map((stat, idx) => {
               const count = useCountUp(stat.value, 2000, visible);
               return (
                 <div key={idx} className="flex flex-col items-center justify-center space-y-2">
-                  <div className="p-3 bg-primary/10 rounded-2xl mb-2">
-                    <stat.icon className="h-6 w-6 text-primary" />
+                  <div className="p-3 bg-amber-500/8 border border-amber-500/12 rounded-2xl mb-2">
+                    <stat.icon className="h-6 w-6 text-amber-400" />
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold text-primary tabular-nums tracking-tight">
+                  <div className="text-4xl md:text-5xl font-bold text-amber-400 tabular-nums tracking-tight">
                     {stat.prefix}{count}{stat.suffix}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1">
+                  <div className="text-sm font-medium text-[rgba(255,255,255,0.5)] uppercase tracking-wider mt-1">
                     {stat.label}
                   </div>
                 </div>

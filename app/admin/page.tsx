@@ -34,7 +34,7 @@ export default function AdminDashboardPage() {
             value: stats.totalUsers,
             icon: Users,
             color: 'text-blue-600',
-            bg: 'bg-blue-50 dark:bg-blue-950/30',
+            bg: 'bg-blue-500/10',
         },
         {
             title: 'Pro Kullanıcı',
@@ -42,21 +42,21 @@ export default function AdminDashboardPage() {
             sub: `${stats.freeUsers} ücretsiz`,
             icon: Crown,
             color: 'text-amber-600',
-            bg: 'bg-amber-50 dark:bg-amber-950/30',
+            bg: 'bg-amber-500/10',
         },
         {
             title: 'Toplam Analiz',
             value: stats.totalAnalyses,
             icon: BarChart2,
             color: 'text-green-600',
-            bg: 'bg-green-50 dark:bg-green-950/30',
+            bg: 'bg-emerald-500/10',
         },
         {
             title: 'Toplam Gelir',
             value: `₺${stats.totalRevenue.toLocaleString('tr-TR')}`,
             icon: TrendingUp,
             color: 'text-purple-600',
-            bg: 'bg-purple-50 dark:bg-purple-950/30',
+            bg: 'bg-purple-500/10',
         },
         {
             title: 'Destek Talepleri',
@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
             sub: `${stats.openTickets} açık`,
             icon: MessageSquare,
             color: 'text-rose-600',
-            bg: 'bg-rose-50 dark:bg-rose-950/30',
+            bg: 'bg-rose-500/10',
         },
     ] : [];
 

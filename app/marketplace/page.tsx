@@ -351,22 +351,22 @@ export default function MarketplacePage() {
         connected: {
             icon: <CheckCircle2 className="h-5 w-5" />,
             label: 'Bağlı',
-            color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800',
+            color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
         },
         disconnected: {
             icon: <XCircle className="h-5 w-5" />,
             label: 'Bağlı Değil',
-            color: 'text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-700',
+            color: 'text-[rgba(255,255,255,0.4)] bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)]',
         },
         pending_test: {
             icon: <Loader2 className="h-5 w-5 animate-spin" />,
             label: 'Test Ediliyor',
-            color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800',
+            color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
         },
         error: {
             icon: <AlertTriangle className="h-5 w-5" />,
             label: 'Hata',
-            color: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800',
+            color: 'text-red-400 bg-red-500/10 border-red-500/20',
         },
 
     };
@@ -385,7 +385,7 @@ export default function MarketplacePage() {
                 </div>
 
                 {/* Marketplace Card */}
-                <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
                     {/* Card Header */}
                     <div className={`flex items-center justify-between p-6 border-b bg-gradient-to-r ${mpConfig.gradient}`}>
                         <div className="flex items-center gap-4">
@@ -397,7 +397,7 @@ export default function MarketplacePage() {
                                     <PopoverTrigger asChild>
                                         <button className="flex items-center gap-2 group text-left focus:outline-none">
                                             <h2 className="text-xl font-bold">{mpConfig.label}</h2>
-                                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-muted/50 group-hover:bg-muted transition-colors">
+                                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[rgba(255,255,255,0.06)] group-hover:bg-white/10 transition-colors">
                                                 <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />
                                             </div>
                                         </button>
@@ -408,7 +408,7 @@ export default function MarketplacePage() {
                                                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                                 <Input
                                                     placeholder="Pazaryeri ara..."
-                                                    className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
+                                                    className="pl-9 bg-[rgba(255,255,255,0.04)] border-none focus-visible:ring-1"
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
                                                 />
@@ -422,7 +422,7 @@ export default function MarketplacePage() {
                                                     return (
                                                         <button
                                                             key={key}
-                                                            className={`flex items-start w-full gap-3 p-2.5 rounded-lg text-left transition-all hover:bg-muted/50 ${isSelected ? 'bg-muted/30' : ''}`}
+                                                            className={`flex items-start w-full gap-3 p-2.5 rounded-lg text-left transition-all hover:bg-white/5 ${isSelected ? 'bg-white/[0.03]' : ''}`}
                                                             onClick={() => {
                                                                 setSelectedMarketplace(key as MarketplaceKey);
                                                                 setMarketplaceOpen(false);
@@ -494,9 +494,9 @@ export default function MarketplacePage() {
                                 </div>
 
                                 {/* Security Notice */}
-                                <div className="flex items-start gap-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-4">
-                                    <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                                    <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                <div className="flex items-start gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+                                    <ShieldCheck className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                                    <div className="text-xs text-emerald-400">
                                         <p className="font-semibold">API bilgileriniz güvende</p>
                                         <p className="mt-0.5 opacity-80">Tüm kimlik bilgileri AES-256-GCM ile şifreli olarak saklanır. Hiçbir zaman düz metin olarak depolanmaz.</p>
                                     </div>
@@ -543,13 +543,13 @@ export default function MarketplacePage() {
                                 {/* Metrics Panel */}
                                 {orderMetrics && (
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                        <div className="rounded-lg border bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800 p-4 space-y-1">
-                                            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Bu Ay Satış</p>
-                                            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{orderMetrics.currentMonthSales}</p>
+                                        <div className="rounded-lg border bg-emerald-500/10 border-emerald-500/20 p-4 space-y-1">
+                                            <p className="text-xs font-medium text-emerald-400 uppercase tracking-wider">Bu Ay Satış</p>
+                                            <p className="text-xl font-bold text-emerald-400">{orderMetrics.currentMonthSales}</p>
                                         </div>
-                                        <div className="rounded-lg border bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 p-4 space-y-1">
-                                            <p className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">Eşleşmeyen Sipariş</p>
-                                            <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{orderMetrics.unmatchedOrders}</p>
+                                        <div className="rounded-lg border bg-amber-500/10 border-amber-500/20 p-4 space-y-1">
+                                            <p className="text-xs font-medium text-amber-400 uppercase tracking-wider">Eşleşmeyen Sipariş</p>
+                                            <p className="text-xl font-bold text-amber-400">{orderMetrics.unmatchedOrders}</p>
                                         </div>
                                         <div className="rounded-lg border p-4 space-y-1">
                                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Metrik Güncelleme</p>
@@ -561,7 +561,7 @@ export default function MarketplacePage() {
 
                                 {/* Last Log */}
                                 {lastLog && (
-                                    <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+                                    <div className="flex items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-3">
                                         <RefreshCw className="h-4 w-4 text-muted-foreground shrink-0" />
                                         <p className="text-xs text-muted-foreground truncate">{lastLog}</p>
                                     </div>
@@ -579,9 +579,9 @@ export default function MarketplacePage() {
                             /* ─── Disconnected State — Show Form ─── */
                             <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-6">
                                 {/* Info Banner */}
-                                <div className="flex items-start gap-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-4">
-                                    <ExternalLink className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                                    <div className="text-xs text-blue-700 dark:text-blue-300">
+                                <div className="flex items-start gap-3 rounded-lg border border-blue-500/20 bg-blue-500/10 p-4">
+                                    <ExternalLink className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
+                                    <div className="text-xs text-blue-400">
                                         <p className="font-semibold">API bilgilerinizi nereden bulabilirsiniz?</p>
                                         <p className="mt-0.5 opacity-80">
                                             {mpConfig.helpText}
@@ -689,8 +689,8 @@ export default function MarketplacePage() {
                                 </div>
 
                                 {/* Security Notice */}
-                                <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
-                                    <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                <div className="flex items-start gap-3 rounded-lg border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4">
+                                    <ShieldCheck className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                                     <p className="text-xs text-muted-foreground">
                                         API bilgileriniz AES-256-GCM ile şifrelenerek güvenli sunucularımızda saklanır.
                                         Bilgileriniz hiçbir zaman tarayıcınızda depolanmaz veya loglara yazılmaz.

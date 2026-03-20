@@ -29,7 +29,7 @@ export function VatImpactCard({ input, result }: VatImpactCardProps) {
 
     if (!isProMode) {
         return (
-            <div className="rounded-2xl border bg-card p-5 shadow-sm">
+            <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5">
                 <div className="flex items-start justify-between">
                     <div>
                         <p className="text-xs font-medium text-muted-foreground">Vergi Etkisi (Birim KDV)</p>
@@ -57,7 +57,7 @@ export function VatImpactCard({ input, result }: VatImpactCardProps) {
 
     // PRO MODE Detailed View
     return (
-        <div className="rounded-2xl border-2 border-primary/20 bg-card p-5 shadow-md">
+        <div className="rounded-2xl border-2 border-amber-500/20 bg-amber-500/5 p-5">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Landmark className="h-5 w-5 text-primary" />

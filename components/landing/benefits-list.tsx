@@ -20,7 +20,7 @@ const benefits = [
 
 export function BenefitsList() {
   return (
-    <section className="py-24 bg-muted/20 border-y border-border/50">
+    <section className="py-24 border-y border-[rgba(255,255,255,0.06)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -29,13 +29,16 @@ export function BenefitsList() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-14"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-lg px-3 py-1 text-xs font-semibold uppercase tracking-wider" style={{ background: 'rgba(217,119,6,0.12)', color: '#FBBF24' }}>
             Kapsam
           </span>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">
-            Hesaplama Neleri İçeriyor?
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-4" style={{ letterSpacing: '-0.5px' }}>
+            Hesaplama Neleri{' '}
+            <span style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              İçeriyor?
+            </span>
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base text-[rgba(255,255,255,0.5)]">
             Tüm e-ticaret giderlerinizi tek panelde görün.
           </p>
         </motion.div>
@@ -48,9 +51,9 @@ export function BenefitsList() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.04 }}
-              className="flex items-center gap-3 rounded-xl border border-border/60 bg-background/60 p-4 hover:bg-background hover:border-primary/20 hover:shadow-sm transition-all duration-200"
+              className="flex items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 hover:border-amber-500/20 hover:bg-white/[0.04] transition-all duration-200"
             >
-              <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-500 h-5 w-5" />
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
               <span className="text-sm font-medium">{item}</span>
             </motion.div>
           ))}

@@ -66,7 +66,7 @@ function VerifyEmailContent() {
         </div>
 
         <div
-          className="rounded-2xl bg-card p-8 space-y-6 text-center"
+          className="rounded-2xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] p-8 space-y-6 text-center"
           style={{
             boxShadow: '0 20px 60px hsl(221 83% 53% / 0.08)',
             border: '1px solid hsl(221 83% 53% / 0.1)',
@@ -100,12 +100,12 @@ function VerifyEmailContent() {
           {/* Tekrar gönder */}
           <div className="space-y-3">
             {resendSuccess && (
-              <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+              <p className="text-sm text-emerald-400 font-medium">
                 ✓ Doğrulama e-postası tekrar gönderildi.
               </p>
             )}
             {resendError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{resendError}</p>
+              <p className="text-sm text-red-400">{resendError}</p>
             )}
 
             <Button

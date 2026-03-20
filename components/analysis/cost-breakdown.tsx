@@ -59,7 +59,7 @@ export function CostBreakdown({ input, result }: CostBreakdownProps) {
   const maxVal = Math.max(...items.map((i) => i.value), 1);
 
   return (
-    <div className="rounded-2xl border bg-card p-6 shadow-sm">
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">Maliyet Dağılımı (Birim)</h3>
         {isProMode && <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded">NET ESASLI</span>}
@@ -72,7 +72,7 @@ export function CostBreakdown({ input, result }: CostBreakdownProps) {
               <span className="text-muted-foreground font-medium">{item.label}</span>
               <span className="font-bold">{formatCurrency(item.value)}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted/50 border border-muted">
+            <div className="h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.06)]">
               <div
                 className="h-full rounded-full bg-primary/70 transition-all duration-700 ease-out"
                 style={{ width: `${(item.value / maxVal) * 100}%` }}

@@ -229,10 +229,10 @@ export default function SettingsPage() {
                 </div>
 
                 {/* ─── 1. Appearance ─── */}
-                <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
+                <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
-                            <Sun className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                            <Sun className="h-5 w-5 text-violet-400" />
                         </div>
                         <div>
                             <h2 className="font-semibold">Görünüm</h2>
@@ -249,11 +249,11 @@ export default function SettingsPage() {
                                         key={opt.key}
                                         onClick={() => setTheme(opt.key)}
                                         className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${active
-                                            ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20'
-                                            : 'border-transparent bg-muted/30 hover:bg-muted/60 hover:border-border'
+                                            ? 'border-amber-500/50 bg-amber-500/10'
+                                            : 'border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] hover:bg-white/5 hover:border-[rgba(255,255,255,0.12)]'
                                             }`}
                                     >
-                                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${active ? 'bg-primary/10' : 'bg-muted'
+                                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${active ? 'bg-amber-500/10' : 'bg-[rgba(255,255,255,0.06)]'
                                             }`}>
                                             <opt.icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                                         </div>
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                 </section>
 
                 {/* ─── 2. Plan & Billing ─── */}
-                <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
+                <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                                 <p className="text-xs text-muted-foreground">Mevcut planınızı ve ödeme detaylarınızı yönetin.</p>
                             </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isPro ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isPro ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.4)]'
                             }`}>
                             {isPro ? 'Pro Aktif' : 'Ücretsiz Plan'}
                         </div>
@@ -322,19 +322,19 @@ export default function SettingsPage() {
 
                         {/* Pricing UI (Optional Toggle) */}
                         {!isPro && (
-                            <div className="rounded-xl border bg-muted/20 p-4 space-y-4">
+                            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-4">
                                 <div className="flex items-center justify-between">
                                     <span className="text-xs font-medium">Fiyatlandırma</span>
-                                    <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border">
+                                    <div className="flex items-center gap-1 bg-[rgba(255,255,255,0.04)] p-0.5 rounded-lg border border-[rgba(255,255,255,0.06)]">
                                         <button
                                             onClick={() => setBillingCycle('monthly')}
-                                            className={`px-2 py-1 text-[10px] rounded-md transition-all ${billingCycle === 'monthly' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}
+                                            className={`px-2 py-1 text-[10px] rounded-md transition-all ${billingCycle === 'monthly' ? 'bg-[rgba(255,255,255,0.08)] text-foreground' : 'text-[rgba(255,255,255,0.4)]'}`}
                                         >
                                             Aylık
                                         </button>
                                         <button
                                             onClick={() => setBillingCycle('yearly')}
-                                            className={`px-2 py-1 text-[10px] rounded-md transition-all ${billingCycle === 'yearly' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}
+                                            className={`px-2 py-1 text-[10px] rounded-md transition-all ${billingCycle === 'yearly' ? 'bg-[rgba(255,255,255,0.08)] text-foreground' : 'text-[rgba(255,255,255,0.4)]'}`}
                                         >
                                             Yıllık
                                         </button>
@@ -353,7 +353,7 @@ export default function SettingsPage() {
                         )}
 
                         {isPro && (
-                            <div className="rounded-xl border bg-muted/20 p-4 flex flex-col justify-center items-center text-center space-y-2">
+                            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 flex flex-col justify-center items-center text-center space-y-2">
                                 <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-1">
                                     <CreditCard className="h-5 w-5 text-emerald-600" />
                                 </div>
@@ -365,11 +365,11 @@ export default function SettingsPage() {
                 </section>
 
                 {/* ─── 3. Email Settings & Notifications ─── */}
-                <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-5 relative overflow-hidden">
+                <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-2xl opacity-50"></div>
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-                            <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            <Mail className="h-5 w-5 text-blue-400" />
                         </div>
                         <div>
                             <h2 className="font-semibold">E-posta Bildirimleri</h2>
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                             { label: 'Pro plan aktivasyonu', desc: 'Pro plan aktif olduğunda bildirim.' },
                             { label: 'Pro plan sona erme', desc: 'Pro planınız sona erdiğinde bildirim.' },
                         ].map((item, i) => (
-                            <div key={i} className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                            <div key={i} className="flex items-center justify-between rounded-xl p-4 hover:bg-white/5 transition-colors">
                                 <div className="flex-1">
                                     <p className="text-sm font-medium flex items-center gap-2">
                                         {item.label}
@@ -407,7 +407,7 @@ export default function SettingsPage() {
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 pb-1">Tercihli Bildirimler</p>
 
                         {/* Haftalık Özet Raporu */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-white/5 transition-colors">
                             <div className="flex-1">
                                 <p className="text-sm font-medium">Haftalık Özet Raporu</p>
                                 <p className="text-xs text-muted-foreground">Her hafta performans özeti e-posta ile gönderilir.</p>
@@ -422,7 +422,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Zarar Eden Ürün Tespiti */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-white/5 transition-colors">
                             <div className="flex-1">
                                 <p className="text-sm font-medium">Zarar Eden Ürün Tespiti</p>
                                 <p className="text-xs text-muted-foreground">Zarar eden ürün tespit edildiğinde uyarı gönderir.</p>
@@ -437,7 +437,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Hedef Marj Uyarısı */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-white/5 transition-colors">
                             <div className="flex-1">
                                 <p className="text-sm font-medium">Hedef Marj Uyarısı</p>
                                 <p className="text-xs text-muted-foreground">Marj, belirlediğiniz hedefin altına düşerse uyarır.</p>
@@ -452,7 +452,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Pro Bitiş Hatırlatıcısı */}
-                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between rounded-xl p-4 hover:bg-white/5 transition-colors">
                             <div className="flex-1">
                                 <p className="text-sm font-medium">Pro Bitiş Hatırlatıcısı</p>
                                 <p className="text-xs text-muted-foreground">Pro planınız bitmeden 7 ve 1 gün önce hatırlatma gönderir.</p>
@@ -470,7 +470,7 @@ export default function SettingsPage() {
                     <div className="divider border-t border-border" />
 
                     {/* Sistem Testi */}
-                    <div className="rounded-xl border border-border p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                    <div className="rounded-xl border border-border p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                         <div>
                             <p className="text-sm font-medium flex items-center gap-1.5">Sistem Testi <CheckCircle2 className="h-4 w-4 text-emerald-500" /></p>
                             <p className="text-xs text-muted-foreground">Test e-postası gönder (Brevo SMTP)</p>
@@ -506,10 +506,10 @@ export default function SettingsPage() {
                 </section>
 
                 {/* ─── 3. Analysis Defaults ─── */}
-                <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
+                <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
-                            <Store className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            <Store className="h-5 w-5 text-emerald-400" />
                         </div>
                         <div>
                             <h2 className="font-semibold">Analiz Varsayılanları</h2>
@@ -601,10 +601,10 @@ export default function SettingsPage() {
                 </section>
 
                 {/* ─── 4. Security ─── */}
-                <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
+                <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-                            <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            <Shield className="h-5 w-5 text-blue-400" />
                         </div>
                         <div>
                             <h2 className="font-semibold">Hesap Güvenliği</h2>
@@ -613,7 +613,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Profile info */}
-                    <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-3">
                         <div className="flex items-center gap-3">
                             <Mail className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -627,7 +627,7 @@ export default function SettingsPage() {
                                 <p className="text-[11px] text-muted-foreground">Bağlı Sağlayıcılar</p>
                                 <div className="flex gap-1.5 mt-0.5">
                                     {(providers.length > 0 ? providers : ['email']).map((p) => (
-                                        <span key={p} className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-2 py-0.5 text-[10px] font-medium capitalize">
+                                        <span key={p} className="inline-flex items-center gap-1 rounded-full border bg-[rgba(255,255,255,0.06)] px-2 py-0.5 text-[10px] font-medium capitalize">
                                             <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                                             {p === 'email' ? 'E-posta' : p}
                                         </span>
@@ -639,7 +639,7 @@ export default function SettingsPage() {
 
                     {/* Password change */}
                     {(providers.includes('email') || providers.length === 0) && (
-                        <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+                        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-3">
                             <p className="text-sm font-medium">Şifre Değiştir</p>
                             <div className="flex gap-2">
                                 <Input
@@ -666,7 +666,7 @@ export default function SettingsPage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950/20 rounded-[10px]"
+                            className="gap-1.5 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-[10px]"
                             onClick={logout}
                         >
                             <LogOut className="h-4 w-4" />
@@ -675,7 +675,7 @@ export default function SettingsPage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950/20 rounded-[10px]"
+                            className="gap-1.5 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-[10px]"
                             onClick={async () => {
                                 await supabase.auth.signOut({ scope: 'global' });
                                 router.push('/auth');
@@ -688,10 +688,10 @@ export default function SettingsPage() {
                 </section>
 
                 {/* ─── 5. Data Management ─── */}
-                <section className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
+                <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
-                            <Database className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                            <Database className="h-5 w-5 text-orange-400" />
                         </div>
                         <div>
                             <h2 className="font-semibold">Veri Yönetimi</h2>
@@ -702,7 +702,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Export */}
-                    <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-3">
                         <p className="text-sm font-medium">Verileri Dışa Aktar</p>
                         <p className="text-xs text-muted-foreground">Tüm analizlerinizi CSV veya JSON formatında indirin.</p>
                         <div className="flex gap-2">
@@ -718,10 +718,10 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Delete all */}
-                    <div className="rounded-xl border border-red-100 dark:border-red-900/30 bg-red-50/30 dark:bg-red-950/10 p-4 space-y-3">
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 space-y-3">
                         <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4 text-red-500" />
-                            <p className="text-sm font-medium text-red-700 dark:text-red-400">Tehlikeli Bölge</p>
+                            <AlertTriangle className="h-4 w-4 text-red-400" />
+                            <p className="text-sm font-medium text-red-400">Tehlikeli Bölge</p>
                         </div>
                         <p className="text-xs text-muted-foreground">
                             Tüm analiz geçmişinizi ve kaydedilen ürün verilerinizi kalıcı olarak silebilirsiniz. Bu işlem geri alınamaz.
@@ -734,7 +734,7 @@ export default function SettingsPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950/20 rounded-[10px]"
+                                    className="gap-1.5 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-[10px]"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                     Tüm Verileri Sil

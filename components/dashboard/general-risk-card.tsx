@@ -74,28 +74,28 @@ export function GeneralRiskCard() {
 
     const styles = {
         safe: {
-            border: 'border-emerald-500',
-            bg: 'bg-emerald-50/50 dark:bg-emerald-950/10',
-            text: 'text-emerald-700 dark:text-emerald-400',
+            border: 'border-emerald-500/30',
+            bg: 'bg-emerald-500/10',
+            text: 'text-emerald-400',
             icon: ShieldCheck,
             label: 'Düşük Risk',
-            btn: 'text-emerald-600 hover:text-emerald-700'
+            btn: 'text-emerald-400 hover:text-emerald-300'
         },
         moderate: {
-            border: 'border-amber-500',
-            bg: 'bg-amber-50/50 dark:bg-amber-950/10',
-            text: 'text-amber-700 dark:text-amber-400',
+            border: 'border-amber-500/30',
+            bg: 'bg-amber-500/10',
+            text: 'text-amber-400',
             icon: AlertTriangle,
             label: 'Orta Risk',
-            btn: 'text-amber-600 hover:text-amber-700'
+            btn: 'text-amber-400 hover:text-amber-300'
         },
         high: {
-            border: 'border-red-500',
-            bg: 'bg-red-50/50 dark:bg-red-950/10',
-            text: 'text-red-700 dark:text-red-400',
+            border: 'border-red-500/30',
+            bg: 'bg-red-500/10',
+            text: 'text-red-400',
             icon: AlertOctagon,
             label: 'Yüksek Risk',
-            btn: 'text-red-600 hover:text-red-700'
+            btn: 'text-red-400 hover:text-red-300'
         }
     };
 
@@ -110,7 +110,7 @@ export function GeneralRiskCard() {
                         <Icon className={`h-5 w-5 ${style.text}`} />
                         Risk Durumu
                     </CardTitle>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border bg-white/50 dark:bg-black/20 ${style.text} border-current opacity-80`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border bg-black/20 ${style.text} border-current opacity-80`}>
                         {style.label}
                     </span>
                 </div>

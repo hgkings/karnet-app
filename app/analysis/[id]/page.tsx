@@ -327,27 +327,27 @@ export default function AnalysisResultPage() {
 
         {/* Compact Key Metrics Grid */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <div className="rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Birim Net Kâr</p>
-            <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${result.unit_net_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4">
+            <p className="text-[10px] uppercase font-bold text-[rgba(255,255,255,0.4)] tracking-wider">Birim Net Kâr</p>
+            <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${result.unit_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {formatCurrency(result.unit_net_profit)}
             </p>
           </div>
-          <div className="rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Kâr Marjı</p>
-            <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${result.margin_pct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4">
+            <p className="text-[10px] uppercase font-bold text-[rgba(255,255,255,0.4)] tracking-wider">Kâr Marjı</p>
+            <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${result.margin_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {formatPercent(result.margin_pct)}
             </p>
           </div>
-          <div className="rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Aylık Net Kâr</p>
-            <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${result.monthly_net_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4">
+            <p className="text-[10px] uppercase font-bold text-[rgba(255,255,255,0.4)] tracking-wider">Aylık Net Kâr</p>
+            <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${result.monthly_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {formatCurrency(result.monthly_net_profit)}
             </p>
           </div>
 
           {/* Integrated Ad Ceiling */}
-          <div className="rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4">
             {(() => {
               const adCeiling = calculateAdCeiling(input);
               const isLoss = adCeiling <= 0;
@@ -359,7 +359,7 @@ export default function AnalysisResultPage() {
                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Reklam Tavanı</p>
                     {isRisk && <span className="animate-pulse h-2 w-2 rounded-full bg-red-500"></span>}
                   </div>
-                  <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${isLoss || isRisk ? 'text-red-600 dark:text-red-400' : 'text-foreground'}`}>
+                  <p className={`mt-0.5 text-xl sm:text-2xl font-black tracking-tight ${isLoss || isRisk ? 'text-red-400' : 'text-foreground'}`}>
                     {isLoss ? 'Kâr Yok' : formatCurrency(adCeiling)}
                   </p>
                 </>
@@ -370,7 +370,7 @@ export default function AnalysisResultPage() {
 
 
         {/* Minimum Kârlı Satış Fiyatı — 3 kart */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
           <MinPriceCards input={input} currentPrice={input.sale_price} />
         </div>
 
@@ -400,7 +400,7 @@ export default function AnalysisResultPage() {
               const isProMode = input.pro_mode === true;
 
               return (
-                <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">📦</span>
                     <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">İade Analizi</h3>
@@ -408,12 +408,12 @@ export default function AnalysisResultPage() {
 
                   {/* İade uyarı kartları */}
                   {isNegativeAfterReturn && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/30 p-3 text-xs font-medium text-red-700 dark:text-red-400">
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs font-medium text-red-400">
                       🔴 Beklenen iadeler hesaba katıldığında bu ürün ZARAR ettiriyor!
                     </div>
                   )}
                   {!isNegativeAfterReturn && isHighReturn && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-900/30 p-3 text-xs text-amber-700 dark:text-amber-400">
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-400">
                       ⚠️ Yüksek iade oranı! {monthlySales > 0 ? `${monthlySales} satışta ~${expectedReturns} iade bekleniyor.` : ''} Net kârınız iade maliyetlerini karşılıyor mu? Fiyatlandırmanızı gözden geçirmenizi öneririz.
                     </div>
                   )}
@@ -433,7 +433,7 @@ export default function AnalysisResultPage() {
                     <div className="border-t pt-2.5 space-y-2">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-muted-foreground">İade Etkisi (birim)</span>
-                        <span className="font-semibold text-red-600 dark:text-red-400">
+                        <span className="font-semibold text-red-400">
                           -{formatCurrency(returnImpactUnit)}
                         </span>
                       </div>
@@ -443,7 +443,7 @@ export default function AnalysisResultPage() {
                             Ek İade Maliyeti
                             {!isProMode && <span className="ml-1 text-[10px] text-amber-500">(bilgi)</span>}
                           </span>
-                          <span className="font-semibold text-orange-600 dark:text-orange-400">
+                          <span className="font-semibold text-orange-400">
                             -{formatCurrency(extraReturnImpactUnit)}
                             <span className="text-xs text-muted-foreground ml-1">
                               ({formatCurrency(extraReturnCost)}/iade)
@@ -453,14 +453,14 @@ export default function AnalysisResultPage() {
                       )}
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-muted-foreground">İade Öncesi Kâr</span>
-                        <span className={`font-semibold ${profitBeforeReturn >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                        <span className={`font-semibold ${profitBeforeReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                           {formatCurrency(profitBeforeReturn)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center border-t pt-2">
                         <span className="font-bold text-sm">İade Sonrası Net</span>
                         <div className="text-right">
-                          <p className={`text-xl font-black ${result.unit_net_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                          <p className={`text-xl font-black ${result.unit_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             {formatCurrency(result.unit_net_profit)}
                             <span className="ml-1 text-base">{result.unit_net_profit >= 0 ? '✅' : '🔴'}</span>
                           </p>
@@ -476,7 +476,7 @@ export default function AnalysisResultPage() {
             {/* VAT Impact & Monthly Revenue */}
             <div className="grid gap-6 md:grid-cols-2">
               <VatImpactCard input={input} result={result} />
-              <div className="rounded-2xl border bg-card p-5">
+              <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5">
                 <p className="text-xs font-medium text-muted-foreground">Aylik Ciro</p>
                 <p className="mt-1 text-2xl font-bold">{formatCurrency(result.monthly_revenue)}</p>
                 <p className="mt-1 text-xs text-muted-foreground break-all">{input.monthly_sales_volume} adet x {formatCurrency(input.sale_price)}</p>
@@ -535,16 +535,16 @@ export default function AnalysisResultPage() {
           {/* RIGHT COLUMN (4/12) */}
           <div className="lg:col-span-4 space-y-6 min-w-0">
             {/* Risk Gauge */}
-            <div className="flex flex-col items-center rounded-xl border bg-card p-5 shadow-sm">
+            <div className="flex flex-col items-center rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5">
               <h3 className="mb-4 self-start text-xs font-bold uppercase text-muted-foreground tracking-wider">Risk Skoru</h3>
               <RiskGauge score={risk.score} level={risk.level} />
               {risk.factors.length > 0 && (
                 <div className="mt-6 w-full space-y-2">
                   {risk.factors.slice(0, 3).map((f) => (
-                    <div key={f.name} className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-900/10 px-3 py-2 border border-red-100 dark:border-red-900/20">
-                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
+                    <div key={f.name} className="flex items-start gap-2 rounded-lg bg-red-500/10 px-3 py-2 border border-red-500/20">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" />
                       <div>
-                        <p className="text-[10px] font-bold text-red-700 dark:text-red-300 break-words">{f.name}</p>
+                        <p className="text-[10px] font-bold text-red-400 break-words">{f.name}</p>
                       </div>
                     </div>
                   ))}
@@ -553,25 +553,25 @@ export default function AnalysisResultPage() {
             </div>
 
             {/* Smart Recommendations */}
-            <div className="rounded-xl border bg-card p-5 shadow-sm">
+            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5">
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-md">
-                  <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 bg-amber-500/10 rounded-md">
+                  <TrendingUp className="h-4 w-4 text-amber-400" />
                 </div>
                 <h3 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Akıllı Öneriler</h3>
               </div>
               <div className="space-y-3">
                 {result.margin_pct < 10 && (
-                  <div className="text-xs p-3 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/20 text-orange-800 dark:text-orange-200">
+                  <div className="text-xs p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400">
                     ⚠️ Düşük Marj: Giderleri veya fiyatı gözden geçirin.
                   </div>
                 )}
                 {input.ad_cost_per_sale > result.unit_net_profit && (
-                  <div className="text-xs p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 text-red-800 dark:text-red-200">
+                  <div className="text-xs p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
                     🛑 Reklam Zararı: Reklam maliyeti kârı aşıyor.
                   </div>
                 )}
-                <div className="flex gap-2 text-xs text-muted-foreground p-2 rounded-lg bg-muted/30">
+                <div className="flex gap-2 text-xs text-muted-foreground p-2 rounded-lg bg-[rgba(255,255,255,0.04)]">
                   <ChevronRight className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
                   <p>İadeyi %1 düşürmek aylık <b>{formatCurrency(result.monthly_revenue * 0.01)}</b> kazandırır.</p>
                 </div>
@@ -581,7 +581,7 @@ export default function AnalysisResultPage() {
             {/* Competitor Analysis Link/Card - Keep it compact or move functionality inside? 
                 The user had it in a card before. Let's keep the Competitor logic here to avoid losing it.
             */}
-            <div className="rounded-xl border bg-card p-5 space-y-4">
+            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <User2 className="h-4 w-4 text-primary" />
@@ -619,7 +619,7 @@ export default function AnalysisResultPage() {
                   <div className="pt-2 border-t mt-2">
                     <div className="flex justify-between text-xs mb-2">
                       <span className="text-muted-foreground">Fark:</span>
-                      <span className={input.sale_price > compPrice ? 'text-red-500' : 'text-emerald-500'}>
+                      <span className={input.sale_price > compPrice ? 'text-red-400' : 'text-emerald-400'}>
                         {formatCurrency(input.sale_price - compPrice)}
                       </span>
                     </div>
@@ -641,8 +641,8 @@ export default function AnalysisResultPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
-          <p className="text-xs text-amber-800 dark:text-amber-300">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+          <p className="text-xs text-amber-400">
             Bu arac tahmini hesaplama yapar. Muhasebecinize danismadan finansal karar vermeyin.
           </p>
         </div>

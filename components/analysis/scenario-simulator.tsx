@@ -100,7 +100,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">İade Oranı Değişimi</Label>
-                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${returnRateDelta > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : returnRateDelta < 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${returnRateDelta > 0 ? 'bg-red-500/10 text-red-400' : returnRateDelta < 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                                     {returnRateDelta > 0 ? '+' : ''}{returnRateDelta}%
                                 </span>
                             </div>
@@ -116,7 +116,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">Reklam Maliyeti (Birim)</Label>
-                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${adCostDelta > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : adCostDelta < 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${adCostDelta > 0 ? 'bg-red-500/10 text-red-400' : adCostDelta < 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                                     {adCostDelta > 0 ? '+' : ''}{formatCurrency(adCostDelta)}
                                 </span>
                             </div>
@@ -132,7 +132,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">Komisyon Farkı</Label>
-                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${commissionDelta > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : commissionDelta < 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${commissionDelta > 0 ? 'bg-red-500/10 text-red-400' : commissionDelta < 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                                     {commissionDelta > 0 ? '+' : ''}{commissionDelta}%
                                 </span>
                             </div>
@@ -151,7 +151,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                 <div className="lg:col-span-5 flex flex-col gap-4 min-w-0">
 
                     {/* Main Profit Card */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+                    <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Simüle Edilen Net Kâr</p>
                         <div className="mt-2 min-w-0 overflow-hidden">
                             {/* Clamp font size: min 24px, preferred 3.5vw, max 40px */}
@@ -163,7 +163,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                             <span className="text-muted-foreground line-through opacity-60 px-1.5 py-0.5 bg-muted rounded">
                                 {formatCurrency(originalResult.monthly_net_profit)}
                             </span>
-                            <span className={`font-bold px-1.5 py-0.5 rounded ${profitDiff >= 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                            <span className={`font-bold px-1.5 py-0.5 rounded ${profitDiff >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                                 {profitDiff > 0 ? '+' : ''}{formatCurrency(profitDiff)}
                             </span>
                         </div>
@@ -171,7 +171,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
 
                     {/* Margin Card & Decision */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                        <div className="rounded-xl border bg-card/50 p-4 flex flex-col justify-center">
+                        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-4 flex flex-col justify-center">
                             <div className="flex justify-between items-center mb-1">
                                 <p className="text-xs font-medium text-muted-foreground">Simüle Marj</p>
                                 <span className={`text-xs font-bold ${marginDiff >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>

@@ -73,8 +73,8 @@ export function TicketDetailDialog({ ticket, open, onOpenChange }: TicketDetailD
 
             {ticket.admin_reply && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-green-700 dark:text-green-400">Destek Cevabı</h4>
-                <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg text-sm border border-green-200 dark:border-green-900 whitespace-pre-wrap">
+                <h4 className="text-sm font-medium text-green-400">Destek Cevabı</h4>
+                <div className="bg-green-950/30 p-4 rounded-lg text-sm border border-green-900 whitespace-pre-wrap">
                   {ticket.admin_reply}
                 </div>
                 {ticket.admin_replied_at && (

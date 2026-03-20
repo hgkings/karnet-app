@@ -10,11 +10,11 @@ export default function PaymentFailPage() {
             <Navbar />
             <div className="mx-auto max-w-lg px-4 py-24 text-center space-y-6">
                 <div className="flex justify-center">
-                    <div className="h-20 w-20 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
+                    <div className="h-20 w-20 rounded-full bg-red-500/10 flex items-center justify-center">
                         <XCircle className="h-10 w-10 text-red-500" />
                     </div>
                 </div>
-                <h1 className="text-2xl font-bold text-red-600 dark:text-red-400">Ödeme Başarısız ❌</h1>
+                <h1 className="text-2xl font-bold text-red-400">Ödeme Başarısız ❌</h1>
                 <p className="text-muted-foreground">
                     Ödeme tamamlanamadı. Lütfen tekrar deneyin veya farklı bir ödeme yöntemi kullanın.
                 </p>

@@ -39,12 +39,12 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Main Content Wrapper */}
       <div className="flex w-full pt-16">
         {/* Fixed Left Sidebar (Desktop) */}
-        <div className="hidden md:fixed md:left-0 md:top-16 md:bottom-0 md:flex md:w-72 md:flex-col md:border-r md:bg-card">
+        <div className="hidden md:fixed md:left-0 md:top-16 md:bottom-0 md:flex md:w-60 md:flex-col">
           <Sidebar />
         </div>
 
         {/* Scrollable Main Content */}
-        <main className="flex-1 overflow-y-auto md:pl-72 h-[calc(100vh-64px)]">
+        <main className="flex-1 overflow-y-auto md:pl-60 h-[calc(100vh-64px)]">
           <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
             {children}
           </div>

@@ -75,9 +75,9 @@ function ResultRow({
 }) {
   const colorClass =
     highlight === 'green'
-      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+      ? 'text-emerald-400 font-semibold'
       : highlight === 'red'
-      ? 'text-red-600 dark:text-red-400 font-semibold'
+      ? 'text-red-400 font-semibold'
       : 'font-medium';
   return (
     <div>
@@ -197,7 +197,7 @@ export function CampaignSimulator({ input, originalResult }: Props) {
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-6">
 
       {/* Başlık */}
       <div>
@@ -273,7 +273,7 @@ export function CampaignSimulator({ input, originalResult }: Props) {
             onChange={setTrendyolFreeShipping}
           />
           {trendyolFreeShipping && (
-            <div className="ml-12 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
+            <div className="ml-12 rounded-md bg-blue-500/10 border border-blue-500/20 px-3 py-2 text-xs text-blue-300">
               ✓ {shippingCost > 0 ? `${formatCurrency(shippingCost)} kargo bedeli` : 'Kargo bedeli'} maliyet hesabına dahildir. Müşteri 0₺ öder.
             </div>
           )}
@@ -306,7 +306,7 @@ export function CampaignSimulator({ input, originalResult }: Props) {
             onChange={setHepFreeShipping}
           />
           {hepFreeShipping && (
-            <div className="ml-12 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
+            <div className="ml-12 rounded-md bg-blue-500/10 border border-blue-500/20 px-3 py-2 text-xs text-blue-300">
               ✓ {shippingCost > 0 ? `${formatCurrency(shippingCost)} kargo bedeli` : 'Kargo bedeli'} maliyet hesabına dahildir. Müşteri 0₺ öder.
             </div>
           )}
@@ -357,7 +357,7 @@ export function CampaignSimulator({ input, originalResult }: Props) {
             onChange={setN11FreeShipping}
           />
           {n11FreeShipping && (
-            <div className="ml-12 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
+            <div className="ml-12 rounded-md bg-blue-500/10 border border-blue-500/20 px-3 py-2 text-xs text-blue-300">
               ✓ {shippingCost > 0 ? `${formatCurrency(shippingCost)} kargo bedeli` : 'Kargo bedeli'} maliyet hesabına dahildir. Müşteri 0₺ öder.
             </div>
           )}
@@ -453,26 +453,26 @@ export function CampaignSimulator({ input, originalResult }: Props) {
 
       {/* Uyarı sistemi */}
       {isLoss && (
-        <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3 flex items-start gap-2">
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 flex items-start gap-2">
           <span className="shrink-0 mt-0.5">🔴</span>
-          <p className="text-xs text-red-700 dark:text-red-400">
+          <p className="text-xs text-red-400">
             Bu kampanya konfigürasyonunda <strong>ZARAR ediyorsunuz!</strong>{' '}
             {formatCurrency(Math.abs(simResult.unit_net_profit))} zarar bekleniyor.
           </p>
         </div>
       )}
       {isNearBreakeven && (
-        <div className="rounded-lg border border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/30 p-3 flex items-start gap-2">
+        <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-3 flex items-start gap-2">
           <span className="shrink-0 mt-0.5">🟠</span>
-          <p className="text-xs text-orange-700 dark:text-orange-400">
+          <p className="text-xs text-orange-400">
             Uyarı! Bu kampanyada neredeyse başabaş noktasındasınız.
           </p>
         </div>
       )}
       {isLowMargin && (
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3 flex items-start gap-2">
+        <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-3 flex items-start gap-2">
           <span className="shrink-0 mt-0.5">🟡</span>
-          <p className="text-xs text-yellow-700 dark:text-yellow-400">
+          <p className="text-xs text-yellow-400">
             Dikkat! Kâr marjınız <strong>%{simResult.margin_pct.toFixed(1)}</strong>&apos;e geriledi.
           </p>
         </div>
@@ -485,8 +485,8 @@ export function CampaignSimulator({ input, originalResult }: Props) {
           <span
             className={
               simResult.unit_net_profit >= 0
-                ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                : 'text-red-600 dark:text-red-400 font-bold'
+                ? 'text-emerald-400 font-bold'
+                : 'text-red-400 font-bold'
             }
           >
             {formatCurrency(simResult.unit_net_profit)}
@@ -498,8 +498,8 @@ export function CampaignSimulator({ input, originalResult }: Props) {
               <span
                 className={
                   monthlyImpact >= 0
-                    ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-                    : 'text-red-600 dark:text-red-400 font-bold'
+                    ? 'text-emerald-400 font-bold'
+                    : 'text-red-400 font-bold'
                 }
               >
                 {monthlyImpact >= 0 ? '+' : ''}
@@ -543,8 +543,8 @@ export function CampaignSimulator({ input, originalResult }: Props) {
                 <span
                   className={
                     s.netProfit >= 0
-                      ? 'text-emerald-600 dark:text-emerald-400 font-medium'
-                      : 'text-red-600 dark:text-red-400 font-medium'
+                      ? 'text-emerald-400 font-medium'
+                      : 'text-red-400 font-medium'
                   }
                 >
                   {formatCurrency(s.netProfit)}

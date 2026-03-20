@@ -24,7 +24,7 @@ export function RiskChart({ analyses }: RiskChartProps) {
   const levels: RiskLevel[] = ['safe', 'moderate', 'risky', 'dangerous'];
 
   return (
-    <div className="rounded-2xl border bg-card p-6 shadow-premium-sm transition-shadow hover:shadow-premium-md">
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
       <h3 className="text-base font-bold text-foreground mb-6">Risk Dağılımı</h3>
       <div className="space-y-5">
         {levels.map((level) => {
@@ -40,7 +40,7 @@ export function RiskChart({ analyses }: RiskChartProps) {
                   {counts[level]} ürün
                 </span>
               </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-muted/60">
+              <div className="h-2.5 overflow-hidden rounded-full bg-[rgba(255,255,255,0.08)]">
                 <div
                   className="h-full rounded-full transition-all duration-700 ease-out"
                   style={{
