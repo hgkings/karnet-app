@@ -45,7 +45,7 @@ export function Hero() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
               </span>
-              Yeni: Hepsiburada Entegrasyonu
+              Yeni: Trendyol & Hepsiburada API Entegrasyonu
             </motion.div>
 
             {/* H1 */}
@@ -54,15 +54,14 @@ export function Hero() {
               className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-[3.4rem] lg:leading-[1.1] mb-6 text-foreground"
               style={{ letterSpacing: '-0.5px' }}
             >
-              Pazaryerinde gerçek{' '}
+              Satıyorsun ama{' '}
               <span style={{
                 background: 'linear-gradient(135deg, #F59E0B, #D97706)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                kârını
-              </span>{' '}
-              gör
+                kazanıyor musun?
+              </span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -70,8 +69,7 @@ export function Hero() {
               custom={2} initial="hidden" animate="visible" variants={fadeUp}
               className="mb-8 text-lg text-[rgba(255,255,255,0.5)] leading-relaxed max-w-xl mx-auto lg:mx-0"
             >
-              Komisyon, kargo, reklam, iade, KDV dahil — net kâr ve risk puanı.
-              Ürün başı gerçek kârını <strong className="text-foreground">2 dakikada</strong> gör.
+              Pazaryeri komisyonları, kargo maliyetleri, iade kayıpları... Hepsini görünür kıl, kontrolü ele al.
             </motion.p>
 
             {/* CTAs */}
@@ -108,7 +106,7 @@ export function Hero() {
             >
               {[
                 { icon: '🔒', text: 'Kredi kartı gerekmez' },
-                { icon: '👥', text: '500+ aktif satıcı' },
+                { icon: '👥', text: '5.000+ satıcı' },
                 { icon: '⭐', text: 'Ücretsiz plan sonsuza kadar' },
               ].map((item) => (
                 <span key={item.text} className="flex items-center gap-1.5">

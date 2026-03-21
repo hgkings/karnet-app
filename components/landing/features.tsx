@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Calculator, Shield, BarChart3, Target, FileSpreadsheet, TrendingUp, Crown } from 'lucide-react';
+import { Calculator, Shield, BarChart3, Target, FileSpreadsheet, TrendingUp, Crown, Calendar } from 'lucide-react';
 
 const fadeUp: Record<string, any> = {
   hidden: { opacity: 0, y: 20 },
@@ -51,10 +51,11 @@ export function Features() {
               <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/8 border border-amber-500/12 text-amber-400 transition-colors">
                 <Calculator className="h-5 w-5" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Gerçek Kâr Hesaplama</h3>
-              <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-5">
-                Komisyon, KDV, iade, reklam ve kargo dahil tüm giderleri hesaplayarak gerçek net kârınızı görün.
+              <h3 className="text-xl font-bold mb-2">Ürün Bazlı Kâr Analizi</h3>
+              <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-1">
+                &quot;Bu ürün beni kâra mı zarara mı sokuyor?&quot; Artık tahmin etme, hesapla.
               </p>
+              <p className="text-[rgba(255,255,255,0.3)] text-xs mb-4">4 pazaryerinde tüm maliyetler dahil net kâr</p>
               <div className="rounded-xl bg-white/[0.03] border border-[rgba(255,255,255,0.06)] p-4 flex items-end gap-1.5 h-20">
                 {[40, 65, 45, 80, 55, 90, 70, 95, 60, 85].map((h, i) => (
                   <div
@@ -106,12 +107,13 @@ export function Features() {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent" />
             <div className="relative">
               <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/8 border border-amber-500/12 text-amber-400 transition-colors">
-                <BarChart3 className="h-5 w-5" />
+                <Target className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Hassasiyet Analizi</h3>
-              <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-4">
-                Fiyat değişikliklerini anlık simüle edin.
+              <h3 className="text-lg font-bold mb-2">Önce Test Et, Sonra Uygula</h3>
+              <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-1">
+                İndirim, kampanya, fiyat değişikliği... Uygulamadan önce kâr etkisini hesapla.
               </p>
+              <p className="text-[rgba(255,255,255,0.3)] text-xs mb-3">Riski almadan sonucu gör</p>
               <div className="space-y-2">
                 <div className="flex justify-between text-[10px] text-[rgba(255,255,255,0.3)]">
                   <span>Fiyat</span><span className="font-semibold text-foreground">₺349</span>
@@ -133,24 +135,13 @@ export function Features() {
             className="group relative rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 hover:border-amber-500/30 hover:shadow-lg transition-all duration-300"
           >
             <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/8 border border-amber-500/12 text-amber-400 transition-colors">
-              <Target className="h-5 w-5" />
+              <Calendar className="h-5 w-5" />
             </div>
-            <h3 className="text-lg font-bold mb-2">4 Pazaryeri</h3>
-            <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-4">
-              Trendyol, Hepsiburada, n11, Amazon TR
+            <h3 className="text-lg font-bold mb-2">Finansal Takvim</h3>
+            <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-1">
+              Hangi gün ne kadar para girecek, ne kadar çıkacak?
             </p>
-            <div className="flex gap-2 flex-wrap">
-              {[
-                { name: 'Ty', color: 'bg-amber-500/12 text-amber-400' },
-                { name: 'HB', color: 'bg-amber-500/12 text-amber-400' },
-                { name: 'n11', color: 'bg-amber-500/12 text-amber-400' },
-                { name: 'AMZ', color: 'bg-amber-500/12 text-amber-400' },
-              ].map((mp) => (
-                <span key={mp.name} className={`text-xs font-bold px-2.5 py-1 rounded-lg ${mp.color}`}>
-                  {mp.name}
-                </span>
-              ))}
-            </div>
+            <p className="text-[rgba(255,255,255,0.3)] text-xs">Pazaryeri ödeme takvimi ve giderler tek ekranda</p>
           </motion.div>
 
           {/* KDV — Pro */}
