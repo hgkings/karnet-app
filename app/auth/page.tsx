@@ -101,26 +101,29 @@ export default function AuthPage() {
           {/* Headline + subline */}
           <div className="space-y-3">
             <h1 className="text-3xl font-bold tracking-tight leading-tight">
-              Kârnet ile{' '}
-              <span className="text-primary">net kârını gör.</span>
+              Kârını{' '}
+              <span className="text-primary">kontrol altına al</span>
             </h1>
             <p className="text-muted-foreground leading-relaxed">
-              Komisyon, kargo, reklam, iade, KDV dahil.
+              Komisyon, kargo, iade — tüm gizli maliyetleri tek ekranda gör. Veriye dayalı kararlar al.
             </p>
           </div>
 
           {/* 3 icon bullets */}
           <div className="space-y-3">
             {[
-              { icon: BarChart3, text: 'Net kâr & marj', color: 'text-blue-500' },
-              { icon: ShieldAlert, text: 'Zarar/risk uyarısı', color: 'text-amber-500' },
-              { icon: Layers, text: 'Ürün bazlı maliyet dökümü', color: 'text-emerald-500' },
+              { icon: BarChart3, text: 'Anlık Kâr Analizi', sub: 'Ürün bazlı net kâr, saniyeler içinde.', color: 'text-blue-500' },
+              { icon: ShieldAlert, text: 'Kampanya Simülatörü', sub: 'İndirimi uygulamadan önce test et.', color: 'text-amber-500' },
+              { icon: Layers, text: 'Pazaryeri Entegrasyonu', sub: 'Trendyol, Hepsiburada, n11, Amazon.', color: 'text-emerald-500' },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
                   <item.icon className={`h-4 w-4 ${item.color}`} />
                 </div>
-                <span className="text-sm font-medium">{item.text}</span>
+                <div>
+                  <span className="text-sm font-medium">{item.text}</span>
+                  <p className="text-xs text-muted-foreground">{item.sub}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -329,9 +332,9 @@ export default function AuthPage() {
               <div className="mt-6 pt-5 border-t text-center text-sm">
                 {mode === 'login' ? (
                   <p className="text-muted-foreground">
-                    Hesabınız yok mu?{' '}
+                    Hesabın yok mu?{' '}
                     <button onClick={() => setMode('register')} className="font-semibold text-primary hover:underline">
-                      Ücretsiz Kayıt Ol
+                      Ücretsiz Başla
                     </button>
                   </p>
                 ) : (
