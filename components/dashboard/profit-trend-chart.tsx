@@ -47,10 +47,10 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
     }, [analyses, days]);
 
     return (
-        <div className="rounded-2xl border bg-card p-6 shadow-premium-sm transition-shadow hover:shadow-premium-md">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-base font-bold text-foreground">Aylık Kâr Trendi</h3>
-                <div className="flex gap-1 bg-muted/50 p-1 rounded-xl">
+                <div className="flex gap-1 bg-[rgba(255,255,255,0.04)] p-1 rounded-xl">
                     {[30, 90, 365].map((d) => (
                         <Button
                             key={d}
@@ -92,7 +92,7 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                         return (
-                                            <div className="rounded-xl border bg-card p-3 shadow-premium-md">
+                                            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#1C1917] p-3 shadow-lg">
                                                 <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{payload[0].payload.formattedDate}</p>
                                                 <p className="text-lg font-bold text-primary">
                                                     {formatCurrency(payload[0].value as number)}
@@ -115,7 +115,7 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
                     </ResponsiveContainer>
                 ) : (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-[rgba(255,255,255,0.06)] flex items-center justify-center">
                             <span className="text-xl">📊</span>
                         </div>
                         <p>Bu zaman aralığında veri bulunamadı.</p>

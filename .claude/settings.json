@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(git stash:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git rebase:*)",
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(git push:*)",
+      "Bash(ls /workspaces/Trendyol/*.yaml /workspaces/Trendyol/*.yml /workspaces/Trendyol/*.lock)",
+      "Bash(pnpm --version)",
+      "Bash(pnpm install:*)",
+      "Bash(git commit:*)",
+      "WebFetch(domain:www.xn--krnet-3qa.com)",
+      "Bash(find /workspaces/Trendyol/lib -type f -name *.ts -o -name *.tsx)",
+      "Bash(find /workspaces/Trendyol -name .env* -o -name supabase.sql)",
+      "WebFetch(domain:dev.paytr.com)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep -n \"SafePriceCard\\\\|return_extra_cost\" /workspaces/Trendyol/app/analysis/[id]/page.tsx)"
+    ]
+  }
+}

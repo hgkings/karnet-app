@@ -158,7 +158,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
 
   if (analyses.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed bg-card/50 p-12 text-center shadow-sm">
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.02)] p-12 text-center">
         <div className="rounded-full bg-primary/10 p-4 mb-4">
           <Search className="h-8 w-8 text-primary/60" />
         </div>
@@ -167,7 +167,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
           İlk ürününüzü analiz ederek karlılık durumunu ve risk raporunu görebilirsiniz.
         </p>
         <Link href="/analysis/new">
-          <Button className="mt-6 rounded-xl h-11 px-8 shadow-premium-md hover:scale-105 transition-transform">
+          <Button className="mt-6 rounded-xl h-11 px-8 hover:scale-105 transition-transform">
             Yeni Analiz Başlat
           </Button>
         </Link>
@@ -178,12 +178,12 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
   return (
     <div className="space-y-4">
       {/* --- Toolbar --- */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-card p-4 rounded-xl border shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-[rgba(255,255,255,0.03)] p-4 rounded-xl border border-[rgba(255,255,255,0.06)]">
         <div className="relative w-full md:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Ürün adı veya pazaryeri ara..."
-            className="pl-9 h-10 bg-muted/30 border-transparent focus:border-primary/20 focus:bg-background transition-all"
+            className="pl-9 h-10 bg-[rgba(255,255,255,0.04)] border-transparent focus:border-amber-500/20 focus:bg-[rgba(255,255,255,0.06)] transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -233,11 +233,11 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
       </div>
 
       {/* --- Table --- */}
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-premium-sm">
+      <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40 text-[11px] uppercase tracking-wider text-muted-foreground hover:bg-muted/50 transition-colors">
+              <tr className="border-b border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] text-[11px] uppercase tracking-wider text-[rgba(255,255,255,0.4)]">
                 <th
                   className="px-4 py-3.5 text-left font-semibold cursor-pointer select-none group"
                   onClick={() => handleSort('monthly_net_profit')} // Default/Custom logic
@@ -298,7 +298,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                 </tr>
               ) : (
                 paginatedData.map((a) => (
-                  <tr key={a.id} className="transition-colors hover:bg-muted/30 group">
+                  <tr key={a.id} className="transition-colors hover:bg-white/[0.03] group">
                     <td className="px-4 py-3.5">
                       <div className="flex flex-col">
                         <span className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs">{a.input.product_name}</span>
@@ -307,7 +307,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                         </span>
                       </div>
                       <div className="mt-1 sm:hidden">
-                        <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground">
+                        <span className="inline-flex items-center rounded-md bg-[rgba(255,255,255,0.06)] px-2 py-1 text-[10px] font-medium text-muted-foreground">
                           {getMarketplaceLabel(a.input.marketplace)}
                         </span>
                       </div>
@@ -315,34 +315,34 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                       {/* Health Tags */}
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {a.result.margin_pct >= 20 && (a.risk.level === 'safe' || a.risk.level === 'moderate') && (
-                          <span className="inline-flex items-center rounded-sm bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                          <span className="inline-flex items-center rounded-sm bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">
                             ⭐ Yıldız
                           </span>
                         )}
                         {a.result.monthly_net_profit > 0 && (a.result.margin_pct < 10 || a.risk.level === 'risky' || a.risk.level === 'dangerous') && (
-                          <span className="inline-flex items-center rounded-sm bg-orange-100 px-1.5 py-0.5 text-[10px] font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                          <span className="inline-flex items-center rounded-sm bg-orange-500/10 px-1.5 py-0.5 text-[10px] font-medium text-orange-400">
                             ⚠️ İnce Çizgi
                           </span>
                         )}
                         {a.result.monthly_net_profit <= 0 && (
-                          <span className="inline-flex items-center rounded-sm bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                          <span className="inline-flex items-center rounded-sm bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-400">
                             🩸 Zarar
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="hidden px-4 py-3.5 sm:table-cell">
-                      <span className="inline-flex items-center rounded-full bg-secondary/50 px-2.5 py-1 text-xs font-medium text-secondary-foreground border border-secondary">
+                      <span className="inline-flex items-center rounded-full bg-[rgba(255,255,255,0.06)] px-2.5 py-1 text-xs font-medium text-[rgba(255,255,255,0.6)] border border-[rgba(255,255,255,0.06)]">
                         {getMarketplaceLabel(a.input.marketplace)}
                       </span>
                     </td>
-                    <td className={`px-4 py-3.5 text-right font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <td className={`px-4 py-3.5 text-right font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {formatCurrency(a.result.unit_net_profit)}
                     </td>
-                    <td className={`hidden px-4 py-3.5 text-right font-bold tabular-nums md:table-cell ${a.result.margin_pct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <td className={`hidden px-4 py-3.5 text-right font-bold tabular-nums md:table-cell ${a.result.margin_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {formatPercent(a.result.margin_pct)}
                     </td>
-                    <td className={`hidden px-4 py-3.5 text-right font-bold tabular-nums lg:table-cell ${a.result.monthly_net_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <td className={`hidden px-4 py-3.5 text-right font-bold tabular-nums lg:table-cell ${a.result.monthly_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {formatCurrency(a.result.monthly_net_profit)}
                     </td>
                     <td className="px-4 py-3.5 text-center">
@@ -406,7 +406,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
 
         {/* --- Pagination --- */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t px-4 py-3 bg-muted/20">
+          <div className="flex items-center justify-between border-t border-[rgba(255,255,255,0.06)] px-4 py-3 bg-[rgba(255,255,255,0.02)]">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>Satır:</span>
               <Select

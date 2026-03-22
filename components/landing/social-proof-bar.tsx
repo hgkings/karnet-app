@@ -1,32 +1,40 @@
-import { Clock, Layers, Target } from 'lucide-react';
-
-const stats = [
-    { icon: Clock, value: '2 dk', label: 'Ortalama analiz süresi' },
-    { icon: Layers, value: '8+', label: 'Gider kalemi hesaplanır' },
-    { icon: Target, value: 'Akıllı', label: 'Risk puanı + önerilen fiyat' },
-];
+'use client';
 
 export function SocialProofBar() {
-    return (
-        <section className="border-y bg-card/50">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                    {stats.map((stat) => (
-                        <div
-                            key={stat.label}
-                            className="flex items-center justify-center gap-3 py-5 sm:py-6"
-                        >
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                                <stat.icon className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-bold tracking-tight">{stat.value}</p>
-                                <p className="text-xs text-muted-foreground">{stat.label}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
+  const marketplaces = [
+    { name: 'Trendyol', color: '#F27A1A' },
+    { name: 'Hepsiburada', color: '#FF6000' },
+    { name: 'n11', color: '#7D2B8B' },
+    { name: 'Amazon TR', color: '#FF9900' },
+  ];
+
+  const items = [...marketplaces, ...marketplaces, ...marketplaces, ...marketplaces];
+
+  return (
+    <div className="border-y border-[rgba(255,255,255,0.06)] py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <p className="text-center text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)] mb-6">
+          Türkiye&apos;nin önde gelen pazaryerlerini destekler
+        </p>
+        <div className="marquee-container">
+          <div className="marquee-track gap-8">
+            {items.map((mp, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2.5 shrink-0 px-5 py-2.5 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)]"
+              >
+                <div
+                  className="h-2.5 w-2.5 rounded-full shrink-0 opacity-40"
+                  style={{ backgroundColor: mp.color }}
+                />
+                <span className="text-sm font-semibold text-[rgba(255,255,255,0.15)] whitespace-nowrap">
+                  {mp.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

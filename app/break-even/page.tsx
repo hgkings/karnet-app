@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Calculator, Target, TrendingUp, DollarSign, Save, Info } from 'lucide-react';
 
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
+import { isProUser } from '@/utils/access';
 // ... existing imports
 
 export default function BreakEvenPage() {
@@ -19,7 +20,7 @@ export default function BreakEvenPage() {
     const [showUpgrade, setShowUpgrade] = useState(false);
 
     useEffect(() => {
-        if (user && user.plan !== 'pro' && user.plan !== 'admin') {
+        if (user && !isProUser(user)) {
             setShowUpgrade(true);
         }
     }, [user]);
@@ -127,8 +128,8 @@ export default function BreakEvenPage() {
                 <div className="grid gap-8 lg:grid-cols-3">
 
                     {/* Input Section */}
-                    <Card className="lg:col-span-1 h-fit shadow-md border-muted/40">
-                        <CardHeader className="bg-muted/10 pb-4">
+                    <Card className="lg:col-span-1 h-fit border-[rgba(255,255,255,0.06)]">
+                        <CardHeader className="bg-[rgba(255,255,255,0.02)] pb-4">
                             <CardTitle className="flex items-center gap-2 text-lg">
                                 <Calculator className="h-5 w-5 text-primary" />
                                 Hesaplama Verileri
@@ -192,7 +193,7 @@ export default function BreakEvenPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-emerald-600 dark:text-emerald-500 font-medium">Aylık Hedef Net Kâr</Label>
+                                <Label className="text-emerald-400 font-medium">Aylık Hedef Net Kâr</Label>
                                 <div className="relative">
                                     <Input
                                         type="number"
@@ -224,13 +225,13 @@ export default function BreakEvenPage() {
 
                         {/* Error State */}
                         {!isValidContribution && avgPrice > 0 && (
-                            <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-start gap-3 dark:bg-red-900/10 dark:border-red-900/30">
-                                <div className="p-2 bg-white dark:bg-red-900/20 rounded-full shadow-sm">
-                                    <Info className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 flex items-start gap-3">
+                                <div className="p-2 bg-red-500/10 rounded-full">
+                                    <Info className="h-5 w-5 text-red-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold text-red-900 dark:text-red-300">Negatif Katkı Payı</h3>
-                                    <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+                                    <h3 className="text-sm font-semibold text-red-400">Negatif Katkı Payı</h3>
+                                    <p className="text-xs text-red-500 mt-1">
                                         Ortalama satış fiyatınız değişken maliyetlerinizi karşılamıyor.
                                         Lütfen birim fiyatı yükseltin veya maliyetleri düşürün.
                                     </p>
@@ -242,7 +243,7 @@ export default function BreakEvenPage() {
                         <div className="grid gap-4 sm:grid-cols-2">
 
                             {/* Break-even Orders */}
-                            <Card className="shadow-sm border-l-4 border-l-blue-500">
+                            <Card className="border-l-4 border-l-blue-500">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Başabaş Sipariş Adedi</CardTitle>
                                 </CardHeader>
@@ -257,7 +258,7 @@ export default function BreakEvenPage() {
                             </Card>
 
                             {/* Break-even Revenue */}
-                            <Card className="shadow-sm border-l-4 border-l-violet-500">
+                            <Card className="border-l-4 border-l-violet-500">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-sm font-medium text-muted-foreground">Başabaş Ciro</CardTitle>
                                 </CardHeader>
@@ -272,29 +273,29 @@ export default function BreakEvenPage() {
                             </Card>
 
                             {/* Target Profit Orders */}
-                            <Card className="sm:col-span-2 shadow-sm border-l-4 border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10">
+                            <Card className="sm:col-span-2 border-l-4 border-l-emerald-500 bg-emerald-500/5">
                                 <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                                     <div className="space-y-1">
-                                        <CardTitle className="text-sm font-medium text-emerald-900 dark:text-emerald-400">
+                                        <CardTitle className="text-sm font-medium text-emerald-400">
                                             Hedef Kâra Ulaşmak İçin Gereken
                                         </CardTitle>
                                         <CardDescription className="text-xs">
                                             {formatCurrency(targetProfit)} net kâr hedefine ulaşmak için.
                                         </CardDescription>
                                     </div>
-                                    <Target className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                    <Target className="h-5 w-5 text-emerald-400" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex flex-col sm:flex-row gap-6 mt-2">
                                         <div>
-                                            <span className="text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 tabular-nums">
+                                            <span className="text-3xl font-bold tracking-tight text-emerald-400 tabular-nums">
                                                 {isValidContribution ? targetOrders.toLocaleString('tr-TR') : '-'}
                                             </span>
                                             <span className="text-sm text-muted-foreground ml-2">Adet Sipariş</span>
                                         </div>
                                         <div className="w-px bg-border hidden sm:block h-10" />
                                         <div>
-                                            <span className="text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400 tabular-nums">
+                                            <span className="text-3xl font-bold tracking-tight text-emerald-400 tabular-nums">
                                                 {isValidContribution ? formatCurrency(targetOrders * avgPrice) : '-'}
                                             </span>
                                             <span className="text-sm text-muted-foreground ml-2">Ciro</span>
@@ -305,7 +306,7 @@ export default function BreakEvenPage() {
                         </div>
 
                         {/* Explanation */}
-                        <div className="rounded-xl bg-card border p-4 text-sm text-muted-foreground space-y-2">
+                        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 text-sm text-muted-foreground space-y-2">
                             <div className="flex items-center gap-2 font-medium text-foreground">
                                 <Info className="h-4 w-4" />
                                 <span>Bu Veriler Ne Anlama Geliyor?</span>

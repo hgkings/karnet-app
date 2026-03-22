@@ -35,6 +35,7 @@ function formatMonth(yyyy_mm: string): string {
 }
 
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
+import { isProUser } from '@/utils/access';
 // ... existing imports
 
 export default function CashPlanPage() {
@@ -42,7 +43,7 @@ export default function CashPlanPage() {
     const [showUpgrade, setShowUpgrade] = useState(false);
 
     useEffect(() => {
-        if (user && user.plan !== 'pro' && user.plan !== 'admin') {
+        if (user && !isProUser(user)) {
             setShowUpgrade(true);
         }
     }, [user]);
@@ -250,7 +251,7 @@ export default function CashPlanPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-lg border">
+                    <div className="flex items-center gap-2 bg-[rgba(255,255,255,0.04)] p-1 rounded-lg border border-[rgba(255,255,255,0.06)]">
                         {[3, 6, 12].map((m) => (
                             <button
                                 key={m}
@@ -266,12 +267,12 @@ export default function CashPlanPage() {
             </div>
 
             {/* Stock Simulator */}
-            <Card className="border-dashed border-2 bg-muted/20">
+            <Card className="border-dashed border-2 border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
                 <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            <div className="p-2 bg-blue-500/10 rounded-lg">
+                                <Package className="h-5 w-5 text-blue-400" />
                             </div>
                             <div>
                                 <h3 className="font-semibold text-base">Stok Alım Simülasyonu</h3>
@@ -308,28 +309,28 @@ export default function CashPlanPage() {
 
             {/* Risk Warning Banner */}
             {negativeMonths > 0 && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
                     <div className="flex gap-3">
-                        <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                        <AlertTriangle className="h-5 w-5 text-red-400 mt-0.5" />
                         <div>
-                            <h3 className="font-semibold text-red-900 dark:text-red-300">Nakit Akışı Riski Tespit Edildi</h3>
-                            <p className="text-sm text-red-800 dark:text-red-200 mt-1">
+                            <h3 className="font-semibold text-red-400">Nakit Akışı Riski Tespit Edildi</h3>
+                            <p className="text-sm text-red-500 mt-1">
                                 Önümüzdeki {horizon} ay içinde toplam <strong>{negativeMonths} ayda</strong> nakit açığı (negatif bakiye) öngörülüyor.
                             </p>
                             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                                <div className="text-xs bg-white/50 dark:bg-black/20 p-2 rounded border border-red-100 dark:border-red-900/30">
+                                <div className="text-xs bg-red-500/10 p-2 rounded border border-red-500/20">
                                     <span className="font-medium block mb-0.5">📉 Stok Yönetimi:</span>
                                     Fazla stok maliyetini azaltın veya vadeli alımları artırın.
                                 </div>
-                                <div className="text-xs bg-white/50 dark:bg-black/20 p-2 rounded border border-red-100 dark:border-red-900/30">
+                                <div className="text-xs bg-red-500/10 p-2 rounded border border-red-500/20">
                                     <span className="font-medium block mb-0.5">💰 Tahsilat Hızı:</span>
                                     Pazaryeri hakediş sürelerini kısaltacak yöntemleri araştırın.
                                 </div>
-                                <div className="text-xs bg-white/50 dark:bg-black/20 p-2 rounded border border-red-100 dark:border-red-900/30">
+                                <div className="text-xs bg-red-500/10 p-2 rounded border border-red-500/20">
                                     <span className="font-medium block mb-0.5">🚀 Satış Artırma:</span>
                                     Nakit girişi sağlamak için stok eritme kampanyası yapın.
                                 </div>
-                                <div className="text-xs bg-white/50 dark:bg-black/20 p-2 rounded border border-red-100 dark:border-red-900/30">
+                                <div className="text-xs bg-red-500/10 p-2 rounded border border-red-500/20">
                                     <span className="font-medium block mb-0.5">🛑 Gider Kısıtlaması:</span>
                                     Reklam ve operasyonel giderleri gözden geçirin.
                                 </div>
@@ -353,7 +354,7 @@ export default function CashPlanPage() {
                     </CardContent>
                 </Card>
 
-                <Card className={`shadow-sm border-l-4 ${negativeMonths > 0 ? 'border-l-red-500 bg-red-50/50 dark:bg-red-950/20' : 'border-l-emerald-500'}`}>
+                <Card className={`shadow-sm border-l-4 ${negativeMonths > 0 ? 'border-l-red-500 bg-red-500/10' : 'border-l-emerald-500'}`}>
                     <CardContent className="pt-6 pb-4">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                             <AlertTriangle className="h-4 w-4" />
@@ -379,15 +380,15 @@ export default function CashPlanPage() {
             </div>
 
             {/* Table */}
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="bg-muted/50 border-b">
+                            <tr className="bg-[rgba(255,255,255,0.03)] border-b border-[rgba(255,255,255,0.06)]">
                                 <th className="py-3 px-4 text-left font-semibold text-muted-foreground min-w-[140px]">Ay</th>
                                 <th className="py-3 px-4 text-left font-semibold text-muted-foreground min-w-[140px]">Başlangıç Nakit</th>
-                                <th className="py-3 px-4 text-left font-semibold text-emerald-600 dark:text-emerald-500 min-w-[140px]">Nakit Girişi (+)</th>
-                                <th className="py-3 px-4 text-left font-semibold text-red-600 dark:text-red-400 min-w-[140px]">Nakit Çıkışı (-)</th>
+                                <th className="py-3 px-4 text-left font-semibold text-emerald-400 min-w-[140px]">Nakit Girişi (+)</th>
+                                <th className="py-3 px-4 text-left font-semibold text-red-400 min-w-[140px]">Nakit Çıkışı (-)</th>
                                 <th className="py-3 px-4 text-left font-semibold text-muted-foreground min-w-[120px]">Net Değişim</th>
                                 <th className="py-3 px-4 text-left font-semibold text-foreground min-w-[140px]">Kapanış Nakit</th>
                             </tr>
@@ -398,7 +399,7 @@ export default function CashPlanPage() {
                                 const isNegative = row.closing_cash < 0;
 
                                 return (
-                                    <tr key={row.month} className="group hover:bg-muted/30 transition-colors">
+                                    <tr key={row.month} className="group hover:bg-white/[0.03] transition-colors">
                                         <td className="py-3 px-4 font-medium flex items-center gap-2">
                                             <Calendar className="h-4 w-4 text-muted-foreground opacity-50" />
                                             {formatMonth(row.month)}
@@ -424,7 +425,7 @@ export default function CashPlanPage() {
                                                 type="number"
                                                 value={row.cash_in}
                                                 onChange={(e) => handleInputChange(idx, 'cash_in', parseFloat(e.target.value) || 0)}
-                                                className="h-8 text-right tabular-nums text-emerald-600 font-medium max-w-[120px] bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50 focus-visible:ring-emerald-500"
+                                                className="h-8 text-right tabular-nums text-emerald-400 font-medium max-w-[120px] bg-emerald-500/10 border-emerald-500/20 focus-visible:ring-emerald-500"
                                             />
                                         </td>
                                         <td className="py-3 px-4">
@@ -432,14 +433,14 @@ export default function CashPlanPage() {
                                                 type="number"
                                                 value={row.cash_out}
                                                 onChange={(e) => handleInputChange(idx, 'cash_out', parseFloat(e.target.value) || 0)}
-                                                className="h-8 text-right tabular-nums text-red-600 font-medium max-w-[120px] bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50 focus-visible:ring-red-500"
+                                                className="h-8 text-right tabular-nums text-red-400 font-medium max-w-[120px] bg-red-500/10 border-red-500/20 focus-visible:ring-red-500"
                                             />
                                         </td>
                                         <td className="py-3 px-4 text-right tabular-nums text-muted-foreground">
                                             {formatCurrency(row.cash_in - row.cash_out)}
                                         </td>
                                         <td className="py-3 px-4 text-right">
-                                            <div className={`tabular-nums font-bold py-1 px-2 rounded-md inline-block ${isNegative ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400' : 'bg-muted/50'
+                                            <div className={`tabular-nums font-bold py-1 px-2 rounded-md inline-block ${isNegative ? 'bg-red-500/10 text-red-400' : 'bg-[rgba(255,255,255,0.06)]'
                                                 }`}>
                                                 {formatCurrency(row.closing_cash)}
                                             </div>
@@ -452,7 +453,7 @@ export default function CashPlanPage() {
                 </div>
 
                 {/* Footer Action */}
-                <div className="p-4 bg-muted/20 border-t flex justify-end">
+                <div className="p-4 bg-[rgba(255,255,255,0.02)] border-t border-[rgba(255,255,255,0.06)] flex justify-end">
                     <Button onClick={handleSave} disabled={saving} className="gap-2">
                         <Save className="h-4 w-4" />
                         {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}

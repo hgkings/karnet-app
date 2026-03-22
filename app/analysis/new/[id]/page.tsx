@@ -176,7 +176,7 @@ export default function AnalysisDetailPage() {
 
                 <div className="grid gap-8 lg:grid-cols-3">
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
                             <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold">
                                 <PieChartIcon className="h-5 w-5 text-primary" /> Maliyet Kirilimi (Birim)
                             </h3>
@@ -200,7 +200,7 @@ export default function AnalysisDetailPage() {
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
+                        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] overflow-hidden">
                             <div className="p-6 border-b">
                                 <h3 className="text-lg font-semibold">Finansal Detaylar</h3>
                             </div>
@@ -220,7 +220,7 @@ export default function AnalysisDetailPage() {
                     </div>
 
                     <div className="space-y-6">
-                        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
                             <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                                 <AlertTriangle className="h-5 w-5 text-amber-500" /> Risk Analizi
                             </h3>
@@ -251,7 +251,7 @@ export default function AnalysisDetailPage() {
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
                             <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                                 <Package className="h-5 w-5 text-blue-500" /> Pazaryeri Parametreleri
                             </h3>

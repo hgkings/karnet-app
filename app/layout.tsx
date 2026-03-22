@@ -1,12 +1,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
 import { ThemeProvider } from '@/contexts/theme-provider';
 import { AuthProvider } from '@/contexts/auth-context';
 import { AlertProvider } from '@/contexts/alert-context';
 import { Toaster } from 'sonner';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: {
@@ -49,9 +50,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <html lang="tr" suppressHydrationWarning className="dark">
+      <body className={`${inter.variable} ${GeistSans.variable} font-sans`}>
+        {/* Aurora animated background — all pages */}
+        <div className="aurora-bg">
+          <div className="aurora-orb orb-1" />
+          <div className="aurora-orb orb-2" />
+          <div className="aurora-orb orb-3" />
+        </div>
+        <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
           <AuthProvider>
             <AlertProvider>
               {children}

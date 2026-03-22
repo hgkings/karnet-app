@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")
+const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")
 
 serve(async (req) => {
     try {
@@ -33,18 +33,18 @@ serve(async (req) => {
             return new Response(JSON.stringify({ message: 'Skipped: User disabled email alerts or not found' }), { status: 200 })
         }
 
-        // Send email via Resend
-        const res = await fetch("https://api.resend.com/emails", {
+        // Send email via Brevo API
+        const res = await fetch("https://api.brevo.com/v3/smtp/email", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${RESEND_API_KEY}`,
+                "api-key": BREVO_API_KEY ?? "",
             },
             body: JSON.stringify({
-                from: "Kar Kocu Alert <notifications@karkocu.tr>",
-                to: [profile.email],
+                sender: { name: "Kârnet", email: "karnet.destek@gmail.com" },
+                to: [{ email: profile.email }],
                 subject: `KRİTİK RİSK BİLDİRİMİ: ${record.title}`,
-                html: `
+                htmlContent: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #fee2e2; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #ef4444; padding: 20px; color: white; text-align: center;">
               <h1 style="margin: 0; font-size: 24px;">Kritik Risk Bildirimi</h1>
@@ -52,19 +52,19 @@ serve(async (req) => {
             <div style="padding: 30px; background-color: white;">
               <h2 style="color: #111827; margin-top: 0;">${record.title}</h2>
               <p style="color: #4b5563; font-size: 16px; line-height: 24px;">
-                Ürününüz için kritik bir durum tespit edildi: 
+                Ürününüz için kritik bir durum tespit edildi:
                 <br>
                 <strong style="color: #dc2626;">${record.message}</strong>
               </p>
               <div style="margin-top: 30px;">
-                <a href="${Deno.env.get("SITE_URL")}/analysis/${record.analysis_id}" 
+                <a href="${Deno.env.get("SITE_URL")}/analysis/${record.analysis_id}"
                    style="display: inline-block; background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                    Detayları Görüntüle
                 </a>
               </div>
             </div>
             <div style="background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb;">
-              Bu bildirim, Kar Kocu ayarlarınızda "E-posta Bildirimleri" açık olduğu için gönderilmiştir.
+              Bu bildirim, Kârnet ayarlarınızda "E-posta Bildirimleri" açık olduğu için gönderilmiştir.
             </div>
           </div>
         `,

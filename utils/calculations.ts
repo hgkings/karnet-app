@@ -1,5 +1,17 @@
 import { ProductInput, CalculationResult } from '@/types';
 
+/** Trendyol Platform Hizmet Bedeli — gönderi başına sabit 8,49 TL + KDV */
+export function calculateTrendyolServiceFee(_salePrice: number): number {
+  return 8.49;
+}
+
+/** Pazaryerine göre varsayılan platform servis bedeli (TL) */
+export function getDefaultServiceFee(marketplace: string): number {
+  if (marketplace === 'trendyol') return 8.49;    // Trendyol Platform Hizmet Bedeli
+  if (marketplace === 'hepsiburada') return 9.50; // İşlem Bedeli 7₺ + Hizmet Bedeli 2,5₺
+  return 0;
+}
+
 export const n = (v: any, fallback = 0) => {
   if (v === null || v === undefined) return fallback;
   const num = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
@@ -19,10 +31,7 @@ export function calculateProfit(input: ProductInput): CalculationResult {
   const other_cost = n(input.other_cost);
   const monthly_sales_volume = n(input.monthly_sales_volume);
 
-  // 1.1 Komisyon
-  const commission_amount = sale_price * (commission_pct / 100);
-
-  // 1.2 KDV etkisi (Satiş fiyatı KDV dahil kabul edilerek)
+  // 1.1 KDV etkisi (Satış fiyatı KDV dahil kabul edilerek) — komisyondan önce hesaplanmalı
   let vat_amount = 0;
   let sale_price_excl_vat = sale_price;
 
@@ -35,19 +44,31 @@ export function calculateProfit(input: ProductInput): CalculationResult {
     vat_amount = Number.isFinite(calcVat) ? calcVat : 0;
   }
 
+  // 1.2 Komisyon
+  // Türkiye pazaryerlerinde komisyon KDV-HARİÇ liste fiyatı üzerinden kesilir (PRO mod ile tutarlı).
+  // n11 ek bedelleri ("satış tutarı üzerinden") ise KDV-DAHİL fiyata uygulanır.
+  const n11_extra_pct = n(input.n11_extra_pct, 0);
+  const commission_amount = sale_price_excl_vat * (commission_pct / 100)
+    + sale_price * (n11_extra_pct / 100);
+
   // 1.3 İade kaybı
   const expected_return_loss = (return_rate_pct / 100) * sale_price;
 
-  // 1.4 Birim değişken gider toplamı
-  const unit_variable_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
+  // 1.4 Platform servis bedeli (Trendyol, Hepsiburada ve Custom'da uygulanır; n11 zaten n11_extra_pct içinde, Amazon TR'de yok)
+  const service_fee_amount = (input.marketplace === 'trendyol' || input.marketplace === 'hepsiburada' || input.marketplace === 'custom')
+    ? n(input.trendyol_service_fee, 0)
+    : 0;
 
-  // 1.5 Birim toplam maliyet
+  // 1.5 Birim değişken gider toplamı
+  const unit_variable_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost + service_fee_amount;
+
+  // 1.6 Birim toplam maliyet
   const unit_total_cost = unit_variable_cost + commission_amount + vat_amount + expected_return_loss;
 
-  // 1.6 Birim net kâr
+  // 1.7 Birim net kâr
   const unit_net_profit = sale_price - unit_total_cost;
 
-  // 1.7 Net kâr marjı
+  // 1.8 Net kâr marjı
   const margin_pct = sale_price > 0 ? (unit_net_profit / sale_price) * 100 : 0;
 
   // 2.1 Aylık net kâr
@@ -66,6 +87,7 @@ export function calculateProfit(input: ProductInput): CalculationResult {
     commission_amount,
     vat_amount,
     expected_return_loss,
+    service_fee_amount,
     unit_variable_cost,
     unit_total_cost,
     unit_net_profit,
@@ -91,17 +113,26 @@ export function calculateBreakevenPrice(input: ProductInput): number {
   const ad_cost_per_sale = n(input.ad_cost_per_sale);
   const other_cost = n(input.other_cost);
   const commission_pct = n(input.commission_pct);
+  const n11_extra_pct = n(input.n11_extra_pct, 0);
   const vat_pct = n(input.vat_pct, 20);
   const return_rate_pct = n(input.return_rate_pct);
 
-  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
+  const service_fee_amount = (input.marketplace === 'trendyol' || input.marketplace === 'hepsiburada' || input.marketplace === 'custom')
+    ? n(input.trendyol_service_fee, 0)
+    : 0;
+  // Ek iade maliyeti: iade edilen birim başına operasyon/kargo bedeli → beklenen birim etkisi
+  const return_extra_unit = n(input.return_extra_cost, 0) * (return_rate_pct / 100);
+  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost + service_fee_amount + return_extra_unit;
 
-  // KDV dahil mantığına göre paydadaki vergi çarpanı: 1 / (1 + KDV/100)
+  // Formül türetimi (komisyon KDV-hariç, n11 extra ve iade KDV-dahil üzerinden):
+  // P × vat_factor × (1 - comm/100) − P × n11_extra/100 − P × return/100 = base_cost
+  // → denominator = vat_factor × (1 − comm_pct/100) − n11_extra_pct/100 − return_factor
   const vat_factor = 1 / (1 + vat_pct / 100);
-  const commission_factor = commission_pct / 100;
   const return_factor = return_rate_pct / 100;
 
-  const denominator = vat_factor - commission_factor - return_factor;
+  const denominator = vat_factor * (1 - commission_pct / 100)
+    - (n11_extra_pct / 100)
+    - return_factor;
 
   if (denominator <= 0) return Infinity;
 
@@ -126,24 +157,31 @@ export function calculateRequiredPrice(
   const ad_cost_per_sale = n(input.ad_cost_per_sale);
   const other_cost = n(input.other_cost);
   const commission_pct = n(input.commission_pct);
+  const n11_extra_pct = n(input.n11_extra_pct, 0);
   const vat_pct = n(input.vat_pct, 20);
   const return_rate_pct = n(input.return_rate_pct);
 
-  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost;
+  const service_fee_amount = (input.marketplace === 'trendyol' || input.marketplace === 'hepsiburada' || input.marketplace === 'custom')
+    ? n(input.trendyol_service_fee, 0)
+    : 0;
+  const return_extra_unit = n(input.return_extra_cost, 0) * (return_rate_pct / 100);
+  const base_cost = product_cost + shipping_cost + packaging_cost + ad_cost_per_sale + other_cost + service_fee_amount + return_extra_unit;
+  // Komisyon KDV-hariç, n11 extra ve iade KDV-dahil — calculateBreakevenPrice ile aynı türetim
   const vat_factor = 1 / (1 + vat_pct / 100);
-  const commission_factor = commission_pct / 100;
   const return_factor = return_rate_pct / 100;
+  const base_denominator = vat_factor * (1 - commission_pct / 100)
+    - (n11_extra_pct / 100)
+    - return_factor;
 
   if (type === 'margin') {
     const target_margin_rate = value / 100;
-    const denominator = vat_factor - commission_factor - return_factor - target_margin_rate;
+    const denominator = base_denominator - target_margin_rate;
     if (denominator <= 0) return 0;
     return base_cost / denominator;
   } else {
     // Target net profit per unit
-    const denominator = vat_factor - commission_factor - return_factor;
-    if (denominator <= 0) return 0;
-    return (value + base_cost) / denominator;
+    if (base_denominator <= 0) return 0;
+    return (value + base_cost) / base_denominator;
   }
 }
 
@@ -181,13 +219,26 @@ export function generateSensitivityAnalysis(input: ProductInput) {
 // ... existing code ...
 
 export function calculateCashflow(input: ProductInput) {
-  const unitCost = input.product_cost + input.shipping_cost + input.packaging_cost + input.other_cost;
-  const monthlyOutflow = unitCost * input.monthly_sales_volume;
+  const volume = n(input.monthly_sales_volume);
+  const payoutDelay = n(input.payout_delay_days);
+
+  // Satıcının doğrudan ödediği birim başı nakit çıkışı
+  // (service_fee pazaryeri tarafından ödemeden kesilir, ayrı çıkış değil)
+  const unitCashOut = n(input.product_cost) + n(input.shipping_cost)
+    + n(input.packaging_cost) + n(input.other_cost) + n(input.ad_cost_per_sale);
+  const monthlyOutflow = unitCashOut * volume;
   const dailyOutflow = monthlyOutflow / 30;
-  const workingCapitalNeeded = dailyOutflow * input.payout_delay_days;
+  const workingCapitalNeeded = dailyOutflow * payoutDelay;
+
   const result = calculateProfit(input);
-  const monthlyInflow = result.monthly_revenue - result.commission_amount - result.vat_amount;
-  const monthlyCashGap = monthlyOutflow - (monthlyInflow * (30 - input.payout_delay_days) / 30);
+  // Pazaryerinin satıcıya yansıttığı aylık net ödeme:
+  // ciro − komisyon (aylık) − servis bedeli (aylık) − KDV (aylık)
+  // NOT: commission_amount, service_fee_amount, vat_amount birim başı değerler — volume ile çarpılır
+  const monthlyInflow = result.monthly_revenue
+    - (result.commission_amount + result.service_fee_amount + result.vat_amount) * volume;
+
+  const receivedFraction = Math.max(0, 30 - payoutDelay) / 30;
+  const monthlyCashGap = monthlyOutflow - monthlyInflow * receivedFraction;
 
   return {
     workingCapitalNeeded: Math.max(0, workingCapitalNeeded),

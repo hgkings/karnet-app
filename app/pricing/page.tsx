@@ -1,31 +1,112 @@
 'use client';
 
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Navbar } from '@/components/layout/navbar';
 import { Button } from '@/components/ui/button';
-import { Check, X, Crown, Sparkles, Loader2, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import {
+  Check, X, Crown, Loader2, RefreshCw,
+  CheckCircle2, XCircle, ChevronDown, ChevronUp, ShieldCheck,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLAN_LIMITS } from '@/config/plans';
 import { PRICING } from '@/config/pricing';
 import { isProUser } from '@/utils/access';
 import { toast } from 'sonner';
+import { PricingSection } from '@/components/shared/PricingSection';
+import type { PricingTier } from '@/components/shared/PricingSection';
 
-export default function PricingPage() {
+// ─── types ───────────────────────────────────────────────────────────────────
+type BillingCycle = 'monthly' | 'yearly';
+
+// ─── constants ───────────────────────────────────────────────────────────────
+const FREE_LIMIT = PLAN_LIMITS.free.maxProducts;
+const MONTHLY_PRICE = PRICING.proMonthly;          // 229
+const YEARLY_PRICE  = PRICING.proYearly;           // 2290
+
+const COMPARISON_ROWS: { label: string; free: string | boolean; pro: string | boolean }[] = [
+  { label: 'Ürün analizi',                      free: `${FREE_LIMIT} ürün`,  pro: 'Sınırsız' },
+  { label: 'Temel kâr hesaplama',               free: true,    pro: true    },
+  { label: 'PRO Muhasebe Modu (KDV ayrıştırma)', free: false,  pro: true    },
+  { label: 'Hassasiyet analizi',                free: false,   pro: true    },
+  { label: 'Pazaryeri karşılaştırması',         free: false,   pro: true    },
+  { label: 'Nakit akışı tahmini',               free: false,   pro: true    },
+  { label: 'CSV içe aktarma',                   free: false,   pro: true    },
+  { label: 'CSV & rapor dışa aktarma',          free: false,   pro: true    },
+  { label: 'Trendyol API entegrasyonu',         free: false,   pro: true    },
+  { label: 'Hepsiburada API entegrasyonu',      free: false,   pro: true    },
+  { label: 'PDF rapor',                         free: '1/ay',  pro: 'Sınırsız' },
+  { label: 'Öncelikli e-posta desteği',         free: false,   pro: true    },
+  { label: 'Yeni özellikler erken erişim',      free: false,   pro: true    },
+];
+
+const FAQ_ITEMS: { q: string; a: string }[] = [
+  {
+    q: 'Ücretsiz plandan Pro\'ya geçince verilerim kalır mı?',
+    a: 'Evet, tüm analizleriniz ve verileriniz eksiksiz korunur. Plan yükseltmesi mevcut verilerinizi hiçbir şekilde etkilemez.',
+  },
+  {
+    q: 'İptal etmek için ne yapmalıyım?',
+    a: 'İstediğiniz zaman ayarlar sayfasından aboneliğinizi iptal edebilirsiniz. İptal sonrası dönem sonuna kadar Pro özelliklerini kullanmaya devam edersiniz.',
+  },
+  {
+    q: 'Ödeme güvenli mi?',
+    a: 'Ödemeler PayTR güvencesiyle gerçekleştirilir. Kart bilgileriniz Kârnet sunucularında saklanmaz; doğrudan PayTR\'ın PCI-DSS sertifikalı altyapısında işlenir.',
+  },
+  {
+    q: 'Yıllık planı aylığa çevirebilir miyim?',
+    a: 'Evet, mevcut dönem sonunda plan tipinizi değiştirebilirsiniz. Ayarlar sayfasından plan yönetimine ulaşabilirsiniz.',
+  },
+  {
+    q: '7 gün iade garantisi nasıl çalışır?',
+    a: 'Satın alma tarihinden itibaren 7 gün içinde, herhangi bir gerekçe göstermeksizin destek ekibimizden tam iade talep edebilirsiniz.',
+  },
+];
+
+// ─── sub-components ───────────────────────────────────────────────────────────
+
+function CellValue({ val }: { val: string | boolean }) {
+  if (val === true)  return <Check className="h-5 w-5 text-emerald-500 mx-auto" />;
+  if (val === false) return <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />;
+  return <span className="text-sm font-medium">{val}</span>;
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b last:border-b-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between py-4 text-left gap-4 hover:text-primary transition-colors"
+      >
+        <span className="font-medium text-sm sm:text-base">{q}</span>
+        {open
+          ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+          : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <p className="pb-4 text-sm text-muted-foreground leading-relaxed">{a}</p>
+      )}
+    </div>
+  );
+}
+
+// ─── inner page (uses useSearchParams — wrapped in Suspense below) ────────────
+
+function PricingContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [billing, setBilling] = useState<BillingCycle>(
+    searchParams.get('billing') === 'yearly' ? 'yearly' : 'monthly',
+  );
   const [loading, setLoading] = useState(false);
 
-  // Payment return state
+  const isAnnual = billing === 'yearly';
   const paymentStatus = searchParams.get('payment'); // 'success' | 'fail' | null
   const [pollState, setPollState] = useState<'idle' | 'polling' | 'active' | 'pending'>('idle');
   const [pollCount, setPollCount] = useState(0);
 
-  const FREE_LIMIT = PLAN_LIMITS.free.maxProducts;
-
-  // Refresh profile from Supabase
   const refreshProfile = useCallback(async (): Promise<boolean> => {
     try {
       const res = await fetch('/api/user/profile', { credentials: 'same-origin', cache: 'no-store' });
@@ -42,370 +123,265 @@ export default function PricingPage() {
   useEffect(() => {
     if (paymentStatus !== 'success' || !user) return;
     if (pollState !== 'idle') return;
-
-    // Already Pro? Show immediately
-    if (isProUser(user)) {
-      setPollState('active');
-      toast.success('Plan aktif ✅ Pro planınız zaten aktif!');
-      return;
-    }
+    if (isProUser(user)) { setPollState('active'); toast.success('Pro planınız zaten aktif!'); return; }
 
     setPollState('polling');
     toast.success('Ödeme başarılı ✅ Planınız kontrol ediliyor...');
-
     let attempt = 0;
-    const maxAttempts = 6;
-    const interval = 5000; // 5 seconds
-
     const poll = async () => {
       attempt++;
       setPollCount(attempt);
       const isPro = await refreshProfile();
-
       if (isPro) {
         setPollState('active');
-        toast.success('Plan aktif ✅ Pro planınız aktif edildi!');
-        // Reload page to reflect new plan
+        toast.success('Pro planınız aktif edildi!');
         setTimeout(() => window.location.href = '/pricing', 1500);
         return;
       }
-
-      if (attempt < maxAttempts) {
-        setTimeout(poll, interval);
-      } else {
-        setPollState('pending');
-      }
+      if (attempt < 6) setTimeout(poll, 5000);
+      else setPollState('pending');
     };
-
-    // Start first check after 3 seconds
     setTimeout(poll, 3000);
   }, [paymentStatus, user, pollState, refreshProfile]);
 
-  // Show fail toast
   useEffect(() => {
-    if (paymentStatus === 'fail') {
-      toast.error('Ödeme başarısız ❌ Tekrar deneyebilirsiniz.');
-    }
+    if (paymentStatus === 'fail') toast.error('Ödeme başarısız ❌ Tekrar deneyebilirsiniz.');
   }, [paymentStatus]);
+
+  const handleUpgrade = async () => {
+    if (!user) { window.location.href = '/auth'; return; }
+    setLoading(true);
+    try {
+      const selectedPlan = isAnnual ? 'pro_yearly' : 'pro_monthly';
+      const res = await fetch('/api/paytr/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+      const data = await res.json();
+      if (data.paymentUrl) {
+        window.open(data.paymentUrl, '_blank');
+        const params = new URLSearchParams({ paymentId: data.paymentId });
+        if (data.token) params.set('token', data.token);
+        window.location.href = `/basari?${params.toString()}`;
+      } else {
+        toast.error(data.error || 'Ödeme başlatılamadı.');
+        setLoading(false);
+      }
+    } catch {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 space-y-20">
 
-      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
-
-        {/* Payment Return Banner */}
+        {/* ─ Payment Return Banners ─────────────────────────────────────────── */}
         {paymentStatus === 'success' && (
           <div className={cn(
-            "mb-8 mx-auto max-w-2xl rounded-xl border p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4",
+            'mx-auto max-w-2xl rounded-xl border p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4',
             pollState === 'active'
-              ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800"
-              : "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : 'bg-amber-500/10 border-amber-500/20',
           )}>
             {pollState === 'active' ? (
-              <>
-                <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
-                <div>
-                  <p className="font-semibold text-emerald-700 dark:text-emerald-400">Plan Aktif ✅</p>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-500">Pro planınız başarıyla aktif edildi!</p>
-                </div>
-              </>
+              <><CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" />
+                <div><p className="font-semibold text-emerald-400">Plan Aktif ✅</p>
+                  <p className="text-sm text-emerald-500">Pro planınız başarıyla aktif edildi!</p></div></>
             ) : pollState === 'pending' ? (
-              <>
-                <Loader2 className="h-6 w-6 text-amber-500 shrink-0" />
+              <><Loader2 className="h-6 w-6 text-amber-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="font-semibold text-amber-700 dark:text-amber-400">Ödeme Alındı ⏳</p>
-                  <p className="text-sm text-amber-600 dark:text-amber-500">
-                    Ödeme alındı ancak plan henüz aktif değil. 30 saniye içinde otomatik aktif olur.
-                  </p>
+                  <p className="font-semibold text-amber-400">Ödeme Alındı ⏳</p>
+                  <p className="text-sm text-amber-500">30 saniye içinde otomatik aktif olur.</p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={async () => {
-                    setPollState('polling');
-                    setPollCount(0);
-                    const isPro = await refreshProfile();
-                    if (isPro) {
-                      setPollState('active');
-                      toast.success('Plan aktif ✅');
-                      setTimeout(() => window.location.href = '/pricing', 1500);
-                    } else {
-                      setPollState('pending');
-                      toast.info('Henüz aktif değil, biraz daha bekleyin.');
-                    }
-                  }}
-                  className="shrink-0"
-                >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Yenile
-                </Button>
-              </>
+                <Button size="sm" variant="outline" className="shrink-0" onClick={async () => {
+                  setPollState('polling'); setPollCount(0);
+                  const isPro = await refreshProfile();
+                  if (isPro) { setPollState('active'); toast.success('Plan aktif ✅'); setTimeout(() => window.location.href = '/pricing', 1500); }
+                  else { setPollState('pending'); toast.info('Henüz aktif değil, biraz daha bekleyin.'); }
+                }}>
+                  <RefreshCw className="h-4 w-4 mr-1" />Yenile
+                </Button></>
             ) : (
-              <>
-                <Loader2 className="h-6 w-6 text-blue-500 animate-spin shrink-0" />
-                <div>
-                  <p className="font-semibold text-blue-700 dark:text-blue-400">Ödeme Başarılı ✅</p>
-                  <p className="text-sm text-blue-600 dark:text-blue-500">
-                    Planınız kontrol ediliyor... ({pollCount}/6)
-                  </p>
-                </div>
-              </>
+              <><Loader2 className="h-6 w-6 text-amber-400 animate-spin shrink-0" />
+                <div><p className="font-semibold text-amber-400">Ödeme Başarılı ✅</p>
+                  <p className="text-sm text-amber-500">Planınız kontrol ediliyor… ({pollCount}/6)</p></div></>
             )}
           </div>
         )}
-
         {paymentStatus === 'fail' && (
-          <div className="mb-8 mx-auto max-w-2xl rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
-            <XCircle className="h-6 w-6 text-red-500 shrink-0" />
-            <div>
-              <p className="font-semibold text-red-700 dark:text-red-400">Ödeme Başarısız ❌</p>
-              <p className="text-sm text-red-600 dark:text-red-500">Ödeme tamamlanamadı. Tekrar deneyebilirsiniz.</p>
-            </div>
+          <div className="mx-auto max-w-2xl rounded-xl border border-red-500/20 bg-red-500/10 p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+            <XCircle className="h-6 w-6 text-red-400 shrink-0" />
+            <div><p className="font-semibold text-red-400">Ödeme Başarısız ❌</p>
+              <p className="text-sm text-red-500">Ödeme tamamlanamadı. Tekrar deneyebilirsiniz.</p></div>
           </div>
         )}
 
-        {/* Header */}
-        <div className="mx-auto max-w-3xl text-center space-y-4 mb-16">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Basit ve Şeffaf Fiyatlandırma
+        {/* ─ Header ────────────────────────────────────────────────────────── */}
+        <div className="text-center space-y-3">
+          <span className="inline-block mb-1 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+            Fiyatlandırma
+          </span>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl font-geist">
+            Sade ve Şeffaf Fiyatlandırma
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Profesyonel satıcılar için tasarlandı. Sürpriz ücret yok.
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+            Gizli ücret yok. İstediğin zaman iptal et.
           </p>
-
-          {/* Toggle */}
-          <div className="flex items-center justify-center mt-8">
-            <div className="relative flex items-center bg-muted p-1 rounded-xl border">
-              <button
-                onClick={() => setIsAnnual(false)}
-                className={cn(
-                  "px-6 py-2.5 text-sm font-medium rounded-[10px] transition-all duration-200",
-                  !isAnnual
-                    ? "bg-card text-foreground shadow-premium-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Aylık
-              </button>
-              <button
-                onClick={() => setIsAnnual(true)}
-                className={cn(
-                  "px-6 py-2.5 text-sm font-medium rounded-[10px] transition-all duration-200 relative",
-                  isAnnual
-                    ? "bg-card text-foreground shadow-premium-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Yıllık
-                <span className="absolute -top-2.5 -right-3 bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded shadow-sm border border-white/20 font-semibold tracking-wide transform rotate-3">
-                  %20
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
+        {/* ─ Plan Cards — PricingSection ───────────────────────────────────── */}
+        {(() => {
+          const freeTier: PricingTier = {
+            name: 'Başlangıç',
+            price: { monthly: 0, yearly: 0 },
+            description: 'Yeni başlayanlar ve denemek isteyenler için ideal.',
+            icon: <span className="text-xl">🚀</span>,
+            onAction: () => { window.location.href = user ? '/dashboard' : '/auth'; },
+            features: [
+              { name: `${FREE_LIMIT} ürüne kadar analiz`, description: 'Kayıt edilebilir ürün sayısı', included: true },
+              { name: 'Temel kâr hesaplama', description: 'Komisyon, kargo, KDV dahil', included: true },
+              { name: '4 pazaryeri desteği', description: 'Trendyol, HB, Amazon, N11', included: true },
+              { name: 'PDF rapor (1 adet/ay)', description: 'Aylık tek rapor', included: true },
+              { name: 'Sınırsız ürün analizi', description: 'Pro planında sınırsız', included: false },
+              { name: 'CSV içe / dışa aktarma', description: 'Pro planında aktif', included: false },
+              { name: 'PRO Muhasebe Modu', description: 'KDV ayrıştırma', included: false },
+              { name: 'Hassasiyet & nakit akışı', description: 'Gelişmiş analizler', included: false },
+            ],
+          };
 
-          {/* FREE */}
-          <div className="relative rounded-2xl border bg-card p-8 shadow-premium-sm hover:shadow-premium-md transition-shadow duration-300 flex flex-col">
-            <div className="mb-6">
-              <h3 className="text-xl font-bold">Ücretsiz</h3>
-              <p className="text-sm text-muted-foreground mt-2 min-h-[40px]">
-                Yeni başlayanlar ve denemek isteyenler için ideal.
-              </p>
+          const proTier: PricingTier = {
+            name: 'Pro',
+            price: { monthly: MONTHLY_PRICE, yearly: YEARLY_PRICE },
+            description: 'Ciddi satıcılar için tüm özellikler — kurucu üye fırsatı.',
+            highlight: true,
+            badge: 'EN ÇOK TERCİH EDİLEN',
+            icon: <Crown className="h-5 w-5" />,
+            onAction: user && isProUser(user) ? undefined : handleUpgrade,
+            features: [
+              { name: 'Sınırsız ürün analizi', description: 'Dilediğiniz kadar analiz', included: true },
+              { name: 'PRO Muhasebe Modu', description: 'KDV ayrıştırma, net kâr', included: true },
+              { name: 'Hassasiyet analizi', description: 'Senaryo bazlı projeksiyon', included: true },
+              { name: 'Pazaryeri karşılaştırması', description: 'Trendyol vs HB vs Amazon', included: true },
+              { name: 'Nakit akışı tahmini', description: 'Aylık cashflow projeksiyonu', included: true },
+              { name: 'CSV içe / dışa aktarma', description: 'Excel ile tam entegrasyon', included: true },
+              { name: 'API entegrasyonu', description: 'Trendyol & Hepsiburada', included: true },
+              { name: 'Sınırsız PDF rapor + öncelikli destek', description: 'Kurucu üye fiyatı garantili', included: true },
+            ],
+          };
+
+          return (
+            <PricingSection
+              tiers={[freeTier, proTier]}
+              className="!py-0"
+              onBillingChange={(isYearly) => setBilling(isYearly ? 'yearly' : 'monthly')}
+            />
+          );
+        })()}
+
+        {/* ─ Comparison Table ───────────────────────────────────────────────── */}
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Özellik Karşılaştırması</h2>
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-3 bg-[rgba(255,255,255,0.03)] border-b border-[rgba(255,255,255,0.06)]">
+              <div className="p-4 text-sm font-semibold text-[rgba(255,255,255,0.5)]">Özellik</div>
+              <div className="p-4 text-sm font-semibold text-center border-l border-[rgba(255,255,255,0.06)]">Ücretsiz</div>
+              <div className="p-4 text-sm font-semibold text-center border-l border-[rgba(255,255,255,0.06)] text-amber-400">Pro</div>
             </div>
-
-            <div className="mb-8">
-              <span className="text-4xl font-bold">0₺</span>
-              <span className="text-muted-foreground ml-1">/ ay</span>
-            </div>
-
-            <div className="space-y-4 flex-1">
-              <FeatureItem text={`Maksimum ${FREE_LIMIT} Ürün Analizi`} included />
-              <FeatureItem text="Temel Kâr Hesaplama" included />
-              <FeatureItem text="Risk Puanı Görüntüleme" included />
-              <FeatureItem text="Sınırsız Analiz" included={false} />
-              <FeatureItem text="Profesyonel Muhasebe Modu" included={false} />
-              <FeatureItem text="Hassasiyet Analizi" included={false} />
-              <FeatureItem text="CSV İçe & Dışa Aktarma" included={false} />
-              <FeatureItem text="Nakit Akışı Tahmini" included={false} />
-              <FeatureItem text="Pazaryeri Karşılaştırması" included={false} />
-              <FeatureItem text="Yazdırılabilir PDF Rapor" included={false} />
-              <FeatureItem text="Öncelikli Destek" included={false} />
-            </div>
-
-            <div className="mt-8 pt-6 border-t">
-              {user && user.plan === 'free' ? (
-                <Button variant="outline" className="w-full h-12 rounded-xl text-base font-medium" disabled>
-                  Mevcut Plan
-                </Button>
-              ) : (
-                <Button variant="outline" className="w-full h-12 rounded-xl text-base font-medium hover:bg-muted/50" asChild>
-                  <a href={user ? '/dashboard' : '/auth'}>
-                    {user ? 'Panele Git' : 'Ücretsiz Başla'}
-                  </a>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* PRO */}
-          <div className="relative rounded-2xl border-2 border-primary/30 bg-gradient-to-b from-primary/[0.03] to-card p-8 shadow-premium-lg hover:scale-[1.02] transition-all duration-300 flex flex-col">
-            {/* Badge */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground px-5 py-2 rounded-full text-xs font-bold shadow-premium-md flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 fill-current" />
-              EN ÇOK TERCİH EDİLEN
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                Pro
-                <Crown className="h-5 w-5 text-primary fill-current" />
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2 min-h-[40px]">
-                Ciddi satıcılar ve büyümek isteyenler için tüm özellikler.
-              </p>
-            </div>
-
-            <div className="mb-8">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Normal Fiyat</span>
-                    <span className="text-xl text-muted-foreground/80 font-bold line-through decoration-red-500/50 decoration-2">
-                      {isAnnual ? `${PRICING.oldMonthly * 10}₺` : `${PRICING.oldMonthly}₺`}
-                    </span>
-                  </div>
+            {/* Rows */}
+            {COMPARISON_ROWS.map((row, i) => (
+              <div key={row.label} className={cn('grid grid-cols-3 border-b border-[rgba(255,255,255,0.04)] last:border-b-0', i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,255,255,0.02)]')}>
+                <div className="p-3.5 text-sm text-[rgba(255,255,255,0.7)]">{row.label}</div>
+                <div className="p-3.5 text-center border-l border-[rgba(255,255,255,0.06)] flex items-center justify-center">
+                  <CellValue val={row.free} />
                 </div>
-
-                {/* Current Price */}
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold text-foreground tracking-tight">
-                    {isAnnual ? `${PRICING.proYearly.toLocaleString('tr-TR')}` : `${PRICING.proMonthly}`}₺
-                  </span>
-                  <span className="text-base font-medium text-muted-foreground">
-                    {isAnnual ? '/ yıl' : '/ ay'}
-                  </span>
-                  <span className="ml-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                    %50 İndirim
-                  </span>
-                </div>
-
-                {/* Founder Badge */}
-                <div className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 border border-amber-200/60 dark:border-amber-800/30 w-full group transition-all hover:bg-amber-100/50">
-                  <div className="shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-amber-950/50 shadow-sm border border-amber-100">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-current" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-amber-600/90 uppercase tracking-wider leading-none mb-0.5">Kurucu Üye Fırsatı</span>
-                    <p className="text-xs text-foreground/80 font-medium leading-tight">
-                      Erken erişim süresince sabitlenen özel fiyat
-                    </p>
-                  </div>
+                <div className="p-3.5 text-center border-l border-[rgba(255,255,255,0.06)] flex items-center justify-center">
+                  <CellValue val={row.pro} />
                 </div>
               </div>
-
-              {isAnnual && (
-                <p className="mt-3 text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400 inline-block px-2.5 py-1 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
-                  🎉 2 Ay Bizden Hediye!
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-4 flex-1">
-              <FeatureItem text="Sınırsız Ürün Analizi" included highlight />
-              <FeatureItem text="Profesyonel Muhasebe Modu (KDV Hariç Net)" included highlight />
-              <FeatureItem text="Hassasiyet Analizi" included highlight />
-              <FeatureItem text="CSV İçe & Dışa Aktarma" included highlight />
-              <FeatureItem text="Nakit Akışı Tahmini" included highlight />
-              <FeatureItem text="Pazaryeri Karşılaştırması" included highlight />
-              <FeatureItem text="Yazdırılabilir PDF Rapor" included highlight />
-              <FeatureItem text="Öncelikli Destek" included highlight />
-            </div>
-
-            <div className="mt-8 pt-6 border-t">
-              {user && isProUser(user) ? (
-                <div className="w-full h-12 flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/20 font-medium">
-                  <Check className="h-5 w-5" />
-                  Pro Plan Aktif
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Button
-                    className="w-full h-14 rounded-xl text-lg font-bold bg-primary hover:bg-primary/90 shadow-premium-md hover:shadow-premium-lg hover:scale-[1.02] transition-all duration-300 active:scale-95"
-                    disabled={loading || (isAnnual && !PRICING.paytrLinkYearly)}
-                    onClick={async () => {
-                      if (!user) { window.location.href = '/auth'; return; }
-                      setLoading(true);
-                      try {
-                        const selectedPlan = isAnnual ? 'pro_yearly' : 'pro_monthly';
-                        const res = await fetch('/api/paytr/create-payment', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ plan: selectedPlan }),
-                        });
-                        const data = await res.json();
-                        if (data.paymentUrl) {
-                          window.open(data.paymentUrl, '_blank');
-                          window.location.href = `/basari?paymentId=${data.paymentId}`;
-                        } else {
-                          console.error('PayTR URL alınamadı:', data.error);
-                          toast.error(data.error || 'Ödeme başlatılamadı.');
-                          setLoading(false);
-                        }
-                      } catch (e) {
-                        console.error('Payment error:', e);
-                        setLoading(false);
-                      }
-                    }}
-                  >
-                    {loading ? (
-                      <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Yönlendiriliyor…</>
-                    ) : isAnnual && !PRICING.paytrLinkYearly ? (
-                      "Yakında"
-                    ) : (
-                      user ? "Pro'ya Yükselt" : "Pro ile Başla"
-                    )}
-                  </Button>
-                  <p className="text-[10px] text-center text-muted-foreground">
-                    7 gün içinde koşulsuz para iade garantisi
-                  </p>
-                </div>
-              )}
-            </div>
+            ))}
           </div>
-
         </div>
 
-        <p className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-          Güvenli ödeme PayTR altyapısı ile gerçekleştirilir. Kart bilgileriniz tarafımızca saklanmaz.
-        </p>
+        {/* ─ Trust Bar ──────────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-emerald-500" />
+            <span>PayTR güvencesi</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="h-5 w-5 text-emerald-500" />
+            <span>Kart bilginiz saklanmaz</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="h-5 w-5 text-emerald-500" />
+            <span>7 gün iade garantisi</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="h-5 w-5 text-emerald-500" />
+            <span>İstediğiniz zaman iptal</span>
+          </div>
+        </div>
+
+        {/* ─ FAQ ────────────────────────────────────────────────────────────── */}
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Sıkça Sorulan Sorular</h2>
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 divide-y divide-[rgba(255,255,255,0.06)]">
+            {FAQ_ITEMS.map((item) => (
+              <FaqItem key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
+        </div>
+
+        {/* ─ Bottom CTA ─────────────────────────────────────────────────────── */}
+        <div className="text-center space-y-5 py-8">
+          <h2 className="text-2xl font-bold">Hâlâ kararsız mısın?</h2>
+          <p className="text-muted-foreground">
+            Ücretsiz planla başla, istediğinde yükselt.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Button variant="outline" size="lg" className="rounded-xl h-12 px-8" asChild>
+              <a href={user ? '/dashboard' : '/auth'}>
+                Ücretsiz Başla
+              </a>
+            </Button>
+            {!(user && isProUser(user)) && (
+              <Button
+                size="lg"
+                className="rounded-xl h-12 px-8 text-white"
+                style={{ background: 'linear-gradient(135deg, #D97706, #92400E)' }}
+                onClick={handleUpgrade}
+                disabled={loading}
+              >
+                {loading
+                  ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Yönlendiriliyor…</>
+                  : "Pro'ya Geç →"}
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Güvenli ödeme · PayTR altyapısı · Kart bilgisi saklanmaz
+          </p>
+        </div>
 
       </div>
     </div>
   );
 }
 
-function FeatureItem({ text, included, highlight = false }: { text: string; included: boolean; highlight?: boolean }) {
+// ─── page export with Suspense (fixes useSearchParams blank render) ────────────
+
+export default function PricingPage() {
   return (
-    <div className={cn("flex items-start gap-3", !included && "opacity-40")}>
-      <div className={cn(
-        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full mt-0.5",
-        included
-          ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-          : "bg-muted text-muted-foreground"
-      )}>
-        {included ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-      <span className={cn(
-        "text-sm leading-6",
-        included && highlight ? "font-medium text-foreground" : "text-muted-foreground"
-      )}>
-        {text}
-      </span>
-    </div>
+    }>
+      <PricingContent />
+    </Suspense>
   );
 }

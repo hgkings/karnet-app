@@ -15,6 +15,11 @@ export interface User {
   // Account preferences
   target_margin?: number;
   margin_alert?: boolean;
+  // Email preferences
+  email_weekly_report?: boolean;
+  email_risk_alert?: boolean;
+  email_margin_alert?: boolean;
+  email_pro_expiry?: boolean;
   default_marketplace?: Marketplace;
   default_commission?: number;
   default_vat?: number;
@@ -90,6 +95,17 @@ export interface ProductInput {
   return_refunds_commission?: boolean;
   return_extra_cost?: number;
 
+  // Category selected in the marketplace category dropdown
+  marketplace_category?: string;
+  /** @deprecated use marketplace_category */
+  trendyol_category?: string;
+
+  // n11 extra fees: +1.20% marketing + 0.67% marketplace = 1.87%
+  n11_extra_pct?: number;
+
+  // Trendyol sabit servis bedeli (sipariş tutarına göre dilimli)
+  trendyol_service_fee?: number;
+
   // Legacy/Standard fields keep compatibility
   accounting_mode?: 'standard' | 'pro';
   income_tax_pct?: number;
@@ -99,6 +115,7 @@ export interface CalculationResult {
   commission_amount: number;
   vat_amount: number; // Unit Output VAT
   expected_return_loss: number;
+  service_fee_amount: number; // Trendyol sabit servis bedeli
   unit_variable_cost: number;
   unit_total_cost: number;
   unit_net_profit: number;
@@ -162,4 +179,50 @@ export interface SupportTicket {
   attachment_url?: string;
   created_at: string;
   updated_at: string;
+}
+
+// Yeni destek talebi sistemi tipleri
+export type TicketCategory = 'teknik' | 'odeme' | 'hesap' | 'oneri' | 'diger'
+export type TicketPriority = 'dusuk' | 'normal' | 'yuksek' | 'acil'
+export type TicketStatus = 'acik' | 'inceleniyor' | 'cevaplandi' | 'kapali'
+
+export interface Ticket {
+  id: string
+  user_id: string
+  user_email: string
+  subject: string
+  category: TicketCategory
+  priority: TicketPriority
+  status: TicketStatus
+  message: string
+  admin_reply: string | null
+  admin_replied_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateTicketDto {
+  subject: string
+  category: TicketCategory
+  priority: TicketPriority
+  message: string
+}
+
+export interface UpdateTicketDto {
+  admin_reply?: string
+  status?: TicketStatus
+}
+
+export interface TicketFilters {
+  status?: TicketStatus
+  priority?: TicketPriority
+  category?: TicketCategory
+  search?: string
+}
+
+export interface TicketStats {
+  open: number
+  reviewing: number
+  answeredToday: number
+  total: number
 }

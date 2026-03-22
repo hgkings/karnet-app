@@ -1,59 +1,102 @@
+'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, ShieldCheck, FileText, Lock } from 'lucide-react';
+import { ArrowRight, BarChart2, Play } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { motion } from 'framer-motion';
 
 export function CTASection() {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
-    return (
-        <section className="py-24 px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-5xl relative overflow-hidden rounded-3xl bg-primary text-primary-foreground px-6 py-16 sm:px-12 sm:py-20 text-center shadow-premium-lg">
-                {/* Background pattern */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/15 via-transparent to-transparent" />
-                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+  return (
+    <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="relative overflow-hidden rounded-3xl px-6 py-16 sm:px-12 sm:py-20 text-center shadow-premium-lg"
+          style={{
+            background: 'linear-gradient(135deg, rgba(217,119,6,0.1), rgba(146,64,14,0.05))',
+            border: '1px solid rgba(217,119,6,0.15)',
+          }}
+        >
+          {/* Dot pattern */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+            }}
+          />
 
-                <div className="relative z-10">
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl mb-4">
-                        2 dakikada gerçek kârını öğren
-                    </h2>
-                    <p className="mx-auto mt-2 max-w-2xl text-lg text-primary-foreground/80 mb-10">
-                        Ücretsiz plan ile hemen 5 ürüne kadar analiz yap. Hiçbir kurulum gerekmez.
-                    </p>
+          {/* Glow blobs */}
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-amber-600/10 blur-3xl" />
 
-                    {/* Trust badges */}
-                    <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-                        {[
-                            { icon: Lock, text: 'Kart bilgisi gerekmez' },
-                            { icon: FileText, text: 'PDF rapor alın' },
-                            { icon: ShieldCheck, text: 'Veriler sadece sende' },
-                        ].map((badge) => (
-                            <div
-                                key={badge.text}
-                                className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2 text-sm font-medium text-primary-foreground/90"
-                            >
-                                <badge.icon className="h-4 w-4" />
-                                {badge.text}
-                            </div>
-                        ))}
-                    </div>
+          {/* Corner chart icon decoration */}
+          <div className="absolute bottom-4 right-6 opacity-[0.05] pointer-events-none select-none">
+            <BarChart2 className="h-40 w-40 text-amber-400" />
+          </div>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link href={user ? '/analysis/new' : '/auth'}>
-                            <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold shadow-premium-md hover:shadow-premium-lg transition-all gap-2 text-primary rounded-[10px]">
-                                <TrendingUp className="h-5 w-5" />
-                                Ücretsiz Başla
-                            </Button>
-                        </Link>
-                        <Link href="/pricing">
-                            <Button size="lg" variant="outline" className="h-14 px-8 text-lg bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 rounded-[10px]">
-                                Planları İncele
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
+          <div className="relative z-10">
+            {/* Badge */}
+            <div
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold mb-6 backdrop-blur-sm"
+              style={{ background: 'rgba(217,119,6,0.12)', color: '#FBBF24' }}
+            >
+              Hemen Başla
             </div>
-        </section>
-    );
+
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl text-foreground mb-4" style={{ letterSpacing: '-0.5px' }}>
+              2 dakikada gerçek{' '}
+              <span style={{
+                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+                kârını
+              </span>{' '}öğren
+            </h2>
+            <p className="mx-auto max-w-xl text-lg text-[rgba(255,255,255,0.5)] mb-10">
+              Ücretsiz plan ile hemen başla. Kurulum yok, kart bilgisi yok.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href={user ? '/analysis/new' : '/auth'}>
+                <Button
+                  size="lg"
+                  className="h-12 px-8 text-base font-semibold rounded-xl shadow-lg shadow-amber-500/30 text-white hover:shadow-xl hover:-translate-y-[1px] transition-all duration-200 gap-2"
+                  style={{ background: 'linear-gradient(135deg, #D97706, #92400E)' }}
+                >
+                  Ücretsiz Başla
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/auth?tab=demo">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 px-8 text-base font-medium rounded-xl border-[rgba(255,255,255,0.06)] hover:bg-white/5 transition-all duration-200 gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  Demo İzle
+                </Button>
+              </Link>
+            </div>
+
+            {/* Trust icons */}
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-[rgba(255,255,255,0.5)]">
+              <span>🔒 Güvenli ödeme</span>
+              <span>📊 Anlık analiz</span>
+              <span>🔐 Veriler şifreli</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
 }

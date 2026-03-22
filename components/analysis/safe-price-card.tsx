@@ -28,8 +28,8 @@ export function SafePriceCard({ input, breakevenPrice }: SafePriceCardProps) {
         <Card className="h-full border-l-4 border-l-emerald-500 shadow-sm">
             <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                        <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+                        <ShieldCheck className="h-4 w-4 text-emerald-400" />
                     </div>
                     <div>
                         <CardTitle className="text-base font-bold">Güvenli Fiyat Aralığı</CardTitle>
@@ -57,15 +57,15 @@ export function SafePriceCard({ input, breakevenPrice }: SafePriceCardProps) {
                     </p>
                 </div>
 
-                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/10 p-4 border border-emerald-100 dark:border-emerald-900/30">
+                <div className="rounded-xl bg-emerald-500/10 p-4 border border-emerald-500/20">
                     <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">Min. Güvenli Fiyat</span>
-                        <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                        <span className="text-xs font-medium text-emerald-400">Min. Güvenli Fiyat</span>
+                        <span className="text-lg font-bold text-emerald-400">
                             {breakevenPrice === Infinity ? 'Hesaplanamaz' : formatCurrency(safePrice)}
                         </span>
                     </div>
                     {margin > 0 && (
-                        <div className="flex justify-between items-center text-[10px] text-emerald-600/70 dark:text-emerald-500/70 border-t border-emerald-200 dark:border-emerald-800/30 pt-1 mt-1">
+                        <div className="flex justify-between items-center text-[10px] text-emerald-500/70 border-t border-emerald-800/30 pt-1 mt-1">
                             <span>Başabaş Noktası:</span>
                             <span>{formatCurrency(breakevenPrice)}</span>
                         </div>

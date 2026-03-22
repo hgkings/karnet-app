@@ -55,7 +55,7 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-8 pb-10">
         {/* Header with Risk Card */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start justify-between border-b pb-6">
+        <div className="flex flex-col lg:flex-row gap-6 items-start justify-between border-b border-[rgba(255,255,255,0.06)] pb-6">
           <div className="space-y-1.5 w-full lg:w-auto">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Panel</h1>
             <p className="text-sm sm:text-base text-muted-foreground">

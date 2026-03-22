@@ -3,16 +3,19 @@
 import { Header } from '@/components/landing/header';
 import { Hero } from '@/components/landing/hero';
 import { SocialProofBar } from '@/components/landing/social-proof-bar';
+import { MarketplaceCards } from '@/components/landing/marketplace-cards';
 import { QuickCalc } from '@/components/landing/quick-calc';
 import { Features } from '@/components/landing/features';
-import { Testimonials } from '@/components/landing/testimonials';
+import { ComparisonTable } from '@/components/landing/comparison-table';
+import { TrustCards } from '@/components/landing/trust-cards';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { BenefitsList } from '@/components/landing/benefits-list';
+import { StatsSection } from '@/components/landing/stats-section';
+import { Testimonials } from '@/components/landing/testimonials';
 import { TrustStrip } from '@/components/landing/trust-strip';
 import { FAQSection } from '@/components/landing/faq-section';
 import { CTASection } from '@/components/landing/cta-section';
 import { Footer } from '@/components/layout/footer';
-import { TrendingUp } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -22,11 +25,15 @@ export default function LandingPage() {
       <main>
         <Hero />
         <SocialProofBar />
+        <MarketplaceCards />
         <QuickCalc />
         <Features />
-        <Testimonials />
+        <ComparisonTable />
+        <TrustCards />
         <HowItWorks />
         <BenefitsList />
+        <StatsSection />
+        <Testimonials />
         <TrustStrip />
         <FAQSection />
         <CTASection />
@@ -36,4 +43,3 @@ export default function LandingPage() {
     </div>
   );
 }
-

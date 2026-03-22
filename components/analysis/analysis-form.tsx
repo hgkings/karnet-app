@@ -6,7 +6,10 @@ import { useAuth } from '@/contexts/auth-context';
 import { useAlerts } from '@/contexts/alert-context';
 import { ProductInput, Marketplace } from '@/types';
 import { marketplaces, getMarketplaceDefaults } from '@/lib/marketplace-data';
-import { calculateProfit, calculateRequiredPrice, n } from '@/utils/calculations';
+import { getMarketplaceCategories, getCategoryCommission, getCategoryReturnRate, N11_EXTRA_FEE_PCT, N11_MARKETING_FEE_PCT, N11_MARKETPLACE_FEE_PCT } from '@/lib/commission-categories';
+import { getUserCommissionRates, getLastRatesUpdate, buildRateMap, lookupRate } from '@/lib/commission-rates';
+import type { CommissionRate } from '@/lib/commission-rates';
+import { calculateProfit, calculateRequiredPrice, calculateTrendyolServiceFee, getDefaultServiceFee, n } from '@/utils/calculations';
 import { calculateProAccounting } from '@/utils/pro-accounting';
 import { calculateRisk } from '@/utils/risk-engine';
 import { saveAnalysis, generateId, getUserAnalysisCount } from '@/lib/storage';
@@ -33,10 +36,12 @@ const defaultInput: ProductInput = {
   shipping_cost: 0,
   packaging_cost: 0,
   ad_cost_per_sale: 0,
-  return_rate_pct: 8,
+  return_rate_pct: 12, // ETBİS 2024 genel sektör ortalaması; kategori seçince otomatik güncellenir
   vat_pct: 20,
   other_cost: 0,
   payout_delay_days: 28,
+  n11_extra_pct: 0,
+  trendyol_service_fee: 0,
   // PRO defaults
   pro_mode: false,
   sale_price_includes_vat: true,
@@ -77,7 +82,6 @@ const fields: FieldConfig[] = [
   { key: 'shipping_cost', label: 'Kargo Ücreti', type: 'number', suffix: '₺', min: 0, step: 0.01, group: 'costs' },
   { key: 'packaging_cost', label: 'Paketleme Maliyeti', type: 'number', suffix: '₺', min: 0, step: 0.01, group: 'costs' },
   { key: 'ad_cost_per_sale', label: 'Reklam Maliyeti (Birim)', type: 'number', suffix: '₺', min: 0, step: 0.01, group: 'costs' },
-  { key: 'return_rate_pct', label: 'İade Oranı', type: 'number', suffix: '%', min: 0, max: 100, step: 0.1, group: 'marketplace' },
   { key: 'vat_pct', label: 'Varsayılan KDV', type: 'number', suffix: '%', min: 0, max: 100, step: 1, group: 'tax' },
   { key: 'other_cost', label: 'Diğer Giderler', type: 'number', suffix: '₺', min: 0, step: 0.01, group: 'costs' },
   { key: 'payout_delay_days', label: 'Ödeme Gecikme Süresi', type: 'number', suffix: 'gün', min: 0, step: 1, group: 'cashflow' },
@@ -106,6 +110,9 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
   const [targetProfit, setTargetProfit] = useState<number | undefined>();
   const [suggestedPrice, setSuggestedPrice] = useState<number | undefined>();
 
+  const [customRateMap, setCustomRateMap] = useState<Map<string, number>>(new Map());
+  const [ratesLastUpdated, setRatesLastUpdated] = useState<string | null>(null);
+
   // In demo mode, treat as free user unless simulated otherwise
   const isProUserFlag = isDemo ? false : isProUser(user);
   const isProMode = input.pro_mode === true;
@@ -132,6 +139,28 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
     }
   }, [input.pro_mode, isProUserFlag, user, isDemo]);
 
+  useEffect(() => {
+    if (!user || isDemo) return;
+    (async () => {
+      const [rates, lastUpdated] = await Promise.all([
+        getUserCommissionRates(user.id),
+        getLastRatesUpdate(user.id),
+      ]);
+      if (rates.length > 0) {
+        setCustomRateMap(buildRateMap(rates));
+      }
+      setRatesLastUpdated(lastUpdated);
+    })();
+  }, [user, isDemo]);
+
+  // Satış fiyatı değişince Trendyol servis bedelini otomatik güncelle
+  useEffect(() => {
+    if (input.marketplace !== 'trendyol') return;
+    const autoFee = calculateTrendyolServiceFee(n(input.sale_price));
+    setInput((prev) => ({ ...prev, trendyol_service_fee: autoFee }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input.sale_price, input.marketplace]);
+
   const handleMarketplaceChange = (mp: Marketplace) => {
     const defaults = getMarketplaceDefaults(mp);
     setInput((prev) => ({
@@ -142,7 +171,27 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
       vat_pct: defaults.vat_pct,
       sale_vat_pct: defaults.vat_pct,
       purchase_vat_pct: defaults.vat_pct,
-      payout_delay_days: defaults.payout_delay_days
+      payout_delay_days: defaults.payout_delay_days,
+      marketplace_category: undefined,
+      trendyol_category: undefined,
+      n11_extra_pct: mp === 'n11' ? N11_EXTRA_FEE_PCT : 0,
+      trendyol_service_fee: getDefaultServiceFee(mp),
+    }));
+  };
+
+  const handleCategoryChange = (categoryLabel: string) => {
+    // Use custom rate if available, fall back to default
+    const customRate = lookupRate(customRateMap, input.marketplace, categoryLabel);
+    const defaultRate = getCategoryCommission(input.marketplace, categoryLabel);
+    const commission = customRate ?? defaultRate;
+    // Auto-fill expected return rate from category data
+    const returnRate = categoryLabel ? getCategoryReturnRate(input.marketplace, categoryLabel) : undefined;
+    setInput((prev) => ({
+      ...prev,
+      marketplace_category: categoryLabel,
+      trendyol_category: prev.marketplace === 'trendyol' ? categoryLabel : prev.trendyol_category,
+      ...(commission !== undefined ? { commission_pct: commission } : {}),
+      ...(returnRate !== undefined ? { return_rate_pct: returnRate } : {}),
     }));
   };
 
@@ -177,7 +226,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
     if (input.monthly_sales_volume <= 0) w.push('Aylık satış adedi 0 veya boş. Toplam kâr hesaplanamaz.');
     if (input.commission_pct > 35) w.push(`Komisyon oranı %${input.commission_pct} çok yüksek görünüyor.`);
     if (input.commission_pct < 0) w.push('Komisyon oranı negatif olamaz.');
-    if (input.return_rate_pct > 30) w.push('İade oranı %30 üzerinde. Bu sektör ortalamasının üzerinde olabilir.');
+    if (input.return_rate_pct > 35) w.push('İade oranı %35 üzerinde. Bu sektör ortalamasının üzerinde olabilir.');
 
     // Pro specific warnings
     if (input.pro_mode) {
@@ -315,7 +364,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
             <div className="space-y-0.5">
               <div className="flex items-center gap-2.5">
                 <Label htmlFor="pro-mode" className="font-bold text-base cursor-pointer">PRO Muhasebe Modu</Label>
-                {!isProUserFlag && <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 text-[10px] px-2 py-0.5"><Lock className="h-3 w-3 mr-1" /> Premium</Badge>}
+                {!isProUserFlag && <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] px-2 py-0.5"><Lock className="h-3 w-3 mr-1" /> Premium</Badge>}
               </div>
               <p className="text-xs text-muted-foreground">Gerçek E-Ticaret Muhasebesi (KDV Ayrıştırma)</p>
             </div>
@@ -349,7 +398,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {/* Primary VAT Toggles */}
-              <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+              <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider flex items-center gap-1.5">
                   <Info className="h-3.5 w-3.5" /> Gelir/Gider Temeli
                 </h4>
@@ -365,7 +414,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+              <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">KDV Oranları</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -379,7 +428,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+              <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Pazaryeri & İade</h4>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
@@ -405,7 +454,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                     { id: 'ad', label: 'Reklam', inc: 'ad_includes_vat', pct: 'ad_vat_pct' },
                     { id: 'other', label: 'Diğer', inc: 'other_cost_includes_vat', pct: 'other_cost_vat_pct' },
                   ].map((item) => (
-                    <div key={item.id} className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
+                    <div key={item.id} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-3">
                       <div className="flex items-center justify-between border-b pb-2.5">
                         <span className="text-sm font-semibold">{item.label}</span>
                         <Switch
@@ -429,13 +478,13 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                   ))}
                 </div>
 
-                <div className="mt-6 rounded-xl border bg-amber-50 dark:bg-amber-900/10 p-5">
+                <div className="mt-6 rounded-xl border bg-amber-500/10 p-5">
                   <div className="flex items-center gap-2 mb-2.5">
                     <Info className="h-4 w-4 text-amber-600" />
-                    <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Ek İade Maliyeti</span>
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Ek İade Maliyeti</span>
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <p className="text-xs text-amber-700/80 dark:text-amber-400/80 flex-1 leading-relaxed">
+                    <p className="text-xs text-amber-400/80 flex-1 leading-relaxed">
                       Müşteri iade ettiğinde cebinizden çıkan ekstra kargo veya operasyon bedeli (birim başına).
                     </p>
                     <div className="relative w-28 shrink-0">
@@ -443,7 +492,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                         type="number"
                         value={input.return_extra_cost ?? 0}
                         onChange={(e) => handleFieldChange('return_extra_cost', parseFloat(e.target.value))}
-                        className="h-10 border-amber-200 dark:border-amber-800 pr-6"
+                        className="h-10 border-amber-500/20 pr-6"
                       />
                       <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-amber-600">₺</span>
                     </div>
@@ -464,7 +513,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 type="button"
                 className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200 ${input.marketplace === mp.key
                   ? 'border-primary bg-primary/10 text-primary shadow-sm'
-                  : 'border-border bg-card hover:bg-muted hover:border-border'
+                  : 'border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] hover:bg-white/5 hover:border-[rgba(255,255,255,0.10)]'
                   }`}
                 onClick={() => handleMarketplaceChange(mp.key)}
               >
@@ -474,6 +523,187 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
           </div>
           <p className="text-xs text-muted-foreground">Pazaryeri değişikliği komisyon, iade ve KDV alanlarını otomatik doldurur.</p>
         </div>
+
+        {/* Category Selector (all marketplaces except custom) */}
+        {input.marketplace !== 'custom' && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">Kategori</Label>
+              {ratesLastUpdated && (
+                <span className="text-[10px] text-muted-foreground">
+                  Son güncelleme: {new Date(ratesLastUpdated).toLocaleDateString('tr-TR')}
+                </span>
+              )}
+            </div>
+            <select
+              value={input.marketplace_category || input.trendyol_category || ''}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">— Kategori seçin (isteğe bağlı) —</option>
+              {getMarketplaceCategories(input.marketplace).map((cat) => {
+                const customRate = lookupRate(customRateMap, input.marketplace, cat.label);
+                const displayRate = customRate ?? cat.commission_pct;
+                const isCustom = customRate !== undefined;
+                return (
+                  <option key={cat.label} value={cat.label}>
+                    {cat.label} (%{displayRate}{isCustom ? ' ✓' : ''})
+                  </option>
+                );
+              })}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Kategori seçimi komisyon oranını otomatik doldurur; dilediğinizde manuel değiştirebilirsiniz.
+              {customRateMap.size > 0 && <span className="text-emerald-400"> ✓ işaretliler kişisel oranlarınızı kullanıyor.</span>}
+            </p>
+
+            {/* Commission rate disclaimer */}
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs space-y-1.5">
+              <p className="font-semibold text-amber-400">
+                ⚠️ Bu oranlar genel tahmindir. Gerçek komisyon oranınız için:
+              </p>
+              <ul className="space-y-1 text-amber-400">
+                <li>
+                  <span className="font-medium">Trendyol →</span>{' '}
+                  <a href="https://akademi.trendyol.com/satici-bilgi-merkezi/detay/trendyol-komisyonlari" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                    akademi.trendyol.com/satici-bilgi-merkezi/detay/trendyol-komisyonlari
+                  </a>
+                </li>
+                <li>
+                  <span className="font-medium">Hepsiburada →</span>{' '}
+                  <a href="https://merchant.hepsiburada.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                    merchant.hepsiburada.com
+                  </a>
+                  {' '}→ Yardım → Komisyon Oranları
+                </li>
+                <li>
+                  <span className="font-medium">n11 →</span>{' '}
+                  <a href="https://magazadestek.n11.com/s/komisyon-oranlari" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                    magazadestek.n11.com/s/komisyon-oranlari
+                  </a>
+                </li>
+                <li>
+                  <span className="font-medium">Amazon TR →</span>{' '}
+                  <a href="https://sellercentral.amazon.com.tr" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                    sellercentral.amazon.com.tr
+                  </a>
+                </li>
+              </ul>
+              <p className="text-amber-500">
+                Komisyon oranını yukarıdaki alandan manuel düzeltebilirsiniz.
+              </p>
+            </div>
+
+          </div>
+        )}
+
+        {/* Beklenen İade Oranı — kategori seçiminden otomatik dolar */}
+        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="return_rate_pct" className="text-sm font-medium">Beklenen İade Oranı</Label>
+            <span
+              title="Ticaret Bakanlığı 2024 verilerine göre Türkiye'de en yüksek iade oranı giyim ve ayakkabı kategorisindedir. Kategori seçiminize göre sektör ortalaması otomatik girilmiştir. Kendi iade oranınızı biliyorsanız bu alanı manuel güncelleyebilirsiniz."
+              className="cursor-help text-muted-foreground"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </span>
+          </div>
+          <div className="relative">
+            <Input
+              id="return_rate_pct"
+              type="number"
+              value={(input.return_rate_pct as number) ?? ''}
+              onChange={(e) => handleFieldChange('return_rate_pct', parseFloat(e.target.value) || 0)}
+              min={0}
+              max={100}
+              step={0.1}
+              className="h-11 pr-8"
+              placeholder="10"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">%</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Satışlarınızın yüzde kaçının iade edileceğini tahmin edin. Otomatik hesaplanan değeri dilediğinizde manuel değiştirebilirsiniz.
+            {input.marketplace === 'amazon_tr' && (
+              <span className="text-blue-400"> Amazon TR koşulsuz iade politikası nedeniyle +%3 eklendi.</span>
+            )}
+          </p>
+        </div>
+
+        {/* Platform Servis Bedeli — pazaryerine göre farklı davranır */}
+        {input.marketplace !== 'amazon_tr' && (
+          <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-1.5">
+              <Label
+                htmlFor={input.marketplace === 'n11' ? 'n11_extra_pct' : 'trendyol_service_fee'}
+                className="text-sm font-medium"
+              >
+                {input.marketplace === 'n11'
+                  ? 'Hizmet Bedeli (%)'
+                  : input.marketplace === 'custom'
+                  ? 'Platform Hizmet Bedeli (₺)'
+                  : 'Servis Bedeli'}
+              </Label>
+              <span
+                title={
+                  input.marketplace === 'trendyol'
+                    ? "Trendyol'un her gönderi için aldığı sabit platform hizmet bedeli. Normal kargolarda 8,49 TL + KDV, 'Bugün Kargoda' etiketiyle 5,49 TL + KDV olarak uygulanır. Komisyondan bağımsız, her siparişten ayrıca kesilir."
+                    : input.marketplace === 'hepsiburada'
+                    ? "Hepsiburada'nın her gönderi için kestiği iki ayrı bedel: İşlem Bedeli 7₺ + Hizmet Bedeli 2,5₺ = toplam 9,5₺ + KDV. Siparişi 0-1 gün içinde kargoya verirsen bu bedel alınmıyor."
+                    : input.marketplace === 'n11'
+                    ? 'Satış tutarı üzerinden kesilen Pazarlama (%1,20) + Pazaryeri (%0,67) hizmet bedeli toplamı.'
+                    : 'Pazaryerinin her sipariş için kestiği platform hizmet bedeli.'
+                }
+                className="cursor-help text-muted-foreground"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </span>
+            </div>
+            <div className="relative">
+              {input.marketplace === 'n11' ? (
+                <Input
+                  id="n11_extra_pct"
+                  type="number"
+                  value={(input.n11_extra_pct as number) ?? ''}
+                  onChange={(e) => handleFieldChange('n11_extra_pct', parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step={0.01}
+                  className="h-11 pr-8"
+                  placeholder="1.87"
+                />
+              ) : (
+                <Input
+                  id="trendyol_service_fee"
+                  type="number"
+                  value={(input.trendyol_service_fee as number) || ''}
+                  onChange={(e) => handleFieldChange('trendyol_service_fee', parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step={0.01}
+                  className="h-11 pr-8"
+                  placeholder="0"
+                />
+              )}
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">
+                {input.marketplace === 'n11' ? '%' : '₺'}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {input.marketplace === 'trendyol' && "Trendyol Platform Hizmet Bedeli (gönderi başına). 'Bugün Kargoda' etiketiyle 5,49₺'ye düşer."}
+              {input.marketplace === 'hepsiburada' && 'İşlem Bedeli (7₺) + Hizmet Bedeli (2,5₺). Hızlı kargoda (0-1 gün) bu bedel alınmıyor.'}
+              {input.marketplace === 'n11' && 'Pazarlama (%1,20) + Pazaryeri (%0,67) hizmet bedeli. Satış tutarı üzerinden kesilir.'}
+              {input.marketplace === 'custom' && 'Platform hizmet bedelini manuel girin.'}
+            </p>
+          </div>
+        )}
+
+        {/* Amazon TR — servis bedeli yok, bilgi notu */}
+        {input.marketplace === 'amazon_tr' && (
+          <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-3 text-xs animate-in fade-in duration-200">
+            <p className="text-blue-400">
+              ℹ️ Amazon TR&apos;de ayrı bir sipariş başı servis bedeli uygulanmaz.
+            </p>
+          </div>
+        )}
 
         {/* Field Groups */}
         {groups.map((group) => {
@@ -614,14 +844,14 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
         {/* Warnings Display */}
         {warnings.length > 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 animate-in fade-in slide-in-from-top-2 dark:bg-amber-900/10 dark:border-amber-900/30">
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <h4 className="font-semibold text-amber-800 dark:text-amber-400 text-sm">Dikkat Edilmesi Gerekenler</h4>
+              <AlertTriangle className="h-5 w-5 text-amber-400" />
+              <h4 className="font-semibold text-amber-800 text-sm">Dikkat Edilmesi Gerekenler</h4>
             </div>
             <ul className="list-disc list-inside space-y-1">
               {warnings.map((w, i) => (
-                <li key={i} className="text-xs text-amber-700 dark:text-amber-500">{w}</li>
+                <li key={i} className="text-xs text-amber-500">{w}</li>
               ))}
             </ul>
             <p className="text-[10px] text-amber-600/80 mt-2 font-medium">Bu uyarılarla devam etmek için butona tekrar tıklayın.</p>

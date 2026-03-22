@@ -58,10 +58,10 @@ function formatDate(iso: string): string {
 
 function riskBadge(level: string) {
   const map: Record<string, { bg: string; text: string; label: string }> = {
-    safe: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-600 dark:text-emerald-400', label: 'Düşük' },
-    moderate: { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-600 dark:text-amber-400', label: 'Orta' },
-    risky: { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-600 dark:text-orange-400', label: 'Yüksek' },
-    dangerous: { bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-600 dark:text-red-400', label: 'Kritik' },
+    safe: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Düşük' },
+    moderate: { bg: 'bg-amber-500/10', text: 'text-amber-400', label: 'Orta' },
+    risky: { bg: 'bg-orange-500/10', text: 'text-orange-400', label: 'Yüksek' },
+    dangerous: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Kritik' },
   };
   const m = map[level] || map.moderate;
   return (
@@ -204,7 +204,7 @@ export default function AccountPage() {
         </div>
 
         {/* ─── 2. Quick Actions ─── */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Hızlı İşlemler</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -215,7 +215,7 @@ export default function AccountPage() {
             ].map((action) => (
               <Link key={action.href} href={action.href}>
                 <div className="flex items-center gap-3 rounded-xl border bg-background p-4 hover:bg-muted/50 hover:shadow-sm transition-all cursor-pointer group">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted group-hover:bg-card transition-colors">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(255,255,255,0.06)] group-hover:bg-[rgba(255,255,255,0.09)] transition-colors">
                     <action.icon className={`h-5 w-5 ${action.color}`} />
                   </div>
                   <span className="text-sm font-medium flex-1">{action.label}</span>
@@ -227,7 +227,7 @@ export default function AccountPage() {
         </div>
 
         {/* ─── 3. Profit Goals ─── */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <Target className="h-5 w-5 text-primary" />
@@ -294,7 +294,7 @@ export default function AccountPage() {
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Bu Ay Toplam Net Kâr</span>
-                    <span className={`font-bold tabular-nums ${monthlyNetProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                    <span className={`font-bold tabular-nums ${monthlyNetProfit >= 0 ? 'text-emerald-400' : 'text-red-400'
                       }`}>
                       {formatCurrency(monthlyNetProfit)}
                     </span>
@@ -330,10 +330,10 @@ export default function AccountPage() {
         </div>
 
         {/* ─── 4. Business Defaults ─── */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
-              <Store className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <Store className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
               <h2 className="font-semibold">Varsayılan Değerler</h2>
@@ -403,7 +403,7 @@ export default function AccountPage() {
         </div>
 
         {/* ─── 5. Plan Section ─── */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${isPro ? 'bg-amber-500/10' : 'bg-muted'}`}>
@@ -413,7 +413,7 @@ export default function AccountPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="font-semibold">{isPro ? 'Pro Plan' : 'Ücretsiz Plan'}</h2>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${isPro
-                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                    ? 'bg-emerald-500/10 text-emerald-400'
                     : 'bg-muted text-muted-foreground'
                     }`}>
                     {isPro ? 'Aktif' : 'Temel'}
@@ -465,7 +465,7 @@ export default function AccountPage() {
         </div>
 
         {/* ─── 6. Security ─── */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
               <Shield className="h-5 w-5 text-blue-500" />
@@ -504,7 +504,7 @@ export default function AccountPage() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/20 rounded-[10px]"
+              className="gap-1.5 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-[10px]"
               onClick={logout}
             >
               <LogOut className="h-4 w-4" />
@@ -513,7 +513,7 @@ export default function AccountPage() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/20 rounded-[10px]"
+              className="gap-1.5 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-[10px]"
               onClick={async () => {
                 await supabase.auth.signOut({ scope: 'global' });
                 router.push('/auth');
@@ -532,7 +532,7 @@ export default function AccountPage() {
         </div>
 
         {/* ─── 7. Recent Activity ─── */}
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Son Analizler</h2>
             {analyses.length > 5 && (
@@ -556,13 +556,13 @@ export default function AccountPage() {
                 <Link key={a.id} href={`/analysis/${a.id}`}>
                   <div className="flex items-center gap-4 rounded-xl p-3 -mx-1 hover:bg-muted/50 transition-colors cursor-pointer group">
                     <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${a.result.unit_net_profit > 0
-                      ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                      : 'bg-red-50 dark:bg-red-900/20'
+                      ? 'bg-emerald-500/10'
+                      : 'bg-red-500/10'
                       }`}>
                       {a.result.unit_net_profit > 0 ? (
-                        <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <TrendingUp className="h-4 w-4 text-emerald-400" />
                       ) : (
-                        <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        <TrendingDown className="h-4 w-4 text-red-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -574,8 +574,8 @@ export default function AccountPage() {
                     </div>
                     <div className="text-right shrink-0">
                       <p className={`text-sm font-bold tabular-nums ${a.result.unit_net_profit > 0
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-red-600 dark:text-red-400'
+                        ? 'text-emerald-400'
+                        : 'text-red-400'
                         }`}>
                         {formatCurrency(a.result.unit_net_profit)}
                       </p>

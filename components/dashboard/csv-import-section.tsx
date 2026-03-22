@@ -138,7 +138,7 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
     };
 
     return (
-        <div className="rounded-2xl border bg-card p-6 shadow-sm border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="rounded-2xl border border-amber-500/20 bg-[rgba(255,255,255,0.03)] p-6 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Upload className="h-5 w-5 text-primary" />
@@ -149,7 +149,7 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
             <div className="grid gap-6 lg:grid-cols-2">
                 <div className="space-y-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex bg-muted rounded-lg p-1 w-fit">
+                        <div className="flex bg-[rgba(255,255,255,0.04)] rounded-lg p-1 w-fit">
                             <button
                                 onClick={() => { setMode('upload'); reset(); }}
                                 className={cn(
@@ -234,11 +234,11 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
 
                     <div className="max-h-[250px] overflow-y-auto space-y-3 pr-2">
                         {missingCols.length > 0 && (
-                            <div className="rounded-xl border border-red-200 bg-red-50 p-3 dark:bg-red-950/20 dark:border-red-900 flex gap-3">
+                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 flex gap-3">
                                 <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
                                 <div className="space-y-1">
-                                    <p className="text-xs font-bold text-red-800 dark:text-red-400">Eksik Sütunlar!</p>
-                                    <p className="text-[10px] text-red-700 dark:text-red-400">
+                                    <p className="text-xs font-bold text-red-400">Eksik Sütunlar!</p>
+                                    <p className="text-[10px] text-red-400">
                                         Zorunlu sütunlar bulunamadı: <span className="font-mono font-bold">{missingCols.join(', ')}</span>
                                     </p>
                                 </div>
@@ -246,28 +246,28 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
                         )}
 
                         {errors.length > 0 && (
-                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:bg-amber-950/20 dark:border-amber-900">
+                            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
-                                    <p className="text-xs font-bold text-amber-800 dark:text-amber-400">{errors.length} hatayla karşılaşıldı</p>
+                                    <p className="text-xs font-bold text-amber-400">{errors.length} hatayla karşılaşıldı</p>
                                 </div>
                                 <div className="space-y-1">
                                     {errors.map((err, i) => (
-                                        <p key={i} className="text-[10px] text-amber-700 dark:text-amber-400 border-l-2 border-amber-200 pl-2">{err}</p>
+                                        <p key={i} className="text-[10px] text-amber-400 border-l-2 border-amber-500/30 pl-2">{err}</p>
                                     ))}
                                 </div>
                             </div>
                         )}
 
                         {warnings.length > 0 && (
-                            <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 dark:bg-blue-950/20 dark:border-blue-900">
+                            <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Info className="h-3.5 w-3.5 text-blue-600" />
-                                    <p className="text-xs font-bold text-blue-800 dark:text-blue-400">Dikkat Edilmesi Gerekenler</p>
+                                    <p className="text-xs font-bold text-blue-400">Dikkat Edilmesi Gerekenler</p>
                                 </div>
                                 <div className="space-y-1">
                                     {warnings.map((w, i) => (
-                                        <p key={i} className="text-[10px] text-blue-700 dark:text-blue-400 border-l-2 border-blue-200 pl-2">{w}</p>
+                                        <p key={i} className="text-[10px] text-blue-400 border-l-2 border-blue-500/30 pl-2">{w}</p>
                                     ))}
                                 </div>
                             </div>
@@ -277,7 +277,7 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">{data.length} geçerli ürün hazır</p>
+                                    <p className="text-xs font-bold text-emerald-400">{data.length} geçerli ürün hazır</p>
                                 </div>
                                 <div className="rounded-xl border border-border overflow-hidden">
                                     <table className="w-full text-[10px] text-left">
