@@ -96,6 +96,87 @@ export const blogPosts: BlogPost[] = [
     `.trim(),
   },
   {
+    slug: 'trendyol-komisyon-oranlari-2026',
+    title: 'Trendyol Komisyon Oranları 2026 — Tam Liste',
+    description:
+      "Trendyol'da hangi kategoride ne kadar komisyon ödüyorsunuz? 2026 güncel komisyon oranlarının tam listesi ve kâra etkisi.",
+    date: '2026-03-23',
+    readTime: 5,
+    content: `
+<p>Trendyol'da satış yapıyorsanız komisyon oranlarını doğru bilmek, kârlı ürün seçiminin temelidir. Yanlış kategoride listelenen ya da komisyon oranı hesaba katılmadan fiyatlanan ürünler farkında olmadan zarar ettirebilir.</p>
+<p>Bu yazıda 2026 yılı güncel Trendyol komisyon oranlarını kategori bazında derledik.</p>
+
+<h2>Trendyol Komisyon Oranları 2026</h2>
+<table>
+  <thead><tr><th>Kategori</th><th>Komisyon Oranı</th></tr></thead>
+  <tbody>
+    <tr><td>Elektronik</td><td>%8 – %10</td></tr>
+    <tr><td>Bilgisayar &amp; Tablet</td><td>%8 – %10</td></tr>
+    <tr><td>Telefon &amp; Aksesuar</td><td>%10 – %14</td></tr>
+    <tr><td>Beyaz Eşya</td><td>%8 – %10</td></tr>
+    <tr><td>Küçük Ev Aletleri</td><td>%10 – %14</td></tr>
+    <tr><td>Televizyon</td><td>%8</td></tr>
+    <tr><td>Giyim &amp; Moda</td><td>%18 – %22</td></tr>
+    <tr><td>Ayakkabı &amp; Çanta</td><td>%18 – %22</td></tr>
+    <tr><td>Spor &amp; Outdoor</td><td>%14 – %18</td></tr>
+    <tr><td>Kozmetik &amp; Kişisel Bakım</td><td>%15 – %20</td></tr>
+    <tr><td>Anne &amp; Bebek</td><td>%12 – %16</td></tr>
+    <tr><td>Oyuncak</td><td>%14 – %18</td></tr>
+    <tr><td>Kitap &amp; Kırtasiye</td><td>%12 – %15</td></tr>
+    <tr><td>Ev &amp; Yaşam</td><td>%14 – %18</td></tr>
+    <tr><td>Mutfak</td><td>%14 – %18</td></tr>
+    <tr><td>Bahçe &amp; Yapı Market</td><td>%12 – %16</td></tr>
+    <tr><td>Pet Shop</td><td>%14 – %18</td></tr>
+    <tr><td>Otomotiv</td><td>%10 – %14</td></tr>
+  </tbody>
+</table>
+<p><strong>Not:</strong> Komisyon oranları Trendyol tarafından dönemsel olarak güncellenebilir. Satıcı panelinizden kategorinize özel güncel oranı kontrol etmenizi öneririz.</p>
+
+<h2>Komisyon Oranı Kâra Nasıl Etki Eder?</h2>
+<p>Komisyon oranındaki küçük bir fark, yüksek cirolu satıcılar için büyük rakamlara dönüşebilir.</p>
+<p>Aylık 100.000 TL ciro yapan bir satıcı için:</p>
+<table>
+  <thead><tr><th>Komisyon Oranı</th><th>Aylık Komisyon Kesintisi</th></tr></thead>
+  <tbody>
+    <tr><td>%10</td><td>10.000 TL</td></tr>
+    <tr><td>%15</td><td>15.000 TL</td></tr>
+    <tr><td>%20</td><td>20.000 TL</td></tr>
+  </tbody>
+</table>
+<p>Yani %10 ile %20 arasındaki fark, aynı ciroda aylık <strong>10.000 TL</strong> daha az kâr demektir.</p>
+
+<h2>Komisyon Dışında Dikkat Edilmesi Gereken Kesintiler</h2>
+<p>Komisyon tek maliyet değil. Trendyol'da net kârınızı etkileyen diğer kalemler:</p>
+<ul>
+  <li><strong>Kargo bedeli:</strong> Ücretsiz kargo kampanyasına dahilseniz bu ücret size yansır</li>
+  <li><strong>İade kargo ücreti:</strong> Müşteri iade ettiğinde dönüş kargo bedeli genellikle satıcıdan kesilir</li>
+  <li><strong>Trendyol reklam harcaması:</strong> Sponsorlu ürün ve vitrin reklamları</li>
+  <li><strong>Hizmet bedeli:</strong> Bazı kampanya ve hizmetler için ek kesinti uygulanabilir</li>
+</ul>
+
+<h2>Hangi Kategori Daha Kârlı?</h2>
+<p>Komisyon oranı düşük kategoriler her zaman daha kârlı değildir. Rekabet yoğunluğu, iade oranı ve reklam maliyeti de hesaba katılmalıdır.</p>
+<p>Genel kural olarak:</p>
+<ul>
+  <li><strong>Elektronik:</strong> Düşük komisyon ama yüksek rekabet ve iade riski</li>
+  <li><strong>Giyim:</strong> Yüksek komisyon ama yüksek ciro potansiyeli</li>
+  <li><strong>Kozmetik:</strong> Orta komisyon, düşük iade, iyi kâr marjı</li>
+</ul>
+
+<h2>Doğru Fiyatlandırma İçin Ne Yapmalı?</h2>
+<ol>
+  <li>Ürününüzün kategorisini ve komisyon oranını öğrenin</li>
+  <li>Kargo, paketleme ve reklam maliyetlerini ekleyin</li>
+  <li>Hedef kâr marjınızı belirleyin</li>
+  <li>Buna göre minimum satış fiyatınızı hesaplayın</li>
+</ol>
+<p>Bu hesaplamayı her ürün için tek tek yapmak zaman alıcı. Kârnet, Trendyol komisyon oranlarını otomatik olarak biliyor — siz sadece ürün maliyetinizi girin, gerisini halleder.</p>
+
+<h2>Kârnet ile Komisyonu Otomatik Hesaplayın</h2>
+<p>Kategori seçtiğinizde Kârnet güncel komisyon oranını otomatik uyguluyor. Kargo, reklam ve paketleme maliyetleriyle birlikte gerçek net kârınızı ve başabaş noktanızı saniyeler içinde görüyorsunuz.</p>
+    `.trim(),
+  },
+  {
     slug: 'trendyolda-gercek-kar-nasil-hesaplanir',
     title: "Trendyol'da Gerçek Kârınızı Nasıl Hesaplarsınız?",
     description:
