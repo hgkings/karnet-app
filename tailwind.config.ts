@@ -20,14 +20,16 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
+        sans: ['"DM Sans"', 'var(--font-inter)', 'system-ui', 'sans-serif'],
         geist: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         'premium-sm': '0 1px 2px rgba(2,6,23,.06)',
         'premium-md': '0 8px 24px rgba(2,6,23,.08)',
         'premium-lg': '0 16px 48px rgba(2,6,23,.12)',
-        'glow-sm': '0 0 15px rgba(37, 99, 235, 0.15)',
-        'glow-md': '0 0 30px rgba(37, 99, 235, 0.2)',
+        'glow-sm': '0 0 15px rgba(217, 119, 6, 0.15)',
+        'glow-md': '0 0 30px rgba(217, 119, 6, 0.2)',
+        'glow-amber': '0 0 20px rgba(217, 119, 6, 0.3)',
       },
       colors: {
         background: 'hsl(var(--background))',

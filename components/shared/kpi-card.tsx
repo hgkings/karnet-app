@@ -13,22 +13,25 @@ interface KPICardProps {
 }
 
 export function KPICard({ title, value, subtitle, icon: Icon, trend, className }: KPICardProps) {
+  const accentClass = trend === 'up' ? 'bg-emerald-500' : trend === 'down' ? 'bg-red-500' : 'bg-border';
+
   return (
     <div className={cn(
-      'rounded-2xl border bg-card p-6 shadow-premium-sm transition-all duration-200 hover:shadow-premium-md',
+      'flex overflow-hidden rounded-2xl border border-border/30 bg-card hover:border-border/60 transition-colors duration-200',
       className
     )}>
-      <div className="flex items-start justify-between">
+      <div className={cn('w-[3px] shrink-0', accentClass)} />
+      <div className="flex flex-1 items-start justify-between p-6">
         <div className="space-y-1.5">
-          <p className="text-[13px] font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold tracking-tight">{value}</p>
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
+          <p className="text-2xl font-semibold tracking-tight mt-1">{value}</p>
           {subtitle && (
             <p className={cn(
               'text-xs font-medium',
-              trend === 'up' && 'text-emerald-600 dark:text-emerald-400',
-              trend === 'down' && 'text-red-600 dark:text-red-400',
-              trend === 'neutral' && 'text-muted-foreground',
-              !trend && 'text-muted-foreground'
+              trend === 'up' && 'text-emerald-400',
+              trend === 'down' && 'text-red-400',
+              trend === 'neutral' && 'text-[rgba(255,255,255,0.4)]',
+              !trend && 'text-[rgba(255,255,255,0.4)]'
             )}>
               {subtitle}
             </p>

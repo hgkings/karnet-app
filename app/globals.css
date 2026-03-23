@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,7 +8,7 @@
   /* ── Light Mode (default) ── */
   :root {
     --card: 0 0% 100%;
-    --ring: 38 92% 50%;
+    --ring: 38 92% 44%;
     --input: 220 13% 91%;
     --muted: 210 20% 98%;
     --accent: 48 100% 96%;
@@ -18,11 +20,11 @@
     --chart-4: 21 82% 31%;
     --chart-5: 18 78% 26%;
     --popover: 0 0% 100%;
-    --primary: 38 92% 50%;
+    --primary: 38 92% 44%;
     --sidebar: 210 20% 98%;
     --spacing: 0.25rem;
     --font-mono: "JetBrains Mono", "Fira Code", monospace;
-    --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+    --font-sans: "DM Sans", "Inter", "Helvetica Neue", Arial, sans-serif;
     --font-serif: "Source Serif 4", Georgia, serif;
     --secondary: 220 14% 96%;
     --background: 0 0% 100%;
@@ -30,7 +32,7 @@
     --destructive: 0 84% 60%;
     --shadow-blur: 8px;
     --shadow-color: hsl(0 0% 0%);
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-ring: 38 92% 44%;
     --shadow-spread: -1px;
     --letter-spacing: 0em;
     --shadow-opacity: 0.1;
@@ -39,11 +41,11 @@
     --card-foreground: 0 0% 15%;
     --shadow-offset-x: 0px;
     --shadow-offset-y: 4px;
-    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary: 38 92% 44%;
     --muted-foreground: 220 9% 46%;
     --accent-foreground: 21 82% 31%;
     --popover-foreground: 0 0% 15%;
-    --primary-foreground: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
     --sidebar-foreground: 0 0% 15%;
     --secondary-foreground: 215 14% 34%;
     --destructive-foreground: 0 0% 100%;
@@ -58,37 +60,37 @@
 
   /* ── Dark Mode ── */
   .dark {
-    --card: 0 0% 15%;
-    --ring: 38 92% 50%;
-    --input: 0 0% 25%;
-    --muted: 0 0% 15%;
-    --accent: 21 82% 31%;
-    --border: 0 0% 25%;
+    --card: 24 10% 10%;
+    --ring: 38 92% 44%;
+    --input: 20 8% 16%;
+    --muted: 24 10% 10%;
+    --accent: 32 80% 18%;
+    --border: 20 6% 14%;
     --chart-1: 43 96% 56%;
-    --chart-2: 32 95% 44%;
-    --chart-3: 21 82% 31%;
-    --chart-4: 26 90% 37%;
-    --chart-5: 21 82% 31%;
-    --popover: 0 0% 15%;
-    --primary: 38 92% 50%;
-    --sidebar: 0 0% 6%;
-    --secondary: 0 0% 15%;
-    --background: 0 0% 9%;
-    --foreground: 0 0% 90%;
+    --chart-2: 38 92% 44%;
+    --chart-3: 32 95% 37%;
+    --chart-4: 26 90% 31%;
+    --chart-5: 21 82% 26%;
+    --popover: 24 10% 10%;
+    --primary: 38 92% 44%;
+    --sidebar: 20 14% 5%;
+    --secondary: 24 10% 10%;
+    --background: 20 14% 4%;
+    --foreground: 40 6% 97%;
     --destructive: 0 84% 60%;
-    --sidebar-ring: 38 92% 50%;
-    --sidebar-accent: 21 82% 31%;
-    --sidebar-border: 0 0% 25%;
-    --card-foreground: 0 0% 90%;
-    --sidebar-primary: 38 92% 50%;
-    --muted-foreground: 0 0% 64%;
-    --accent-foreground: 48 97% 77%;
-    --popover-foreground: 0 0% 90%;
-    --primary-foreground: 0 0% 0%;
-    --sidebar-foreground: 0 0% 90%;
-    --secondary-foreground: 0 0% 90%;
+    --sidebar-ring: 38 92% 44%;
+    --sidebar-accent: 32 80% 18%;
+    --sidebar-border: 20 6% 14%;
+    --card-foreground: 40 6% 97%;
+    --sidebar-primary: 38 92% 44%;
+    --muted-foreground: 0 0% 50%;
+    --accent-foreground: 43 96% 56%;
+    --popover-foreground: 40 6% 97%;
+    --primary-foreground: 0 0% 100%;
+    --sidebar-foreground: 40 6% 97%;
+    --secondary-foreground: 40 6% 90%;
     --destructive-foreground: 0 0% 100%;
-    --sidebar-accent-foreground: 48 97% 77%;
+    --sidebar-accent-foreground: 43 96% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
@@ -127,11 +129,12 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', var(--font-sans, 'Inter', system-ui, sans-serif);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-geist-sans, 'Inter', system-ui, sans-serif);
+    font-family: 'DM Sans', var(--font-geist-sans, 'Inter', system-ui, sans-serif);
     font-feature-settings: "ss01", "ss02";
   }
 }
@@ -141,10 +144,38 @@ html {
 }
 
 /* ── Custom Scrollbar ── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Light mode scrollbar */
+:root ::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+}
+:root ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ── Global Input/Select Focus ── */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #D97706 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1) !important;
+  outline: none;
+}
+
+/* ── Global Button Styles ── */
+button {
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
 
 /* ── Aurora Background (layout-level, all pages) ── */
 .aurora-bg {
@@ -157,7 +188,7 @@ html {
 }
 
 .dark .aurora-bg {
-  background: hsl(222, 47%, 4%);
+  background: #0C0A09;
 }
 
 .aurora-orb {
@@ -168,11 +199,11 @@ html {
   transform: translateZ(0);
 }
 
-/* Light mode orbs — subtle */
+/* Light mode orbs — subtle amber */
 .orb-1 {
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, hsl(217 91% 53% / 0.10) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(38 92% 50% / 0.08) 0%, transparent 70%);
   top: -200px;
   left: -150px;
   animation: orb1 22s ease-in-out infinite alternate;
@@ -181,7 +212,7 @@ html {
 .orb-2 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, hsl(260 70% 55% / 0.07) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(32 95% 44% / 0.06) 0%, transparent 70%);
   top: 30%;
   right: -100px;
   animation: orb2 18s ease-in-out infinite alternate;
@@ -190,23 +221,23 @@ html {
 .orb-3 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, hsl(217 91% 60% / 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(38 92% 50% / 0.05) 0%, transparent 70%);
   bottom: 10%;
   left: 25%;
   animation: orb3 25s ease-in-out infinite alternate;
 }
 
-/* Dark mode orbs — more visible */
+/* Dark mode orbs — amber glow */
 .dark .orb-1 {
-  background: radial-gradient(circle, hsl(217 91% 60% / 0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(38 92% 50% / 0.15) 0%, transparent 70%);
 }
 
 .dark .orb-2 {
-  background: radial-gradient(circle, hsl(260 70% 55% / 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(32 95% 44% / 0.10) 0%, transparent 70%);
 }
 
 .dark .orb-3 {
-  background: radial-gradient(circle, hsl(217 91% 70% / 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(26 90% 37% / 0.08) 0%, transparent 70%);
 }
 
 @keyframes orb1 {
@@ -233,7 +264,7 @@ html {
 }
 
 .dark .bg-animated {
-  background: hsl(222, 47%, 4%);
+  background: #0C0A09;
 }
 
 .bg-orb {
@@ -248,7 +279,7 @@ html {
 .bg-orb-1 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, hsl(221 83% 53%) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(38 92% 50%) 0%, transparent 70%);
   top: -200px;
   left: -100px;
   animation: orbFloat1 20s linear infinite;
@@ -257,7 +288,7 @@ html {
 .bg-orb-2 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, hsl(35 92% 55%) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(32 95% 44%) 0%, transparent 70%);
   top: 10%;
   right: -150px;
   animation: orbFloat2 25s linear infinite;
@@ -267,7 +298,7 @@ html {
 .bg-orb-3 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, hsl(260 70% 60%) 0%, transparent 70%);
+  background: radial-gradient(circle, hsl(26 90% 37%) 0%, transparent 70%);
   bottom: 20%;
   left: 20%;
   animation: orbFloat3 18s linear infinite;
@@ -312,16 +343,16 @@ html {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(10, 10, 20, 0.3);
+  background: rgba(12, 10, 9, 0.3);
   pointer-events: none;
 }
 
-/* ── Page Hero Background (ana sayfa genel arka plan) ── */
+/* ── Page Hero Background ── */
 .page-hero-bg {
   background:
     radial-gradient(ellipse 100% 60% at 50% -10%,
-      hsl(221 83% 53% / 0.12) 0%,
-      hsl(35 92% 50% / 0.04) 50%,
+      hsl(38 92% 50% / 0.10) 0%,
+      hsl(32 95% 44% / 0.04) 50%,
       transparent 100%
     ),
     white;
@@ -330,7 +361,7 @@ html {
 .dark .page-hero-bg {
   background:
     radial-gradient(ellipse 100% 60% at 50% -10%,
-      hsl(217 91% 60% / 0.10) 0%,
+      hsl(38 92% 50% / 0.08) 0%,
       transparent 100%
     ),
     hsl(var(--background));
@@ -356,10 +387,16 @@ html {
     border: 1px solid rgba(255,255,255,0.08);
   }
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-orange-400;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #F59E0B, #D97706);
+  }
+  .gradient-text-amber {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #F59E0B, #D97706);
   }
   .gradient-text-blue {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #F59E0B, #D97706);
   }
   .btn-shine {
     position: relative;
@@ -448,4 +485,4 @@ html {
 
 /* ── Dashboard sidebar scrollbar thin ── */
 .scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }

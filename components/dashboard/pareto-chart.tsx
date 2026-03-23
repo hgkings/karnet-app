@@ -35,12 +35,12 @@ export function ParetoChart({ analyses }: ParetoChartProps) {
     const contributionPct = (currentSum / totalProfit) * 100;
 
     return (
-        <Card className="shadow-sm border-l-4 border-l-emerald-500">
+        <Card className="border-l-4 border-l-emerald-500">
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                            <BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <div className="p-2 bg-emerald-500/10 rounded-lg">
+                            <BarChart3 className="h-4 w-4 text-emerald-400" />
                         </div>
                         <div>
                             <CardTitle className="text-base font-bold">Kârın Omurgası (80/20)</CardTitle>
@@ -54,9 +54,9 @@ export function ParetoChart({ analyses }: ParetoChartProps) {
             <CardContent>
                 <div className="space-y-3 mt-2">
                     {topContributors.slice(0, 5).map((item, idx) => (
-                        <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+                        <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-[rgba(255,255,255,0.03)] hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-3">
-                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
                                     {idx + 1}
                                 </span>
                                 <div className="flex flex-col min-w-0 flex-1 px-2">
@@ -71,7 +71,7 @@ export function ParetoChart({ analyses }: ParetoChartProps) {
                                 </div>
                             </div>
                             <div className="text-right shrink-0 ml-2">
-                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                                <p className="text-sm font-bold text-emerald-400 whitespace-nowrap">
                                     {formatCurrency(item.result.monthly_net_profit)}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground">

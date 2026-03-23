@@ -364,7 +364,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
             <div className="space-y-0.5">
               <div className="flex items-center gap-2.5">
                 <Label htmlFor="pro-mode" className="font-bold text-base cursor-pointer">PRO Muhasebe Modu</Label>
-                {!isProUserFlag && <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 text-[10px] px-2 py-0.5"><Lock className="h-3 w-3 mr-1" /> Premium</Badge>}
+                {!isProUserFlag && <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] px-2 py-0.5"><Lock className="h-3 w-3 mr-1" /> Premium</Badge>}
               </div>
               <p className="text-xs text-muted-foreground">Gerçek E-Ticaret Muhasebesi (KDV Ayrıştırma)</p>
             </div>
@@ -398,7 +398,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {/* Primary VAT Toggles */}
-              <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+              <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider flex items-center gap-1.5">
                   <Info className="h-3.5 w-3.5" /> Gelir/Gider Temeli
                 </h4>
@@ -414,7 +414,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+              <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">KDV Oranları</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -428,7 +428,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+              <div className="space-y-4 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 shadow-sm">
                 <h4 className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Pazaryeri & İade</h4>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
@@ -454,7 +454,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                     { id: 'ad', label: 'Reklam', inc: 'ad_includes_vat', pct: 'ad_vat_pct' },
                     { id: 'other', label: 'Diğer', inc: 'other_cost_includes_vat', pct: 'other_cost_vat_pct' },
                   ].map((item) => (
-                    <div key={item.id} className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
+                    <div key={item.id} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-3">
                       <div className="flex items-center justify-between border-b pb-2.5">
                         <span className="text-sm font-semibold">{item.label}</span>
                         <Switch
@@ -478,13 +478,13 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                   ))}
                 </div>
 
-                <div className="mt-6 rounded-xl border bg-amber-50 dark:bg-amber-900/10 p-5">
+                <div className="mt-6 rounded-xl border bg-amber-500/10 p-5">
                   <div className="flex items-center gap-2 mb-2.5">
                     <Info className="h-4 w-4 text-amber-600" />
-                    <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Ek İade Maliyeti</span>
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Ek İade Maliyeti</span>
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <p className="text-xs text-amber-700/80 dark:text-amber-400/80 flex-1 leading-relaxed">
+                    <p className="text-xs text-amber-400/80 flex-1 leading-relaxed">
                       Müşteri iade ettiğinde cebinizden çıkan ekstra kargo veya operasyon bedeli (birim başına).
                     </p>
                     <div className="relative w-28 shrink-0">
@@ -492,7 +492,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                         type="number"
                         value={input.return_extra_cost ?? 0}
                         onChange={(e) => handleFieldChange('return_extra_cost', parseFloat(e.target.value))}
-                        className="h-10 border-amber-200 dark:border-amber-800 pr-6"
+                        className="h-10 border-amber-500/20 pr-6"
                       />
                       <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-amber-600">₺</span>
                     </div>
@@ -513,7 +513,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 type="button"
                 className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200 ${input.marketplace === mp.key
                   ? 'border-primary bg-primary/10 text-primary shadow-sm'
-                  : 'border-border bg-card hover:bg-muted hover:border-border'
+                  : 'border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] hover:bg-white/5 hover:border-[rgba(255,255,255,0.10)]'
                   }`}
                 onClick={() => handleMarketplaceChange(mp.key)}
               >
@@ -554,15 +554,15 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
             </select>
             <p className="text-xs text-muted-foreground">
               Kategori seçimi komisyon oranını otomatik doldurur; dilediğinizde manuel değiştirebilirsiniz.
-              {customRateMap.size > 0 && <span className="text-emerald-600 dark:text-emerald-400"> ✓ işaretliler kişisel oranlarınızı kullanıyor.</span>}
+              {customRateMap.size > 0 && <span className="text-emerald-400"> ✓ işaretliler kişisel oranlarınızı kullanıyor.</span>}
             </p>
 
             {/* Commission rate disclaimer */}
-            <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800 p-3 text-xs space-y-1.5">
-              <p className="font-semibold text-amber-800 dark:text-amber-300">
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs space-y-1.5">
+              <p className="font-semibold text-amber-400">
                 ⚠️ Bu oranlar genel tahmindir. Gerçek komisyon oranınız için:
               </p>
-              <ul className="space-y-1 text-amber-700 dark:text-amber-400">
+              <ul className="space-y-1 text-amber-400">
                 <li>
                   <span className="font-medium">Trendyol →</span>{' '}
                   <a href="https://akademi.trendyol.com/satici-bilgi-merkezi/detay/trendyol-komisyonlari" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
@@ -589,7 +589,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                   </a>
                 </li>
               </ul>
-              <p className="text-amber-600 dark:text-amber-500">
+              <p className="text-amber-500">
                 Komisyon oranını yukarıdaki alandan manuel düzeltebilirsiniz.
               </p>
             </div>
@@ -625,7 +625,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
           <p className="text-[11px] text-muted-foreground">
             Satışlarınızın yüzde kaçının iade edileceğini tahmin edin. Otomatik hesaplanan değeri dilediğinizde manuel değiştirebilirsiniz.
             {input.marketplace === 'amazon_tr' && (
-              <span className="text-blue-600 dark:text-blue-400"> Amazon TR koşulsuz iade politikası nedeniyle +%3 eklendi.</span>
+              <span className="text-blue-400"> Amazon TR koşulsuz iade politikası nedeniyle +%3 eklendi.</span>
             )}
           </p>
         </div>
@@ -698,8 +698,8 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
         {/* Amazon TR — servis bedeli yok, bilgi notu */}
         {input.marketplace === 'amazon_tr' && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/10 dark:border-blue-800 p-3 text-xs animate-in fade-in duration-200">
-            <p className="text-blue-700 dark:text-blue-400">
+          <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-3 text-xs animate-in fade-in duration-200">
+            <p className="text-blue-400">
               ℹ️ Amazon TR&apos;de ayrı bir sipariş başı servis bedeli uygulanmaz.
             </p>
           </div>
@@ -844,14 +844,14 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
         {/* Warnings Display */}
         {warnings.length > 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 animate-in fade-in slide-in-from-top-2 dark:bg-amber-900/10 dark:border-amber-900/30">
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <h4 className="font-semibold text-amber-800 dark:text-amber-400 text-sm">Dikkat Edilmesi Gerekenler</h4>
+              <AlertTriangle className="h-5 w-5 text-amber-400" />
+              <h4 className="font-semibold text-amber-800 text-sm">Dikkat Edilmesi Gerekenler</h4>
             </div>
             <ul className="list-disc list-inside space-y-1">
               {warnings.map((w, i) => (
-                <li key={i} className="text-xs text-amber-700 dark:text-amber-500">{w}</li>
+                <li key={i} className="text-xs text-amber-500">{w}</li>
               ))}
             </ul>
             <p className="text-[10px] text-amber-600/80 mt-2 font-medium">Bu uyarılarla devam etmek için butona tekrar tıklayın.</p>

@@ -25,9 +25,9 @@ const strengthColors: Record<1 | 2 | 3, string> = {
   3: 'bg-emerald-500',
 };
 const strengthTextColors: Record<1 | 2 | 3, string> = {
-  1: 'text-red-600 dark:text-red-400',
-  2: 'text-amber-600 dark:text-amber-400',
-  3: 'text-emerald-600 dark:text-emerald-400',
+  1: 'text-red-400',
+  2: 'text-amber-400',
+  3: 'text-emerald-400',
 };
 
 export default function ResetPasswordPage() {
@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div
-          className="rounded-2xl bg-card p-8 space-y-6"
+          className="rounded-2xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] p-8 space-y-6"
           style={{
             boxShadow: '0 20px 60px hsl(221 83% 53% / 0.08)',
             border: '1px solid hsl(221 83% 53% / 0.1)',
@@ -104,8 +104,8 @@ export default function ResetPasswordPage() {
             /* ── Başarı durumu ── */
             <div className="text-center space-y-4">
               <div className="flex justify-center">
-                <div className="h-14 w-14 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
-                  <Check className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
+                <div className="h-14 w-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <Check className="h-7 w-7 text-emerald-400" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -189,9 +189,9 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       className={`h-11 rounded-lg pr-10 ${
-                        passwordsMismatch ? 'border-red-400 dark:border-red-500 focus-visible:ring-red-400' : ''
+                        passwordsMismatch ? 'border-red-500/50 focus-visible:ring-red-400' : ''
                       } ${
-                        passwordsMatch ? 'border-emerald-400 dark:border-emerald-500 focus-visible:ring-emerald-400' : ''
+                        passwordsMatch ? 'border-emerald-500/50 focus-visible:ring-emerald-400' : ''
                       }`}
                       autoComplete="new-password"
                       disabled={loading}
@@ -212,12 +212,12 @@ export default function ResetPasswordPage() {
                     </button>
                   </div>
                   {passwordsMismatch && (
-                    <p className="text-xs text-red-600 dark:text-red-400">Şifreler eşleşmiyor.</p>
+                    <p className="text-xs text-red-400">Şifreler eşleşmiyor.</p>
                   )}
                 </div>
 
                 {error && (
-                  <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100 dark:bg-red-950/50 dark:border-red-900 dark:text-red-400">
+                  <div className="p-3 rounded-xl bg-red-500/10 text-red-400 text-sm border border-red-500/20">
                     {error}
                   </div>
                 )}

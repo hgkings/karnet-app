@@ -9,7 +9,6 @@ const testimonials = [
     name: 'Emre K.',
     role: 'Trendyol Satıcısı',
     marketplace: 'Trendyol',
-    mpColor: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
     verified: true,
     stars: 5,
   },
@@ -18,7 +17,6 @@ const testimonials = [
     name: 'Seda A.',
     role: 'E-ticaret Danışmanı',
     marketplace: 'Çoklu Pazaryeri',
-    mpColor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     verified: true,
     stars: 5,
   },
@@ -27,7 +25,6 @@ const testimonials = [
     name: 'Murat T.',
     role: 'Hepsiburada Satıcısı',
     marketplace: 'Hepsiburada',
-    mpColor: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
     verified: false,
     stars: 5,
   },
@@ -45,13 +42,13 @@ export function Testimonials() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-16"
         >
-          <span className="inline-block mb-3 rounded-full border border-primary/30 bg-primary/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-block mb-3 rounded-lg px-3 py-1 text-xs font-semibold uppercase tracking-wider" style={{ background: 'rgba(217,119,6,0.12)', color: '#FBBF24' }}>
             Yorumlar
           </span>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 font-geist">
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-4" style={{ letterSpacing: '-0.5px' }}>
             Kullanıcılar Ne Diyor?
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base text-[rgba(255,255,255,0.5)]">
             Kârnet ile kârlılığını artıran satıcıların deneyimleri.
           </p>
         </motion.div>
@@ -64,7 +61,7 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group relative rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 hover:scale-[1.02] transition-all duration-300"
+              className="group relative rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 hover:border-amber-500/20 hover:shadow-md hover:scale-[1.02] transition-all duration-300"
             >
               {/* Stars */}
               <div className="flex gap-0.5 mb-4">
@@ -79,18 +76,18 @@ export function Testimonials() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-xs font-bold text-primary">
+                  <div className="h-8 w-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-xs font-bold text-amber-400">
                     {t.name.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold flex items-center gap-1">
+                    <p className="text-sm font-medium flex items-center gap-1">
                       {t.name}
-                      {t.verified && <BadgeCheck className="h-3.5 w-3.5 text-emerald-500" />}
+                      {t.verified && <BadgeCheck className="h-3.5 w-3.5 text-emerald-400" />}
                     </p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                    <p className="text-xs text-[rgba(255,255,255,0.5)]">{t.role}</p>
                   </div>
                 </div>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${t.mpColor}`}>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-amber-500/12 text-amber-400">
                   {t.marketplace}
                 </span>
               </div>

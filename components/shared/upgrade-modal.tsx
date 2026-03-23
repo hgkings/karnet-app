@@ -52,8 +52,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-md rounded-2xl bg-card p-8 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="mx-4 w-full max-w-md rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#1C1917] p-8 shadow-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Crown className="h-6 w-6 text-amber-500" />
@@ -71,8 +71,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         <div className="mt-6 space-y-3">
           {features.map((f) => (
             <div key={f} className="flex items-center gap-2.5">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/12">
+                <Check className="h-3 w-3 text-emerald-400" />
               </div>
               <span className="text-sm">{f}</span>
             </div>
@@ -81,7 +81,8 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
 
         <div className="mt-8 space-y-3">
           <Button
-            className="w-full"
+            className="w-full rounded-xl text-white"
+            style={{ background: 'linear-gradient(135deg, #D97706, #92400E)' }}
             disabled={loading}
             onClick={handleUpgrade}
           >

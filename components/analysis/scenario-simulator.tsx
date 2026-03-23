@@ -58,7 +58,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
 
     return (
         <Card className="shadow-sm border">
-            <CardHeader className="pb-3 border-b bg-muted/30">
+            <CardHeader className="pb-3 border-b border-border/20">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <Activity className="h-5 w-5 text-primary" />
@@ -70,17 +70,17 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                     <div className="flex gap-2">
                         <Badge
                             variant="outline"
-                            className="cursor-pointer bg-white hover:bg-emerald-50 hover:text-emerald-700 border-emerald-200 text-emerald-600"
+                            className="cursor-pointer bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
                             onClick={() => applyScenario('optimistic')}
                         >
-                            İyi Senaryo
+                            İyi senaryo
                         </Badge>
                         <Badge
                             variant="outline"
-                            className="cursor-pointer bg-white hover:bg-red-50 hover:text-red-700 border-red-200 text-red-600"
+                            className="cursor-pointer bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400"
                             onClick={() => applyScenario('pessimistic')}
                         >
-                            Kötü Senaryo
+                            Kötü senaryo
                         </Badge>
                         <Badge
                             variant="secondary"
@@ -100,7 +100,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">İade Oranı Değişimi</Label>
-                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${returnRateDelta > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : returnRateDelta < 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${returnRateDelta > 0 ? 'bg-red-500/10 text-red-400' : returnRateDelta < 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                                     {returnRateDelta > 0 ? '+' : ''}{returnRateDelta}%
                                 </span>
                             </div>
@@ -116,7 +116,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">Reklam Maliyeti (Birim)</Label>
-                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${adCostDelta > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : adCostDelta < 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${adCostDelta > 0 ? 'bg-red-500/10 text-red-400' : adCostDelta < 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                                     {adCostDelta > 0 ? '+' : ''}{formatCurrency(adCostDelta)}
                                 </span>
                             </div>
@@ -132,7 +132,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <Label className="text-sm font-medium">Komisyon Farkı</Label>
-                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${commissionDelta > 0 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : commissionDelta < 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
+                                <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${commissionDelta > 0 ? 'bg-red-500/10 text-red-400' : commissionDelta < 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                                     {commissionDelta > 0 ? '+' : ''}{commissionDelta}%
                                 </span>
                             </div>
@@ -151,11 +151,11 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                 <div className="lg:col-span-5 flex flex-col gap-4 min-w-0">
 
                     {/* Main Profit Card */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm transition-all hover:shadow-md">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Simüle Edilen Net Kâr</p>
+                    <div className="rounded-lg border border-border/30 bg-muted/50 p-4">
+                        <p className="text-xs font-medium text-muted-foreground">Simüle edilen net kâr</p>
                         <div className="mt-2 min-w-0 overflow-hidden">
                             {/* Clamp font size: min 24px, preferred 3.5vw, max 40px */}
-                            <p className="font-black tracking-tight text-foreground truncate" style={{ fontSize: 'clamp(24px, 3.5vw, 40px)', lineHeight: 1.1 }}>
+                            <p className="text-3xl font-bold tracking-tight text-foreground truncate" style={{ lineHeight: 1.1 }}>
                                 {formatCurrency(simulatedResult.monthly_net_profit)}
                             </p>
                         </div>
@@ -163,7 +163,7 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
                             <span className="text-muted-foreground line-through opacity-60 px-1.5 py-0.5 bg-muted rounded">
                                 {formatCurrency(originalResult.monthly_net_profit)}
                             </span>
-                            <span className={`font-bold px-1.5 py-0.5 rounded ${profitDiff >= 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                            <span className={`font-bold px-1.5 py-0.5 rounded ${profitDiff >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                                 {profitDiff > 0 ? '+' : ''}{formatCurrency(profitDiff)}
                             </span>
                         </div>
@@ -171,24 +171,24 @@ export function ScenarioSimulator({ input }: ScenarioSimulatorProps) {
 
                     {/* Margin Card & Decision */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                        <div className="rounded-xl border bg-card/50 p-4 flex flex-col justify-center">
+                        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-4 flex flex-col justify-center">
                             <div className="flex justify-between items-center mb-1">
                                 <p className="text-xs font-medium text-muted-foreground">Simüle Marj</p>
-                                <span className={`text-xs font-bold ${marginDiff >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                <span className={`text-xs font-bold ${marginDiff >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                     {marginDiff > 0 ? '+' : ''}{marginDiff.toFixed(1)}%
                                 </span>
                             </div>
                             <p className="text-2xl font-bold tracking-tight">{formatPercent(simulatedResult.margin_pct)}</p>
                         </div>
 
-                        <div className="rounded-xl border bg-muted/30 p-4 flex items-center justify-between gap-3">
+                        <div className="rounded-xl border border-border/30 bg-muted/30 p-4 flex items-center justify-between gap-3">
                             <div>
                                 {simulatedResult.monthly_net_profit < 0 ? (
-                                    <Badge variant="destructive" className="mb-1">RİSKLİ</Badge>
+                                    <Badge variant="destructive" className="mb-1">Riskli</Badge>
                                 ) : simulatedResult.margin_pct < 10 ? (
-                                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 mb-1">DİKKAT</Badge>
+                                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border-amber-500/20 mb-1">Dikkat</Badge>
                                 ) : (
-                                    <Badge className="bg-emerald-600 hover:bg-emerald-700 mb-1">UYGUN</Badge>
+                                    <Badge className="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 mb-1">Uygun</Badge>
                                 )}
                                 <p className="text-[10px] text-muted-foreground leading-tight">
                                     {profitDiff < 0 ? "Kâr düşüşü bekleniyor." : "Kâr artışı öngörülüyor."}

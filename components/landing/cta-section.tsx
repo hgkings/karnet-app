@@ -19,12 +19,13 @@ export function CTASection() {
           transition={{ duration: 0.6 }}
           className="relative overflow-hidden rounded-3xl px-6 py-16 sm:px-12 sm:py-20 text-center shadow-premium-lg"
           style={{
-            background: 'linear-gradient(135deg, hsl(221 83% 45%) 0%, hsl(221 83% 55%) 50%, hsl(260 70% 50%) 100%)',
+            background: 'linear-gradient(135deg, rgba(217,119,6,0.1), rgba(146,64,14,0.05))',
+            border: '1px solid rgba(217,119,6,0.15)',
           }}
         >
           {/* Dot pattern */}
           <div
-            className="absolute inset-0 opacity-[0.07]"
+            className="absolute inset-0 opacity-[0.04]"
             style={{
               backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
               backgroundSize: '24px 24px',
@@ -32,24 +33,34 @@ export function CTASection() {
           />
 
           {/* Glow blobs */}
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl" />
-          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-violet-400/20 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-amber-600/10 blur-3xl" />
 
           {/* Corner chart icon decoration */}
-          <div className="absolute bottom-4 right-6 opacity-[0.08] pointer-events-none select-none">
-            <BarChart2 className="h-40 w-40 text-white" />
+          <div className="absolute bottom-4 right-6 opacity-[0.05] pointer-events-none select-none">
+            <BarChart2 className="h-40 w-40 text-amber-400" />
           </div>
 
           <div className="relative z-10">
             {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/20 px-4 py-1.5 text-sm font-semibold text-white/90 mb-6 backdrop-blur-sm">
-              ✨ Hemen Başla
+            <div
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold mb-6 backdrop-blur-sm"
+              style={{ background: 'rgba(217,119,6,0.12)', color: '#FBBF24' }}
+            >
+              Hemen Başla
             </div>
 
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-white mb-4 font-geist">
-              2 dakikada gerçek kârını öğren
+            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl text-foreground mb-4" style={{ letterSpacing: '-0.5px' }}>
+              2 dakikada gerçek{' '}
+              <span style={{
+                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+                kârını
+              </span>{' '}öğren
             </h2>
-            <p className="mx-auto max-w-xl text-lg text-white/80 mb-10">
+            <p className="mx-auto max-w-xl text-lg text-[rgba(255,255,255,0.5)] mb-10">
               Ücretsiz plan ile hemen başla. Kurulum yok, kart bilgisi yok.
             </p>
 
@@ -58,16 +69,18 @@ export function CTASection() {
               <Link href={user ? '/analysis/new' : '/auth'}>
                 <Button
                   size="lg"
-                  className="h-12 px-8 text-base font-semibold rounded-full bg-white text-blue-600 hover:bg-white/90 hover:shadow-xl hover:scale-105 shadow-lg gap-2 transition-all duration-200"
+                  className="h-12 px-8 text-base font-semibold rounded-xl shadow-lg shadow-amber-500/30 text-white hover:shadow-xl hover:-translate-y-[1px] transition-all duration-200 gap-2"
+                  style={{ background: 'linear-gradient(135deg, #D97706, #92400E)' }}
                 >
-                  Ücretsiz Başla →
+                  Ücretsiz Başla
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/auth?tab=demo">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-12 px-8 text-base font-medium rounded-full bg-transparent border border-white/50 text-white hover:bg-white/10 transition-all duration-200 gap-2"
+                  className="h-12 px-8 text-base font-medium rounded-xl border-[rgba(255,255,255,0.06)] hover:bg-white/5 transition-all duration-200 gap-2"
                 >
                   <Play className="h-4 w-4" />
                   Demo İzle
@@ -76,7 +89,7 @@ export function CTASection() {
             </div>
 
             {/* Trust icons */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-white/80">
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-[rgba(255,255,255,0.5)]">
               <span>🔒 Güvenli ödeme</span>
               <span>📊 Anlık analiz</span>
               <span>🔐 Veriler şifreli</span>

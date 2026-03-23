@@ -188,30 +188,30 @@ export default function CommissionRatesPage() {
         </div>
 
         {/* Where to find rates */}
-        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800 p-5 space-y-3">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-5 space-y-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+            <span className="text-sm font-semibold text-amber-400">
               Varsayılan oranlar genel tahmindir
             </span>
           </div>
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+          <p className="text-xs text-amber-400">
             Gerçek komisyon oranlarınız için satıcı panellerinizi kontrol edin:
           </p>
           <ul className="space-y-1.5">
             {MARKETPLACE_HELP_LINKS.map((link) => (
               <li key={link.name} className="text-xs">
-                <span className="font-semibold text-amber-800 dark:text-amber-300">{link.name}:</span>{' '}
+                <span className="font-semibold text-amber-400">{link.name}:</span>{' '}
                 <a
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 underline underline-offset-2 hover:no-underline"
+                  className="text-blue-400 underline underline-offset-2 hover:no-underline"
                 >
                   {link.url}
                 </a>
                 {link.note && (
-                  <span className="text-amber-600 dark:text-amber-500"> {link.note}</span>
+                  <span className="text-amber-500"> {link.note}</span>
                 )}
               </li>
             ))}
@@ -219,7 +219,7 @@ export default function CommissionRatesPage() {
         </div>
 
         {/* Expected Format */}
-        <div className="rounded-xl border bg-card p-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-sm">Beklenen Format (CSV / Sheets)</h2>
             <Button variant="outline" size="sm" onClick={handleTemplateDownload}>
@@ -249,7 +249,7 @@ export default function CommissionRatesPage() {
         </div>
 
         {/* Google Sheets Import */}
-        <div className="rounded-xl border bg-card p-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Link2 className="h-4 w-4 text-primary" />
             <h2 className="font-semibold text-sm">Google Sheets ile İçe Aktar</h2>
@@ -271,7 +271,7 @@ export default function CommissionRatesPage() {
         </div>
 
         {/* CSV Upload */}
-        <div className="rounded-xl border bg-card p-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Upload className="h-4 w-4 text-primary" />
             <h2 className="font-semibold text-sm">CSV Dosyası Yükle</h2>
@@ -294,13 +294,13 @@ export default function CommissionRatesPage() {
 
         {/* Parse Errors */}
         {parseErrors.length > 0 && (
-          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/10 p-4 space-y-2">
-            <p className="text-xs font-semibold text-red-700 dark:text-red-400">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 space-y-2">
+            <p className="text-xs font-semibold text-red-400">
               {parseErrors.length} satırda hata:
             </p>
             <ul className="space-y-0.5">
               {parseErrors.map((e, i) => (
-                <li key={i} className="text-xs text-red-600 dark:text-red-400">{e}</li>
+                <li key={i} className="text-xs text-red-400">{e}</li>
               ))}
             </ul>
           </div>
@@ -308,7 +308,7 @@ export default function CommissionRatesPage() {
 
         {/* Preview */}
         {preview && preview.length > 0 && (
-          <div className="rounded-xl border bg-card p-5 space-y-4">
+          <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />

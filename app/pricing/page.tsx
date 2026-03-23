@@ -183,18 +183,18 @@ function PricingContent() {
           <div className={cn(
             'mx-auto max-w-2xl rounded-xl border p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4',
             pollState === 'active'
-              ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'
-              : 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : 'bg-amber-500/10 border-amber-500/20',
           )}>
             {pollState === 'active' ? (
-              <><CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
-                <div><p className="font-semibold text-emerald-700 dark:text-emerald-400">Plan Aktif ✅</p>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-500">Pro planınız başarıyla aktif edildi!</p></div></>
+              <><CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0" />
+                <div><p className="font-semibold text-emerald-400">Plan Aktif ✅</p>
+                  <p className="text-sm text-emerald-500">Pro planınız başarıyla aktif edildi!</p></div></>
             ) : pollState === 'pending' ? (
-              <><Loader2 className="h-6 w-6 text-amber-500 shrink-0" />
+              <><Loader2 className="h-6 w-6 text-amber-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="font-semibold text-amber-700 dark:text-amber-400">Ödeme Alındı ⏳</p>
-                  <p className="text-sm text-amber-600 dark:text-amber-500">30 saniye içinde otomatik aktif olur.</p>
+                  <p className="font-semibold text-amber-400">Ödeme Alındı ⏳</p>
+                  <p className="text-sm text-amber-500">30 saniye içinde otomatik aktif olur.</p>
                 </div>
                 <Button size="sm" variant="outline" className="shrink-0" onClick={async () => {
                   setPollState('polling'); setPollCount(0);
@@ -205,17 +205,17 @@ function PricingContent() {
                   <RefreshCw className="h-4 w-4 mr-1" />Yenile
                 </Button></>
             ) : (
-              <><Loader2 className="h-6 w-6 text-blue-500 animate-spin shrink-0" />
-                <div><p className="font-semibold text-blue-700 dark:text-blue-400">Ödeme Başarılı ✅</p>
-                  <p className="text-sm text-blue-600 dark:text-blue-500">Planınız kontrol ediliyor… ({pollCount}/6)</p></div></>
+              <><Loader2 className="h-6 w-6 text-amber-400 animate-spin shrink-0" />
+                <div><p className="font-semibold text-amber-400">Ödeme Başarılı ✅</p>
+                  <p className="text-sm text-amber-500">Planınız kontrol ediliyor… ({pollCount}/6)</p></div></>
             )}
           </div>
         )}
         {paymentStatus === 'fail' && (
-          <div className="mx-auto max-w-2xl rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
-            <XCircle className="h-6 w-6 text-red-500 shrink-0" />
-            <div><p className="font-semibold text-red-700 dark:text-red-400">Ödeme Başarısız ❌</p>
-              <p className="text-sm text-red-600 dark:text-red-500">Ödeme tamamlanamadı. Tekrar deneyebilirsiniz.</p></div>
+          <div className="mx-auto max-w-2xl rounded-xl border border-red-500/20 bg-red-500/10 p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+            <XCircle className="h-6 w-6 text-red-400 shrink-0" />
+            <div><p className="font-semibold text-red-400">Ödeme Başarısız ❌</p>
+              <p className="text-sm text-red-500">Ödeme tamamlanamadı. Tekrar deneyebilirsiniz.</p></div>
           </div>
         )}
 
@@ -284,21 +284,21 @@ function PricingContent() {
         {/* ─ Comparison Table ───────────────────────────────────────────────── */}
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-8">Özellik Karşılaştırması</h2>
-          <div className="rounded-2xl border overflow-hidden">
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-3 bg-muted/50 border-b">
-              <div className="p-4 text-sm font-semibold text-muted-foreground">Özellik</div>
-              <div className="p-4 text-sm font-semibold text-center border-l">Ücretsiz</div>
-              <div className="p-4 text-sm font-semibold text-center border-l text-primary">Pro</div>
+            <div className="grid grid-cols-3 bg-[rgba(255,255,255,0.03)] border-b border-[rgba(255,255,255,0.06)]">
+              <div className="p-4 text-sm font-semibold text-[rgba(255,255,255,0.5)]">Özellik</div>
+              <div className="p-4 text-sm font-semibold text-center border-l border-[rgba(255,255,255,0.06)]">Ücretsiz</div>
+              <div className="p-4 text-sm font-semibold text-center border-l border-[rgba(255,255,255,0.06)] text-amber-400">Pro</div>
             </div>
             {/* Rows */}
             {COMPARISON_ROWS.map((row, i) => (
-              <div key={row.label} className={cn('grid grid-cols-3', i % 2 === 0 ? 'bg-card' : 'bg-muted/20')}>
-                <div className="p-3.5 text-sm text-foreground/80">{row.label}</div>
-                <div className="p-3.5 text-center border-l flex items-center justify-center">
+              <div key={row.label} className={cn('grid grid-cols-3 border-b border-[rgba(255,255,255,0.04)] last:border-b-0', i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,255,255,0.02)]')}>
+                <div className="p-3.5 text-sm text-[rgba(255,255,255,0.7)]">{row.label}</div>
+                <div className="p-3.5 text-center border-l border-[rgba(255,255,255,0.06)] flex items-center justify-center">
                   <CellValue val={row.free} />
                 </div>
-                <div className="p-3.5 text-center border-l flex items-center justify-center">
+                <div className="p-3.5 text-center border-l border-[rgba(255,255,255,0.06)] flex items-center justify-center">
                   <CellValue val={row.pro} />
                 </div>
               </div>
@@ -329,7 +329,7 @@ function PricingContent() {
         {/* ─ FAQ ────────────────────────────────────────────────────────────── */}
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-8">Sıkça Sorulan Sorular</h2>
-          <div className="rounded-2xl border bg-card p-6 divide-y">
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 divide-y divide-[rgba(255,255,255,0.06)]">
             {FAQ_ITEMS.map((item) => (
               <FaqItem key={item.q} q={item.q} a={item.a} />
             ))}
@@ -351,7 +351,8 @@ function PricingContent() {
             {!(user && isProUser(user)) && (
               <Button
                 size="lg"
-                className="rounded-xl h-12 px-8"
+                className="rounded-xl h-12 px-8 text-white"
+                style={{ background: 'linear-gradient(135deg, #D97706, #92400E)' }}
                 onClick={handleUpgrade}
                 disabled={loading}
               >
