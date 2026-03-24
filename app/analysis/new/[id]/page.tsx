@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Analysis } from '@/types';
-import { supabase } from '@/lib/supabaseClient';
+import { getAnalysisById } from '@/lib/api/analyses';
 import { formatCurrency, formatPercent } from '@/components/shared/format';
 import { KPICard } from '@/components/shared/kpi-card';
 import { RiskBadge } from '@/components/shared/risk-badge';
@@ -55,29 +55,8 @@ export default function AnalysisDetailPage() {
 
     const fetchAnalysis = async () => {
         try {
-            const { data, error } = await supabase
-                .from('analyses')
-                .select('*')
-                .eq('id', id)
-                .eq('user_id', user?.id)
-                .single();
-
-            if (error) throw error;
-
-            const mapped: Analysis = {
-                id: data.id,
-                userId: data.user_id,
-                input: data.inputs,
-                result: data.outputs,
-                risk: {
-                    score: data.risk_score,
-                    level: data.risk_level,
-                    factors: data.outputs?._risk_factors || []
-                },
-                createdAt: data.created_at
-            };
-
-            setAnalysis(mapped);
+            const found = await getAnalysisById(id);
+            if (found) setAnalysis(found);
         } catch (err) {
             console.error('Error fetching analysis:', err);
         } finally {

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
+import { getStoredAnalyses } from '@/lib/api/analyses';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 
@@ -52,11 +53,11 @@ export default function MatchingPage() {
 
             setMappings(maps || []);
 
-            const { data: anl } = await supabase
-                .from('analyses')
-                .select('id, product_name')
-                .eq('user_id', user.id)
-                .order('product_name', { ascending: true });
+            const allAnalyses = await getStoredAnalyses();
+            const anl = allAnalyses.map((a: { id: string; input: { product_name: string } }) => ({
+                id: a.id,
+                product_name: a.input.product_name,
+            })).sort((a: { product_name: string }, b: { product_name: string }) => a.product_name.localeCompare(b.product_name));
 
             setAnalyses(anl || []);
         } catch {

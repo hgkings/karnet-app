@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
     const analyses = await analysisService.getUserAnalyses(user.id)
     return NextResponse.json(analyses)
   } catch (error) {
-    console.error('GET /api/analyses error:', error)
-    return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
+    console.error('Analyses API Error:', error)
+    return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('POST /api/analyses error:', error)
-    return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
+    console.error('Analyses API Error:', error)
+    return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }
