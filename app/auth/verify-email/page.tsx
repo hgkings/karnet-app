@@ -1,3 +1,8 @@
+// TODO: Email doğrulama aktif edilecek
+// Supabase'de "Confirm email" açılınca
+// kayıt akışı tekrar verify-email'e
+// yönlendirilmeli
+
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';

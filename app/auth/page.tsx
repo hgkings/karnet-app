@@ -157,16 +157,8 @@ function AuthPageContent() {
           }
         } catch {}
 
-        // Oturum açıldı mı yoksa email doğrulaması mı gerekiyor?
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          router.push(returnUrl);
-        } else {
-          // Email doğrulaması gerekiyor — user context'e set edilmiş olsa bile
-          // dashboard'a yönlendirilmemeli, verify-email'e gitmeli
-          setAwaitingEmailVerification(true);
-          router.push(`/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
-        }
+        // Email doğrulama geçici olarak devre dışı — direkt dashboard'a yönlendir
+        router.push(returnUrl);
       } else {
         setError(translateError(result.error || ''));
       }
