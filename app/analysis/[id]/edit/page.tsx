@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { AnalysisForm } from '@/components/analysis/analysis-form';
-import { getAnalysisById } from '@/lib/storage';
+import { getAnalysisById } from '@/lib/api/analyses';
 import { Analysis } from '@/types';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -27,7 +27,7 @@ export default function EditAnalysisPage() {
 
         if (user && id) {
             (async () => {
-                const data = await getAnalysisById(user.id, id);
+                const data = await getAnalysisById(id);
                 if (data) {
                     setAnalysis(data);
                 }

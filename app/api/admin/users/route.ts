@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/admin-auth'
+import * as profilesDal from '@/dal/profiles'
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAdmin()
@@ -13,19 +14,14 @@ export async function GET(req: NextRequest) {
   const offset = (page - 1) * limit
 
   try {
-    let query = auth.adminClient
-      .from('profiles')
-      .select('id, email, plan, pro_until, pro_expires_at, created_at', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    const { data, count } = await profilesDal.searchProfiles({
+      search: search || undefined,
+      plan: plan || undefined,
+      limit,
+      offset,
+    })
 
-    if (search) query = query.ilike('email', `%${search}%`)
-    if (plan) query = query.eq('plan', plan)
-
-    const { data, count, error } = await query
-    if (error) throw error
-
-    return NextResponse.json({ users: data ?? [], total: count ?? 0, page, limit })
+    return NextResponse.json({ users: data, total: count, page, limit })
   } catch (error) {
     console.error('Admin users error:', error)
     return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
@@ -55,9 +51,7 @@ export async function PATCH(req: NextRequest) {
       updates.pro_started_at = null
     }
 
-    const { error } = await auth.adminClient.from('profiles').update(updates).eq('id', userId)
-    if (error) throw error
-
+    await profilesDal.updateProfilePlan(userId, updates)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin users PATCH error:', error)

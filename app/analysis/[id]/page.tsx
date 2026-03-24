@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Analysis } from '@/types';
-import { getAnalysisById } from '@/lib/storage';
+import { getAnalysisById } from '@/lib/api/analyses';
 import { useAuth } from '@/contexts/auth-context';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { RiskGauge } from '@/components/shared/risk-gauge';
@@ -44,7 +44,7 @@ import {
   Loader2,
   ChevronDown
 } from 'lucide-react';
-import { saveAnalysis } from '@/lib/storage';
+import { saveAnalysis } from '@/lib/api/analyses';
 import { calculateProfit, calculateAdCeiling, n } from '@/utils/calculations';
 import { calculateProAccounting } from '@/utils/pro-accounting';
 import { calculateRisk } from '@/utils/risk-engine';
@@ -74,7 +74,7 @@ export default function AnalysisResultPage() {
     if (!user) return;
     (async () => {
       const id = params.id as string;
-      const found = await getAnalysisById(user.id, id);
+      const found = await getAnalysisById(id);
       if (found) {
         setAnalysis(found);
         setCompName(found.input.competitor_name || '');

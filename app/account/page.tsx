@@ -35,7 +35,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PLAN_LIMITS } from '@/config/plans';
 import { isProUser } from '@/utils/access';
-import { getStoredAnalyses } from '@/lib/storage';
+import { getStoredAnalyses } from '@/lib/api/analyses';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 import type { Analysis, Marketplace } from '@/types';
@@ -109,7 +109,7 @@ export default function AccountPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const data = await getStoredAnalyses(user.id);
+      const data = await getStoredAnalyses();
       setAnalyses(data);
       setStatsLoaded(true);
     })();

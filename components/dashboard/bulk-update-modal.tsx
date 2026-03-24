@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Analysis, Marketplace } from '@/types';
 import { calculateProfit } from '@/utils/calculations';
 import { calculateRisk } from '@/utils/risk-engine';
-import { saveAnalysis } from '@/lib/storage';
+import { saveAnalysis } from '@/lib/api/analyses';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

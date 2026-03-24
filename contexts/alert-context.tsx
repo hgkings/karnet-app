@@ -4,13 +4,13 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { useAuth } from './auth-context';
 import { Analysis, Notification } from '@/types';
 import { generateNotifications } from '@/lib/alerts';
+import { getStoredAnalyses } from '@/lib/api/analyses';
 import {
-    getStoredAnalyses,
     getNotifications,
     upsertNotifications,
     markNotificationAsRead,
     markAllNotificationsAsRead
-} from '@/lib/storage';
+} from '@/lib/api/notifications';
 
 interface AlertContextType {
     notifications: Notification[];
@@ -39,7 +39,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
         try {
             // 1. Fetch current analyses
-            const analysisData = await getStoredAnalyses(user.id);
+            const analysisData = await getStoredAnalyses();
             setAnalyses(analysisData);
 
             // 2. Generate new notifications from analyses and upsert them
@@ -50,7 +50,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             }
 
             // 3. Fetch all notifications from DB
-            const dbNotifications = await getNotifications(user.id);
+            const dbNotifications = await getNotifications();
             setNotifications(dbNotifications);
         } catch (error) {
             console.error('Error fetching alerts:', error);
@@ -66,7 +66,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
     const markAllAsRead = async () => {
         if (!user) return;
-        await markAllNotificationsAsRead(user.id);
+        await markAllNotificationsAsRead();
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     };
 

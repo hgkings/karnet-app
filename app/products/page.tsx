@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useAlerts } from '@/contexts/alert-context';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProductsTable } from '@/components/dashboard/products-table';
-import { deleteAnalysis, saveAnalysis, generateId } from '@/lib/storage';
+import { deleteAnalysis, saveAnalysis, generateId } from '@/lib/api/analyses';
 import { parseCSV, analysesToCSV, analysesToJSON } from '@/lib/csv';
 import { calculateProfit } from '@/utils/calculations';
 import { calculateRisk } from '@/utils/risk-engine';

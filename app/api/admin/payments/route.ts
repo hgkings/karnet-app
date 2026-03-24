@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin } from '@/lib/admin-auth'
+import * as paymentsDal from '@/dal/payments'
+import * as profilesDal from '@/dal/profiles'
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAdmin()
@@ -12,36 +14,25 @@ export async function GET(req: NextRequest) {
   const offset = (page - 1) * limit
 
   try {
-    let query = auth.adminClient
-      .from('payments')
-      .select('id, user_id, plan, amount_try, status, provider, provider_order_id, paid_at, created_at', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    const { data: payments, count } = await paymentsDal.getPayments({
+      status: status || undefined,
+      limit,
+      offset,
+    })
 
-    if (status) query = query.eq('status', status)
+    // Email'leri ayrı sorguda çek
+    const userIds = Array.from(new Set(payments.map((p: Record<string, unknown>) => p.user_id as string)))
+    const profiles = await profilesDal.getProfilesByIds(userIds)
+    const emailMap: Record<string, string> = Object.fromEntries(
+      profiles.map((p: Record<string, unknown>) => [p.id as string, p.email as string])
+    )
 
-    const { data: payments, count, error } = await query
-    if (error) throw error
-
-    // Email'leri ayrı sorguda çek (FK join yerine — daha güvenilir)
-    const userIds = Array.from(new Set((payments ?? []).map(p => p.user_id)))
-    let emailMap: Record<string, string> = {}
-
-    if (userIds.length > 0) {
-      const { data: profiles } = await auth.adminClient
-        .from('profiles')
-        .select('id, email')
-        .in('id', userIds)
-
-      emailMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p.email]))
-    }
-
-    const result = (payments ?? []).map(p => ({
+    const result = payments.map((p: Record<string, unknown>) => ({
       ...p,
-      profiles: { email: emailMap[p.user_id] ?? null },
+      profiles: { email: emailMap[p.user_id as string] ?? null },
     }))
 
-    return NextResponse.json({ payments: result, total: count ?? 0, page, limit })
+    return NextResponse.json({ payments: result, total: count, page, limit })
   } catch (error) {
     console.error('Admin payments error:', error)
     return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })

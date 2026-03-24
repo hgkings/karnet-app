@@ -1,7 +1,7 @@
 'use client';
 
 import { useAlerts } from '@/contexts/alert-context';
-import { deleteAnalysis as storageDeleteAnalysis } from '@/lib/storage';
+import { deleteAnalysis as storageDeleteAnalysis } from '@/lib/api/analyses';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { KPICard } from '@/components/shared/kpi-card';
 import { ProductsTable } from '@/components/dashboard/products-table';

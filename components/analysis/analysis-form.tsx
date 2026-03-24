@@ -12,7 +12,7 @@ import type { CommissionRate } from '@/lib/commission-rates';
 import { calculateProfit, calculateRequiredPrice, calculateTrendyolServiceFee, getDefaultServiceFee, n } from '@/utils/calculations';
 import { calculateProAccounting } from '@/utils/pro-accounting';
 import { calculateRisk } from '@/utils/risk-engine';
-import { saveAnalysis, generateId, getUserAnalysisCount } from '@/lib/storage';
+import { saveAnalysis, generateId, getUserAnalysisCount } from '@/lib/api/analyses';
 import { getPlanLimits } from '@/config/plans';
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
 import { Button } from '@/components/ui/button';
@@ -260,7 +260,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
     try {
       if (!isDemo && !analysisId && user) {
-        const count = await getUserAnalysisCount(user.id);
+        const count = await getUserAnalysisCount();
         const limits = getPlanLimits(user.plan);
         if (count >= limits.maxProducts) {
           setShowUpgrade(true);

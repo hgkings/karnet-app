@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server-client'
-import { getTicketById } from '@/lib/support-service'
+import { getTicketById } from '@/dal/support'
 
 export async function GET(
   _request: NextRequest,

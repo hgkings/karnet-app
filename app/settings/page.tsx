@@ -40,7 +40,7 @@ import {
     ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { deleteAnalysis, getStoredAnalyses } from '@/lib/storage';
+import { deleteAnalysis, getStoredAnalyses } from '@/lib/api/analyses';
 import { analysesToCSV, analysesToJSON } from '@/lib/csv';
 import { supabase } from '@/lib/supabaseClient';
 import { isProUser } from '@/utils/access';
@@ -115,7 +115,7 @@ export default function SettingsPage() {
     useEffect(() => {
         if (!user) return;
         (async () => {
-            const data = await getStoredAnalyses(user.id);
+            const data = await getStoredAnalyses();
             setAnalyses(data);
         })();
         (async () => {
@@ -146,7 +146,7 @@ export default function SettingsPage() {
         if (!user) return;
         setDeleting(true);
         try {
-            const all = await getStoredAnalyses(user.id);
+            const all = await getStoredAnalyses();
             await Promise.all(all.map((a) => deleteAnalysis(a.id)));
             setAnalyses([]);
             toast.success('Tüm analiz verileri silindi.');
