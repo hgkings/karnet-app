@@ -19,9 +19,20 @@ export async function GET(request: NextRequest) {
 
     const analyses = await analysisService.getUserAnalyses(user.id)
     return NextResponse.json(analyses)
-  } catch (error) {
-    console.error('Analyses API Error:', error)
-    return NextResponse.json({ error: String(error) }, { status: 500 })
+  } catch (error: any) {
+    console.error('Analyses API Error:', {
+      message: error?.message,
+      code: error?.code,
+      details: error?.details,
+      hint: error?.hint,
+    })
+    return NextResponse.json(
+      {
+        error: 'Analizler yüklenemedi',
+        detail: error?.message,
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -46,8 +57,19 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Analyses API Error:', error)
-    return NextResponse.json({ error: String(error) }, { status: 500 })
+  } catch (error: any) {
+    console.error('Analyses API Error:', {
+      message: error?.message,
+      code: error?.code,
+      details: error?.details,
+      hint: error?.hint,
+    })
+    return NextResponse.json(
+      {
+        error: 'Analizler yüklenemedi',
+        detail: error?.message,
+      },
+      { status: 500 }
+    )
   }
 }
