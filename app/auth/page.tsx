@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { KarnetLogo } from '@/components/shared/KarnetLogo';
 import Link from 'next/link';
@@ -30,10 +30,18 @@ function translateError(err: string): string {
   if (e.includes('password') && (e.includes('characters') || e.includes('karakter'))) {
     return 'Şifre en az 8 karakter olmalıdır.';
   }
-  if (e.includes('kayit hatasi') || e.includes('kayıt hatası')) {
-    return 'Kayıt başarısız. Lütfen tekrar deneyin.';
+  if (e.includes('email address not authorized') || e.includes('not authorized')) {
+    return 'Bu e-posta adresi ile kayıt yapılamıyor.';
   }
-  return 'Bir hata oluştu. Lütfen tekrar deneyin.';
+  if (e.includes('smtp') || e.includes('email') && e.includes('send')) {
+    return 'Doğrulama e-postası gönderilemedi. SMTP ayarlarını kontrol edin.';
+  }
+  // "Kayit hatasi: [gerçek mesaj]" — asıl hatayı göster
+  if (e.includes('kayit hatasi')) {
+    const actualError = err.replace(/^kayit hatasi:\s*/i, '');
+    return `Kayıt başarısız: ${actualError}`;
+  }
+  return `Hata: ${err}`;
 }
 
 // ── Şifre güç hesaplayıcı ──
@@ -67,6 +75,8 @@ function AuthPageContent() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // Kayıt sonrası e-posta doğrulamasına yönlendirildiğinde user redirect'ini engelle
+  const [awaitingEmailVerification, setAwaitingEmailVerification] = useState(false);
 
   const { login, register, user } = useAuth();
   const router = useRouter();
@@ -76,7 +86,13 @@ function AuthPageContent() {
     return (next.startsWith('/') && !next.startsWith('//') && !next.includes('://')) ? next : '/dashboard';
   })();
 
-  // ⚠️ Tüm hook'lar conditional return'dan ÖNCE tanımlanmalı (Rules of Hooks)
+  // Oturum açık kullanıcıyı yönlendir — render sırasında değil, effect içinde
+  useEffect(() => {
+    if (user && !awaitingEmailVerification) {
+      router.replace(returnUrl);
+    }
+  }, [user, awaitingEmailVerification, router, returnUrl]);
+
   const handleCapsLockCheck = useCallback((e: React.KeyboardEvent) => {
     setCapsLockOn(e.getModifierState('CapsLock'));
   }, []);
@@ -89,11 +105,6 @@ function AuthPageContent() {
     setFullName('');
     setAcceptTerms(false);
   }, []);
-
-  if (user) {
-    router.replace(returnUrl);
-    return null;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +162,9 @@ function AuthPageContent() {
         if (session) {
           router.push(returnUrl);
         } else {
+          // Email doğrulaması gerekiyor — user context'e set edilmiş olsa bile
+          // dashboard'a yönlendirilmemeli, verify-email'e gitmeli
+          setAwaitingEmailVerification(true);
           router.push(`/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
         }
       } else {
