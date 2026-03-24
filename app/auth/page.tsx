@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { KarnetLogo } from '@/components/shared/KarnetLogo';
 import Link from 'next/link';
@@ -67,6 +67,8 @@ function AuthPageContent() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // Kayıt sonrası e-posta doğrulamasına yönlendirildiğinde user redirect'ini engelle
+  const [awaitingEmailVerification, setAwaitingEmailVerification] = useState(false);
 
   const { login, register, user } = useAuth();
   const router = useRouter();
@@ -76,7 +78,13 @@ function AuthPageContent() {
     return (next.startsWith('/') && !next.startsWith('//') && !next.includes('://')) ? next : '/dashboard';
   })();
 
-  // ⚠️ Tüm hook'lar conditional return'dan ÖNCE tanımlanmalı (Rules of Hooks)
+  // Oturum açık kullanıcıyı yönlendir — render sırasında değil, effect içinde
+  useEffect(() => {
+    if (user && !awaitingEmailVerification) {
+      router.replace(returnUrl);
+    }
+  }, [user, awaitingEmailVerification, router, returnUrl]);
+
   const handleCapsLockCheck = useCallback((e: React.KeyboardEvent) => {
     setCapsLockOn(e.getModifierState('CapsLock'));
   }, []);
@@ -89,11 +97,6 @@ function AuthPageContent() {
     setFullName('');
     setAcceptTerms(false);
   }, []);
-
-  if (user) {
-    router.replace(returnUrl);
-    return null;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +154,9 @@ function AuthPageContent() {
         if (session) {
           router.push(returnUrl);
         } else {
+          // Email doğrulaması gerekiyor — user context'e set edilmiş olsa bile
+          // dashboard'a yönlendirilmemeli, verify-email'e gitmeli
+          setAwaitingEmailVerification(true);
           router.push(`/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}`);
         }
       } else {
