@@ -11,10 +11,17 @@ export async function POST() {
     try {
         const { ctx, error, status } = await prepareSyncContext();
         if (!ctx) {
-            const friendlyError = (status === 400 && error?.toLowerCase().includes('seller'))
-                ? 'Satıcı ID zorunludur. Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından Satıcı ID\'nizi bulup pazaryeri ayarlarından güncelleyin.'
-                : error;
-            return NextResponse.json({ error: friendlyError }, { status });
+            const isSellerIdMissing = status === 400 && error?.toLowerCase().includes('seller');
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: isSellerIdMissing
+                        ? 'Satıcı ID eksik. Pazaryeri ayarlarından Satıcı ID bilgisini güncelleyin.'
+                        : error,
+                    ...(isSellerIdMissing && { code: 'MISSING_SUPPLIER_ID' }),
+                },
+                { status }
+            );
         }
 
         // Write running log
