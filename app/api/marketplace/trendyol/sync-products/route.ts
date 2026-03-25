@@ -11,7 +11,10 @@ export async function POST() {
     try {
         const { ctx, error, status } = await prepareSyncContext();
         if (!ctx) {
-            return NextResponse.json({ error }, { status });
+            const friendlyError = (status === 400 && error?.toLowerCase().includes('seller'))
+                ? 'Satıcı ID zorunludur. Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından Satıcı ID\'nizi bulup pazaryeri ayarlarından güncelleyin.'
+                : error;
+            return NextResponse.json({ error: friendlyError }, { status });
         }
 
         // Write running log
@@ -81,6 +84,6 @@ export async function POST() {
             }
         } catch { /* ignore logging errors */ }
 
-        return NextResponse.json({ error: 'Ürün senkronizasyonu başarısız.' }, { status: 500 });
+        return NextResponse.json({ error: 'Ürün senkronizasyonu başarısız.', detail: err?.message }, { status: 500 });
     }
 }

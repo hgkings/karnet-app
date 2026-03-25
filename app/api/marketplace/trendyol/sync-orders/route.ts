@@ -12,7 +12,10 @@ export async function POST(req: Request) {
     try {
         const { ctx, error, status } = await prepareSyncContext();
         if (!ctx) {
-            return NextResponse.json({ error }, { status });
+            const friendlyError = (status === 400 && error?.toLowerCase().includes('seller'))
+                ? 'Satıcı ID zorunludur. Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından Satıcı ID\'nizi bulup pazaryeri ayarlarından güncelleyin.'
+                : error;
+            return NextResponse.json({ error: friendlyError }, { status });
         }
 
         // Parse optional date range from body
@@ -92,6 +95,7 @@ export async function POST(req: Request) {
             }
         } catch { /* ignore logging errors */ }
 
-        return NextResponse.json({ error: 'Sipariş senkronizasyonu başarısız.' }, { status: 500 });
+        console.log('Trendyol URL:', `https://api.trendyol.com/sapigw/suppliers/{supplierId}/orders`);
+        return NextResponse.json({ error: 'Sipariş senkronizasyonu başarısız.', detail: err?.message }, { status: 500 });
     }
 }

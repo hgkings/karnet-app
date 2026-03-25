@@ -111,6 +111,9 @@ export default function MarketplacePage() {
     const [sellerId, setSellerId] = useState('');
     const [storeName, setStoreName] = useState('');
 
+    // Seller ID validation error
+    const [sellerIdError, setSellerIdError] = useState('');
+
     // Show/hide password fields
     const [showApiKey, setShowApiKey] = useState(false);
     const [showApiSecret, setShowApiSecret] = useState(false);
@@ -158,6 +161,13 @@ export default function MarketplacePage() {
             return;
         }
 
+        if (!sellerId.trim()) {
+            setSellerIdError('Satıcı ID zorunludur.');
+            toast.error(`${mpConfig.sellerIdLabel} zorunludur. ${mpConfig.helpText}`);
+            return;
+        }
+        setSellerIdError('');
+
         setSaving(true);
         setLastLog(null);
         try {
@@ -167,7 +177,7 @@ export default function MarketplacePage() {
                 body: JSON.stringify({
                     apiKey: apiKey.trim(),
                     apiSecret: apiSecret.trim(),
-                    sellerId: sellerId.trim() || undefined,
+                    sellerId: sellerId.trim(),
                     storeName: storeName.trim() || undefined,
                 }),
             });
@@ -660,16 +670,22 @@ export default function MarketplacePage() {
                                     {/* Seller / Merchant ID */}
                                     <div className="space-y-2">
                                         <Label htmlFor="sellerId" className="text-sm font-medium">
-                                            {mpConfig.sellerIdLabel} <span className="text-muted-foreground text-xs">(opsiyonel)</span>
+                                            {mpConfig.sellerIdLabel} <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                             id="sellerId"
                                             type="text"
                                             placeholder={`${mpConfig.sellerIdLabel} giriniz`}
                                             value={sellerId}
-                                            onChange={(e) => setSellerId(e.target.value)}
+                                            onChange={(e) => { setSellerId(e.target.value); if (sellerIdError) setSellerIdError(''); }}
                                             autoComplete="off"
+                                            required
+                                            aria-invalid={!!sellerIdError}
+                                            className={sellerIdError ? 'border-red-500 focus-visible:ring-red-500' : ''}
                                         />
+                                        {sellerIdError && (
+                                            <p className="text-xs text-red-500">{sellerIdError}</p>
+                                        )}
                                     </div>
 
                                     {/* Store Name */}
@@ -699,7 +715,7 @@ export default function MarketplacePage() {
 
                                 {/* Save Button */}
                                 <div className="flex justify-end">
-                                    <Button type="submit" disabled={saving || !apiKey || !apiSecret} className="gap-2 min-w-[200px]">
+                                    <Button type="submit" disabled={saving || !apiKey || !apiSecret || !sellerId} className="gap-2 min-w-[200px]">
                                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Store className="h-4 w-4" />}
                                         Kaydet & Bağlantıyı Test Et
                                     </Button>

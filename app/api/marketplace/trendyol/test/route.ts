@@ -10,7 +10,10 @@ export async function POST() {
     try {
         const { ctx, error, status } = await prepareSyncContext();
         if (!ctx) {
-            return NextResponse.json({ error }, { status });
+            const friendlyError = (status === 400 && error?.toLowerCase().includes('seller'))
+                ? 'Satıcı ID zorunludur. Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından Satıcı ID\'nizi bulup pazaryeri ayarlarından güncelleyin.'
+                : error;
+            return NextResponse.json({ success: false, error: friendlyError }, { status });
         }
 
         // Call Trendyol API to test connection
