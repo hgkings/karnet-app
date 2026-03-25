@@ -30,6 +30,11 @@ export default function DashboardPage() {
   useEffect(() => {
     (async () => {
       try {
+        const connRes = await fetch('/api/marketplace/trendyol');
+        if (!connRes.ok) return;
+        const conn = await connRes.json();
+        if (conn.status !== 'connected' || !conn.seller_id?.trim()) return;
+
         const bitis = new Date();
         const baslangic = new Date();
         baslangic.setDate(baslangic.getDate() - 30);

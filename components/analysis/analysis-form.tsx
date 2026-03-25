@@ -115,6 +115,21 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
   const [trendyolKomisyonYukleniyor, setTrendyolKomisyonYukleniyor] = useState(false);
   const [trendyolKomisyonKaynagi, setTrendyolKomisyonKaynagi] = useState(false);
+  const [trendyolBagliMi, setTrendyolBagliMi] = useState(false);
+
+  useEffect(() => {
+    if (input.marketplace !== 'trendyol' || isDemo) return;
+    (async () => {
+      try {
+        const res = await fetch('/api/marketplace/trendyol');
+        if (!res.ok) return;
+        const json = await res.json();
+        setTrendyolBagliMi(json.status === 'connected' && !!json.seller_id?.trim());
+      } catch {
+        // sessizce geç
+      }
+    })();
+  }, [input.marketplace, isDemo]);
 
   const trendyoldenKomisyonCek = async () => {
     setTrendyolKomisyonYukleniyor(true);
@@ -771,7 +786,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                     {errors[field.key] && (
                       <p className="text-xs text-red-500">{errors[field.key]}</p>
                     )}
-                    {field.key === 'commission_pct' && input.marketplace === 'trendyol' && (
+                    {field.key === 'commission_pct' && input.marketplace === 'trendyol' && trendyolBagliMi && (
                       <div className="flex items-center gap-2 mt-1">
                         <Button
                           type="button"
