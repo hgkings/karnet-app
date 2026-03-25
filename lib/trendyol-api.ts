@@ -3,7 +3,7 @@
  *
  * Base URL: https://api.trendyol.com/sapigw/suppliers/{supplierId}
  * Auth: Basic (apiKey:apiSecret → base64)
- * User-Agent: {supplierId}-KarnetApp
+ * User-Agent: {supplierId} - SelfIntegration
  * Rate limit: Exponential backoff on 429/5xx (max 3 retries), 10s timeout
  *
  * Mock mode: apiKey === "TRENDYOL_TEST" — gerçek API çağrısı yapılmaz.
@@ -71,8 +71,8 @@ function buildHeaders(creds: TrendyolCredentials): Record<string, string> {
     const token = Buffer.from(`${creds.apiKey}:${creds.apiSecret}`).toString('base64');
     return {
         'Authorization': `Basic ${token}`,
-        'User-Agent': `${creds.sellerId}-KarnetApp`,
         'Content-Type': 'application/json',
+        'User-Agent': `${String(creds.sellerId).trim()} - SelfIntegration`,
     };
 }
 
@@ -118,6 +118,26 @@ function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// ─── Error Handling ───────────────────────────────────────────
+
+const TRENDYOL_ERROR_MESSAGES: Record<number, string> = {
+    400: 'Gönderilen bilgiler hatalı. API Key, Secret ve Satıcı ID\'yi kontrol edin.',
+    401: 'API Key veya API Secret hatalı. Trendyol Satıcı Paneli → Hesabım → Entegrasyon Bilgileri\'nden güncel bilgileri alın.',
+    403: 'Erişim reddedildi. Satıcı ID\'nin doğru olduğunu ve hesabınızın API erişimine açık olduğunu kontrol edin.',
+    404: 'Satıcı ID ile eşleşen mağaza bulunamadı. ID\'yi kontrol edin.',
+    429: 'Çok fazla istek gönderildi. Lütfen 1-2 dakika bekleyip tekrar deneyin.',
+    500: 'Trendyol\'un sisteminde geçici bir sorun var. Birkaç dakika sonra tekrar deneyin.',
+};
+
+function getTrendyolErrorMessage(status: number): string {
+    return TRENDYOL_ERROR_MESSAGES[status] ?? `Trendyol hatası (HTTP ${status})`;
+}
+
+function handleTrendyolError(status: number, endpoint: string): never {
+    console.error(`[trendyol-api] HTTP ${status} — ${endpoint}`);
+    throw new Error(getTrendyolErrorMessage(status));
+}
+
 // ─── Test Connection ──────────────────────────────────────────
 
 export async function testConnection(
@@ -152,9 +172,9 @@ export async function testConnection(
             };
         }
 
-        return { success: false, message: `Bağlantı hatası: HTTP ${res.status}` };
+        return { success: false, message: getTrendyolErrorMessage(res.status) };
     } catch (err: any) {
-        return { success: false, message: `Bağlantı hatası: ${err?.message || 'Bilinmeyen hata'}` };
+        return { success: false, message: err?.message || 'Trendyol bağlantısı kurulamadı.' };
     }
 }
 
@@ -191,7 +211,7 @@ export async function fetchProducts(
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
-    if (!res.ok) throw new Error(`Trendyol ürün API hatası: HTTP ${res.status}`);
+    if (!res.ok) handleTrendyolError(res.status, url);
 
     const data = await res.json();
     return {
@@ -215,7 +235,7 @@ export async function getProductByBarcode(
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
-    if (!res.ok) throw new Error(`Trendyol barkod sorgulama hatası: HTTP ${res.status}`);
+    if (!res.ok) handleTrendyolError(res.status, url);
 
     const data = await res.json();
     return data.content?.[0] ?? null;
@@ -256,7 +276,7 @@ export async function fetchOrders(
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
-    if (!res.ok) throw new Error(`Trendyol sipariş API hatası: HTTP ${res.status}`);
+    if (!res.ok) handleTrendyolError(res.status, url);
 
     const data = await res.json();
     return {
@@ -280,7 +300,7 @@ export async function getOrderDetail(
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
-    if (!res.ok) throw new Error(`Trendyol sipariş detay hatası: HTTP ${res.status}`);
+    if (!res.ok) handleTrendyolError(res.status, url);
     return res.json();
 }
 
@@ -306,7 +326,7 @@ export async function getCommissionRates(
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
-    if (!res.ok) throw new Error(`Trendyol komisyon oranları hatası: HTTP ${res.status}`);
+    if (!res.ok) handleTrendyolError(res.status, url);
 
     const data = await res.json();
     return data.commissions || data || [];
@@ -327,7 +347,7 @@ export async function getShipmentProviders(creds: TrendyolCredentials): Promise<
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
-    if (!res.ok) throw new Error(`Trendyol kargo sağlayıcıları hatası: HTTP ${res.status}`);
+    if (!res.ok) handleTrendyolError(res.status, url);
 
     const data = await res.json();
     return data.shipmentProviders || data || [];
