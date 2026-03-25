@@ -4,14 +4,18 @@
  * Base URL: https://api.trendyol.com/sapigw/suppliers/{supplierId}
  * Auth: Basic (apiKey:apiSecret → base64)
  * User-Agent: {supplierId} - SelfIntegration
- * Rate limit: Exponential backoff on 429/5xx (max 3 retries), 10s timeout
+ * Rate limit: 45 req/10s client-side limiter + 12s wait on 429
  *
  * Mock mode: apiKey === "TRENDYOL_TEST" — gerçek API çağrısı yapılmaz.
  *
  * NEVER log credentials, auth headers, or tokens.
  */
 
-const BASE_URL = 'https://api.trendyol.com/sapigw';
+// SORUN 4: prod vs stage env — TRENDYOL_ENV=stage ile test ortamı kullanılır
+const BASE_URL = process.env.TRENDYOL_ENV === 'stage'
+    ? 'https://stageapi.trendyol.com/stagesapigw'
+    : 'https://api.trendyol.com/sapigw';
+
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 1000;
 const TIMEOUT_MS = 10000;
@@ -61,6 +65,27 @@ const MOCK_SHIPMENT_PROVIDERS: ShipmentProvider[] = [
     { id: 4, name: 'PTT Kargo', code: 'PTT' },
 ];
 
+// ─── Rate Limiter (45 req / 10s — Trendyol limiti 50) ────────
+
+const rateLimiter = {
+    requests: [] as number[],
+    maxRequests: 45,
+    windowMs: 10_000,
+};
+
+async function checkRateLimit(): Promise<void> {
+    const now = Date.now();
+    rateLimiter.requests = rateLimiter.requests.filter(t => now - t < rateLimiter.windowMs);
+
+    if (rateLimiter.requests.length >= rateLimiter.maxRequests) {
+        const bekleme = rateLimiter.windowMs - (now - rateLimiter.requests[0]) + 100;
+        console.log(`[trendyol-api] Rate limit: ${bekleme}ms bekleniyor`);
+        await sleep(bekleme);
+    }
+
+    rateLimiter.requests.push(Date.now());
+}
+
 // ─── Helpers ─────────────────────────────────────────────────
 
 function isMockMode(creds: TrendyolCredentials): boolean {
@@ -81,6 +106,8 @@ async function fetchWithRetry(url: string, headers: Record<string, string>): Pro
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
+            await checkRateLimit();
+
             const res = await fetch(url, {
                 headers,
                 method: 'GET',
@@ -92,9 +119,12 @@ async function fetchWithRetry(url: string, headers: Record<string, string>): Pro
                 return res;
             }
 
-            // 429 or 5xx → retry with backoff
+            // 429 → Trendyol rate limit, 12s sabit bekleme
+            // 5xx → sunucu hatası, exponential backoff
             if (res.status === 429 || res.status >= 500) {
-                const backoff = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+                const backoff = res.status === 429
+                    ? 12_000
+                    : INITIAL_BACKOFF_MS * Math.pow(2, attempt);
                 console.log(`[trendyol-api] Status ${res.status}, retry ${attempt + 1}/${MAX_RETRIES} after ${backoff}ms`);
                 await sleep(backoff);
                 continue;
@@ -351,4 +381,92 @@ export async function getShipmentProviders(creds: TrendyolCredentials): Promise<
 
     const data = await res.json();
     return data.shipmentProviders || data || [];
+}
+
+// ─── Batch Status (Outbound ürün push sonrası kontrol) ────────
+// Kullanım: Trendyol'a ürün GÖNDERİLDİKTEN sonra batchId ile sonuç sorgulanır.
+// Mevcut sync-products inbound sync (Trendyol → Kârnet DB) yaptığı için
+// batchId bu akışta kullanılmaz; outbound push özelliği eklendiğinde devreye girer.
+
+export interface BatchStatus {
+    basarili: number;
+    basarisiz: number;
+    bekleyen: number;   // -1 = zaman aşımı
+    hatalar: string[];
+}
+
+export async function checkBatchStatus(
+    creds: TrendyolCredentials,
+    batchId: string,
+    maxDeneme = 5
+): Promise<BatchStatus> {
+    if (isMockMode(creds)) {
+        return { basarili: 0, basarisiz: 0, bekleyen: 0, hatalar: [] };
+    }
+
+    const url = `${BASE_URL}/suppliers/${creds.sellerId}/products/batch-requests/${batchId}`;
+    const headers = buildHeaders(creds);
+
+    for (let i = 0; i < maxDeneme; i++) {
+        await sleep(3000);
+        const res = await fetchWithRetry(url, headers);
+
+        if (!res.ok) handleTrendyolError(res.status, url);
+
+        const data = await res.json();
+
+        if (data.status === 'COMPLETED') {
+            const items: any[] = data.items || [];
+            return {
+                basarili: items.filter(item => item.status === 'SUCCESS').length,
+                basarisiz: items.filter(item => item.status === 'ERROR').length,
+                bekleyen: 0,
+                hatalar: items
+                    .filter(item => item.status === 'ERROR')
+                    .flatMap(item => item.failureReasons || []),
+            };
+        }
+        // IN_PROGRESS → döngü devam eder
+    }
+
+    return { basarili: 0, basarisiz: 0, bekleyen: -1, hatalar: ['İşlem zaman aşımına uğradı.'] };
+}
+
+// ─── Finance / Cari Hesap Ekstresi ───────────────────────────
+
+export interface SellerSettlement {
+    siparisId: string | number;
+    satisTutari: number;
+    komisyonTutari: number;
+    kargoTutari: number;
+    iadeTutari: number;
+    netTutar: number;
+    tarih: string;
+    durum: string;
+}
+
+export async function getSellerSettlements(
+    creds: TrendyolCredentials,
+    startDate: string,
+    endDate: string
+): Promise<SellerSettlement[]> {
+    if (isMockMode(creds)) return [];
+
+    const url = `${BASE_URL}/suppliers/${creds.sellerId}/finance/che/seller-settlements?startDate=${startDate}&endDate=${endDate}`;
+    const headers = buildHeaders(creds);
+    const res = await fetchWithRetry(url, headers);
+
+    if (!res.ok) handleTrendyolError(res.status, url);
+
+    const data = await res.json();
+    return (data.content || []).map((item: any): SellerSettlement => ({
+        siparisId: item.shipmentPackageId,
+        satisTutari: item.amount ?? 0,
+        komisyonTutari: item.commissionFee ?? 0,
+        kargoTutari: item.deliveryFee ?? 0,
+        iadeTutari: item.refundAmount ?? 0,
+        netTutar: item.netAmount ?? 0,
+        tarih: item.settlementDate,
+        durum: item.transactionType,
+    }));
 }
