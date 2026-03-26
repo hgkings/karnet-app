@@ -48,14 +48,17 @@ export async function GET(request: NextRequest) {
                 .upsert(
                     {
                         user_id: ctx.userId,
-                        connection_id: ctx.connectionId,
                         siparis_no: siparisNo,
                         siparis_tarihi: order.siparisTarihi || null,
                         musteri_adi: order.musteriAdi || null,
-                        status: order.status || null,
-                        raw_json: order,
+                        hepsiburada_sku: order.lineItems?.[0]?.hepsiburadaSku || null,
+                        satici_sku: order.lineItems?.[0]?.sku || null,
+                        birim_fiyat: order.lineItems?.[0]?.birimFiyat ?? null,
+                        adet: order.lineItems?.[0]?.adet ?? null,
+                        toplam_fiyat: order.lineItems?.[0]?.toplamFiyat ?? null,
+                        durum: order.status || null,
                     },
-                    { onConflict: 'siparis_no,user_id' }
+                    { onConflict: 'user_id,siparis_no' }
                 );
 
             syncedCount++;

@@ -35,15 +35,14 @@ export async function GET() {
                 .upsert(
                     {
                         user_id: ctx.userId,
-                        connection_id: ctx.connectionId,
-                        hepsiburada_sku: product.hepsiburadaSku || null,
+                        hepsiburada_sku: product.hepsiburadaSku || '',
                         merchant_sku: product.merchantSku || null,
-                        title: product.urunAdi || 'İsimsiz',
-                        price: product.fiyat ?? null,
-                        stock: product.stok ?? null,
-                        raw_json: product,
+                        urun_adi: product.urunAdi || 'İsimsiz',
+                        fiyat: product.fiyat ?? null,
+                        stok: product.stok ?? null,
+                        guncelleme_tarihi: new Date().toISOString(),
                     },
-                    { onConflict: 'hepsiburada_sku,user_id' }
+                    { onConflict: 'user_id,hepsiburada_sku' }
                 );
 
             syncedCount++;
