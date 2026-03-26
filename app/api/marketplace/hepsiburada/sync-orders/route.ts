@@ -1,73 +1,64 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prepareSyncContext, writeSyncLog } from '@/lib/marketplace-sync-helpers';
-import { fetchOrders } from '@/lib/hepsiburada-api';
+import { fetchAllOrders } from '@/lib/hepsiburada-api';
 
 export const dynamic = 'force-dynamic';
-const PAGE_SIZE = 50;
+
 const DEFAULT_DAYS_BACK = 30;
 
-export async function POST(req: Request) {
+export async function GET(request: NextRequest) {
     const startedAt = new Date().toISOString();
 
     try {
         const { ctx, error, status } = await prepareSyncContext(undefined, 'hepsiburada');
         if (!ctx) {
-            return NextResponse.json({ error }, { status });
+            return NextResponse.json(
+                { success: false, error: error || 'Hepsiburada hesabı bağlı değil' },
+                { status }
+            );
         }
 
-        let startDate: number;
-        let endDate: number;
+        const { searchParams } = new URL(request.url);
+        const gun = Number(searchParams.get('gun') ?? DEFAULT_DAYS_BACK);
 
-        try {
-            const body = await req.json();
-            endDate = body.endDate ? new Date(body.endDate).getTime() : Date.now();
-            startDate = body.startDate
-                ? new Date(body.startDate).getTime()
-                : endDate - DEFAULT_DAYS_BACK * 24 * 60 * 60 * 1000;
-        } catch {
-            endDate = Date.now();
-            startDate = endDate - DEFAULT_DAYS_BACK * 24 * 60 * 60 * 1000;
-        }
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setDate(now.getDate() - gun);
 
         await writeSyncLog(ctx.admin, ctx.connectionId, 'orders', 'running', 'Hepsiburada sipariş senkronizasyonu başladı...', startedAt);
 
-        let totalSynced = 0;
-        let page = 0;
-        let totalPages = 1;
+        const orders = await fetchAllOrders(
+            {
+                apiKey: ctx.credentials.apiKey,
+                apiSecret: ctx.credentials.apiSecret,
+                merchantId: ctx.sellerId,
+            },
+            startDate,
+            now
+        );
 
-        while (page < totalPages) {
-            const result = await fetchOrders(
-                { apiKey: ctx.credentials.apiKey, apiSecret: ctx.credentials.apiSecret, merchantId: ctx.sellerId },
-                startDate,
-                endDate,
-                page,
-                PAGE_SIZE
-            );
-            totalPages = result.totalPages;
+        let syncedCount = 0;
 
-            for (const order of result.content) {
-                const orderNumber = String(order.orderNumber || order.id || '');
-                if (!orderNumber) continue;
+        for (const order of orders) {
+            const siparisNo = String(order.siparisNo || order.orderNumber || '');
+            if (!siparisNo) continue;
 
-                await ctx.admin
-                    .from('hepsiburada_orders_raw')
-                    .upsert(
-                        {
-                            user_id: ctx.userId,
-                            connection_id: ctx.connectionId,
-                            order_number: orderNumber,
-                            order_date: order.orderDate ? new Date(order.orderDate).toISOString() : null,
-                            status: order.status || order.orderStatus || null,
-                            total_price: order.totalPrice ?? order.totalAmount ?? null,
-                            raw_json: order,
-                        },
-                        { onConflict: 'connection_id,order_number' }
-                    );
+            await ctx.admin
+                .from('hb_orders')
+                .upsert(
+                    {
+                        user_id: ctx.userId,
+                        connection_id: ctx.connectionId,
+                        siparis_no: siparisNo,
+                        siparis_tarihi: order.siparisTarihi || null,
+                        musteri_adi: order.musteriAdi || null,
+                        status: order.status || null,
+                        raw_json: order,
+                    },
+                    { onConflict: 'siparis_no,user_id' }
+                );
 
-                totalSynced++;
-            }
-
-            page++;
+            syncedCount++;
         }
 
         await ctx.admin
@@ -75,10 +66,15 @@ export async function POST(req: Request) {
             .update({ last_sync_at: new Date().toISOString(), status: 'connected' })
             .eq('id', ctx.connectionId);
 
-        const message = `${totalSynced} sipariş senkronize edildi (son ${DEFAULT_DAYS_BACK} gün).`;
+        const message = `${syncedCount} sipariş senkronize edildi (son ${gun} gün).`;
         await writeSyncLog(ctx.admin, ctx.connectionId, 'orders', 'success', message, startedAt, new Date().toISOString());
 
-        return NextResponse.json({ success: true, synced: totalSynced, message });
+        return NextResponse.json({
+            success: true,
+            syncedCount,
+            orders,
+            message,
+        });
     } catch (err: any) {
         console.error('[marketplace/hepsiburada/sync-orders] Error:', err?.message);
 
@@ -88,8 +84,18 @@ export async function POST(req: Request) {
                 await writeSyncLog(ctx.admin, ctx.connectionId, 'orders', 'failed', `Hata: ${err?.message || 'Bilinmeyen'}`, startedAt, new Date().toISOString());
                 await ctx.admin.from('marketplace_connections').update({ status: 'error' }).eq('id', ctx.connectionId);
             }
-        } catch { /* ignore */ }
+        } catch { /* ignore logging errors */ }
 
-        return NextResponse.json({ error: 'Sipariş senkronizasyonu başarısız.' }, { status: 500 });
+        if (err?.message?.includes('Kimlik bilgileri hatalı')) {
+            return NextResponse.json({ success: false, error: 'Kimlik bilgileri hatalı' }, { status: 401 });
+        }
+        if (err?.message?.includes('rate limit') || err?.message?.includes('429')) {
+            return NextResponse.json({ success: false, error: 'İstek limiti aşıldı, bekleyin' }, { status: 429 });
+        }
+
+        return NextResponse.json(
+            { success: false, error: 'Bir hata oluştu', detail: err?.message },
+            { status: 500 }
+        );
     }
 }
