@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prepareSyncContext, writeSyncLog } from '@/lib/marketplace-sync-helpers';
-import { fetchOrders } from '@/lib/trendyol-api';
+import { fetchAllOrders } from '@/lib/trendyol-api';
 
 export const dynamic = 'force-dynamic';
 const PAGE_SIZE = 50;
@@ -43,37 +43,29 @@ export async function POST(req: Request) {
         // Write running log
         await writeSyncLog(ctx.admin, ctx.connectionId, 'orders', 'running', 'Sipariş senkronizasyonu başladı...', startedAt);
 
+        const orders = await fetchAllOrders(ctx.credentials, startDate, endDate, PAGE_SIZE);
         let totalSynced = 0;
-        let page = 0;
-        let totalPages = 1;
 
-        while (page < totalPages) {
-            const result = await fetchOrders(ctx.credentials, startDate, endDate, page, PAGE_SIZE);
-            totalPages = result.totalPages;
+        for (const order of orders) {
+            const orderNumber = String(order.orderNumber || order.id || '');
+            if (!orderNumber) continue;
 
-            for (const order of result.content) {
-                const orderNumber = String(order.orderNumber || order.id || '');
-                if (!orderNumber) continue;
+            await ctx.admin
+                .from('trendyol_orders_raw')
+                .upsert(
+                    {
+                        user_id: ctx.userId,
+                        connection_id: ctx.connectionId,
+                        order_number: orderNumber,
+                        order_date: order.orderDate ? new Date(order.orderDate).toISOString() : null,
+                        status: order.status || null,
+                        total_price: order.totalPrice ?? order.grossAmount ?? null,
+                        raw_json: order,
+                    },
+                    { onConflict: 'connection_id,order_number' }
+                );
 
-                await ctx.admin
-                    .from('trendyol_orders_raw')
-                    .upsert(
-                        {
-                            user_id: ctx.userId,
-                            connection_id: ctx.connectionId,
-                            order_number: orderNumber,
-                            order_date: order.orderDate ? new Date(order.orderDate).toISOString() : null,
-                            status: order.status || null,
-                            total_price: order.totalPrice ?? order.grossAmount ?? null,
-                            raw_json: order,
-                        },
-                        { onConflict: 'connection_id,order_number' }
-                    );
-
-                totalSynced++;
-            }
-
-            page++;
+            totalSynced++;
         }
 
         // Update connection last_sync_at

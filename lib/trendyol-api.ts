@@ -90,6 +90,27 @@ async function checkRateLimit(): Promise<void> {
     rateLimiter.requests.push(Date.now());
 }
 
+// ─── Order Rate Limiter (900 req / 60s — Trendyol sipariş limiti 1000/dk) ──
+
+const orderRateLimiter = {
+    requests: [] as number[],
+    maxRequests: 900,
+    windowMs: 60_000,
+};
+
+async function checkOrderRateLimit(): Promise<void> {
+    const now = Date.now();
+    orderRateLimiter.requests = orderRateLimiter.requests.filter(t => now - t < orderRateLimiter.windowMs);
+
+    if (orderRateLimiter.requests.length >= orderRateLimiter.maxRequests) {
+        const bekleme = orderRateLimiter.windowMs - (now - orderRateLimiter.requests[0]) + 100;
+        console.log(`[trendyol-api] Order rate limit: ${bekleme}ms bekleniyor`);
+        await sleep(bekleme);
+    }
+
+    orderRateLimiter.requests.push(Date.now());
+}
+
 // ─── Helpers ─────────────────────────────────────────────────
 
 function isMockMode(creds: TrendyolCredentials): boolean {
@@ -105,12 +126,16 @@ function buildHeaders(creds: TrendyolCredentials): Record<string, string> {
     };
 }
 
-async function fetchWithRetry(url: string, headers: Record<string, string>): Promise<Response> {
+async function fetchWithRetry(
+    url: string,
+    headers: Record<string, string>,
+    rateLimitFn: () => Promise<void> = checkRateLimit
+): Promise<Response> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
-            await checkRateLimit();
+            await rateLimitFn();
 
             const res = await fetch(url, {
                 headers,
@@ -308,7 +333,7 @@ export async function fetchOrders(
 
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/orders?startDate=${startDate}&endDate=${endDate}&orderByField=PackageLastModifiedDate&orderByDirection=DESC&page=${page}&size=${size}`;
     const headers = buildHeaders(creds);
-    const res = await fetchWithRetry(url, headers);
+    const res = await fetchWithRetry(url, headers, checkOrderRateLimit);
 
     if (!res.ok) handleTrendyolError(res.status, url);
 
@@ -322,6 +347,29 @@ export async function fetchOrders(
     };
 }
 
+export async function fetchAllOrders(
+    creds: TrendyolCredentials,
+    startDate: number,
+    endDate: number,
+    size = 50
+): Promise<any[]> {
+    if (isMockMode(creds)) return MOCK_ORDERS;
+
+    const all: any[] = [];
+    let page = 0;
+    let totalPages = 1;
+    const MAX_PAGES = 20; // güvenlik: max 1000 sipariş
+
+    while (page < totalPages && page < MAX_PAGES) {
+        const result = await fetchOrders(creds, startDate, endDate, page, size);
+        totalPages = result.totalPages || 1;
+        all.push(...result.content);
+        page++;
+    }
+
+    return all;
+}
+
 export async function getOrderDetail(
     creds: TrendyolCredentials,
     orderId: string
@@ -332,7 +380,7 @@ export async function getOrderDetail(
 
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/orders/${orderId}`;
     const headers = buildHeaders(creds);
-    const res = await fetchWithRetry(url, headers);
+    const res = await fetchWithRetry(url, headers, checkOrderRateLimit);
 
     if (!res.ok) handleTrendyolError(res.status, url);
     return res.json();
@@ -507,6 +555,58 @@ export async function getSellerSettlements(
 
         const chunk = await fetchSettlementsChunk(creds, headers, start, end);
         results.push(...chunk);
+
+        mevcutBaslangic = new Date(mevcutBitis);
+        mevcutBaslangic.setDate(mevcutBaslangic.getDate() + 1);
+    }
+
+    return results;
+}
+
+// ─── Other Financials (promosyon, kupon, diğer kesintiler) ────
+
+export interface OtherFinancial {
+    islemTipi: string;
+    tutar: number;
+    aciklama: string;
+    tarih: string | null;
+}
+
+export async function getOtherFinancials(
+    creds: TrendyolCredentials,
+    startDate: string,
+    endDate: string
+): Promise<OtherFinancial[]> {
+    if (isMockMode(creds)) return [];
+
+    const headers = buildHeaders(creds);
+    const results: OtherFinancial[] = [];
+
+    const baslangic = new Date(startDate);
+    const bitis = new Date(endDate);
+    let mevcutBaslangic = new Date(baslangic);
+
+    while (mevcutBaslangic <= bitis) {
+        const mevcutBitis = new Date(mevcutBaslangic);
+        mevcutBitis.setDate(mevcutBitis.getDate() + 14);
+        if (mevcutBitis > bitis) mevcutBitis.setTime(bitis.getTime());
+
+        const start = mevcutBaslangic.toISOString().split('T')[0];
+        const end = mevcutBitis.toISOString().split('T')[0];
+
+        const url = `${BASE_URL}/suppliers/${creds.sellerId}/finance/che/otherfinancials?startDate=${start}&endDate=${end}`;
+        const res = await fetchWithRetry(url, headers);
+
+        if (res.ok) {
+            const data = await res.json();
+            const chunk = (data.content || []).map((item: any): OtherFinancial => ({
+                islemTipi: item.transactionType ?? '',
+                tutar: item.amount ?? 0,
+                aciklama: item.description ?? '',
+                tarih: item.transactionDate ? new Date(item.transactionDate).toISOString() : null,
+            }));
+            results.push(...chunk);
+        }
 
         mevcutBaslangic = new Date(mevcutBitis);
         mevcutBaslangic.setDate(mevcutBaslangic.getDate() + 1);

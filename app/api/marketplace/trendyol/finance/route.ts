@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prepareSyncContext } from '@/lib/marketplace-sync-helpers';
-import { getSellerSettlements } from '@/lib/trendyol-api';
+import { getSellerSettlements, getOtherFinancials } from '@/lib/trendyol-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,12 +17,18 @@ export async function GET(request: NextRequest) {
         const endDate = searchParams.get('endDate')
             ?? new Date().toISOString().split('T')[0];
 
-        const data = await getSellerSettlements(ctx.credentials, startDate, endDate);
+        const [settlements, otherFinancials] = await Promise.all([
+            getSellerSettlements(ctx.credentials, startDate, endDate),
+            getOtherFinancials(ctx.credentials, startDate, endDate),
+        ]);
 
         return NextResponse.json({
             success: true,
-            data,
-            toplam: data.length,
+            data: settlements,
+            otherFinancials,
+            settlements: settlements.length,
+            otherFinancialsCount: otherFinancials.length,
+            toplam: settlements.length + otherFinancials.length,
         });
     } catch (err: any) {
         console.error('[marketplace/trendyol/finance] Error:', err?.message);
