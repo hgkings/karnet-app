@@ -20,6 +20,11 @@ const ORDER_BASE_URL = process.env.TRENDYOL_ENV === 'stage'
     ? 'https://stageapi.trendyol.com/stagesapigw/integration/order/sellers'
     : 'https://apigw.trendyol.com/integration/order/sellers';
 
+// Ürün API'si yeni domain ve path (Trendyol dok. güncellemesi)
+const PRODUCT_BASE_URL = process.env.TRENDYOL_ENV === 'stage'
+    ? 'https://stageapi.trendyol.com/stagesapigw/integration/product/sellers'
+    : 'https://apigw.trendyol.com/integration/product/sellers';
+
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 1000;
 const TIMEOUT_MS = 10000;
@@ -218,7 +223,7 @@ export async function testConnection(
     }
 
     try {
-        const url = `${BASE_URL}/suppliers/${creds.sellerId}/products?page=0&size=1`;
+        const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products?approved=true&page=0&size=1`;
         const headers = buildHeaders(creds);
         const res = await fetchWithRetry(url, headers);
 
@@ -266,7 +271,7 @@ export async function fetchProducts(
         };
     }
 
-    const url = `${BASE_URL}/suppliers/${creds.sellerId}/products?page=${page}&size=${size}`;
+    const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products?approved=true&page=${page}&size=${size}`;
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
@@ -290,7 +295,7 @@ export async function getProductByBarcode(
         return MOCK_PRODUCTS.find(p => p.barcode === barcode) ?? null;
     }
 
-    const url = `${BASE_URL}/suppliers/${creds.sellerId}/products?barcode=${encodeURIComponent(barcode)}&page=0&size=1`;
+    const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products?barcode=${encodeURIComponent(barcode)}&approved=true&page=0&size=1`;
     const headers = buildHeaders(creds);
     const res = await fetchWithRetry(url, headers);
 
@@ -355,16 +360,28 @@ export async function fetchAllOrders(
 ): Promise<any[]> {
     if (isMockMode(creds)) return MOCK_ORDERS;
 
+    // Trendyol kuralı: startDate-endDate arası max 2 hafta (14 gün).
+    // Daha uzun aralıklar için 13 günlük pencerelere böl, her pencerede sayfalama yap.
     const all: any[] = [];
-    let page = 0;
-    let totalPages = 1;
-    const MAX_PAGES = 20; // güvenlik: max 1000 sipariş
+    const WINDOW_MS = 13 * 24 * 60 * 60 * 1000; // 13 gün (ms)
+    const MAX_PAGES = 20; // güvenlik: pencere başına max 1000 sipariş
 
-    while (page < totalPages && page < MAX_PAGES) {
-        const result = await fetchOrders(creds, startDate, endDate, page, size);
-        totalPages = result.totalPages || 1;
-        all.push(...result.content);
-        page++;
+    let mevcutBaslangic = startDate;
+
+    while (mevcutBaslangic < endDate) {
+        const mevcutBitis = Math.min(mevcutBaslangic + WINDOW_MS, endDate);
+
+        let page = 0;
+        let totalPages = 1;
+
+        while (page < totalPages && page < MAX_PAGES) {
+            const result = await fetchOrders(creds, mevcutBaslangic, mevcutBitis, page, size);
+            totalPages = result.totalPages || 1;
+            all.push(...result.content);
+            page++;
+        }
+
+        mevcutBaslangic = mevcutBitis + 1; // bir sonraki pencere (1ms sonra)
     }
 
     return all;
