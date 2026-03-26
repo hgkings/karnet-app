@@ -19,6 +19,7 @@ interface TrendyolFinans {
   toplamKomisyon: number;
   toplamHakedis: number;
   toplamAlacak: number;
+  toplamIadeSayisi: number;
 }
 
 export default function DashboardPage() {
@@ -38,15 +39,26 @@ export default function DashboardPage() {
         const baslangic = new Date();
         baslangic.setDate(baslangic.getDate() - 30);
         const fmt = (d: Date) => d.toISOString().slice(0, 10);
-        const res = await fetch(`/api/marketplace/trendyol/finance?startDate=${fmt(baslangic)}&endDate=${fmt(bitis)}`);
-        if (!res.ok) return;
-        const json = await res.json();
-        const rows: Array<{ komisyonTutari?: number; saticiHakedis?: number; alacak?: number }> = json.data ?? [];
-        if (rows.length === 0) return;
+
+        const [finRes, claimRes] = await Promise.all([
+          fetch(`/api/marketplace/trendyol/finance?startDate=${fmt(baslangic)}&endDate=${fmt(bitis)}`),
+          fetch(`/api/marketplace/trendyol/claims?gun=30`),
+        ]);
+
+        if (!finRes.ok) return;
+        const finJson = await finRes.json();
+        const rows: Array<{ komisyonTutari?: number; saticiHakedis?: number; alacak?: number }> = finJson.data ?? [];
+
+        const toplamIadeSayisi = claimRes.ok
+          ? ((await claimRes.json())?.ozet?.toplamIadeSayisi ?? 0)
+          : 0;
+
+        if (rows.length === 0 && toplamIadeSayisi === 0) return;
         setTrendyolFinans({
           toplamKomisyon: rows.reduce((s, r) => s + (r.komisyonTutari ?? 0), 0),
           toplamHakedis: rows.reduce((s, r) => s + (r.saticiHakedis ?? 0), 0),
           toplamAlacak: rows.reduce((s, r) => s + (r.alacak ?? 0), 0),
+          toplamIadeSayisi,
         });
       } catch {
         // sessizce geç
@@ -148,7 +160,7 @@ export default function DashboardPage() {
                 Canlı veri
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-xl bg-red-500/10 p-3 space-y-0.5">
                 <p className="text-xs text-muted-foreground">Komisyon</p>
                 <p className="text-base font-bold text-red-500">{formatCurrency(trendyolFinans.toplamKomisyon)}</p>
@@ -160,6 +172,10 @@ export default function DashboardPage() {
               <div className="rounded-xl bg-primary/10 p-3 space-y-0.5">
                 <p className="text-xs text-muted-foreground">Alacak</p>
                 <p className="text-base font-bold text-primary">{formatCurrency(trendyolFinans.toplamAlacak)}</p>
+              </div>
+              <div className="rounded-xl bg-yellow-500/10 p-3 space-y-0.5">
+                <p className="text-xs text-muted-foreground">İade Sayısı</p>
+                <p className="text-base font-bold text-yellow-500">{trendyolFinans.toplamIadeSayisi} adet</p>
               </div>
             </div>
           </div>

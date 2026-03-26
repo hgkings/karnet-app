@@ -112,6 +112,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
 
   const [customRateMap, setCustomRateMap] = useState<Map<string, number>>(new Map());
   const [ratesLastUpdated, setRatesLastUpdated] = useState<string | null>(null);
+  const [iadeOranCekiliyor, setIadeOranCekiliyor] = useState(false);
 
   // In demo mode, treat as free user unless simulated otherwise
   const isProUserFlag = isDemo ? false : isProUser(user);
@@ -236,6 +237,33 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
     }
 
     return w;
+  };
+
+  const iadeOranCek = async () => {
+    setIadeOranCekiliyor(true);
+    try {
+      const [claimRes, finRes] = await Promise.all([
+        fetch('/api/marketplace/trendyol/claims?gun=30'),
+        fetch('/api/marketplace/trendyol/finance?startDate=' +
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10) +
+          '&endDate=' + new Date().toISOString().slice(0, 10)),
+      ]);
+      const claimJson = await claimRes.json();
+      const finJson = await finRes.json();
+      const iadeSayisi: number = claimJson?.ozet?.toplamIadeSayisi ?? 0;
+      const siparisAdedi: number = (finJson?.data ?? []).length;
+      if (siparisAdedi > 0) {
+        const oran = Math.round((iadeSayisi / siparisAdedi) * 1000) / 10;
+        handleFieldChange('return_rate_pct', oran);
+        toast.success(`İade oranı Trendyol'dan çekildi: %${oran}`);
+      } else {
+        toast.error('Yeterli sipariş verisi bulunamadı.');
+      }
+    } catch {
+      toast.error('İade oranı alınamadı.');
+    } finally {
+      setIadeOranCekiliyor(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -608,19 +636,34 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
               <Info className="h-3.5 w-3.5" />
             </span>
           </div>
-          <div className="relative">
-            <Input
-              id="return_rate_pct"
-              type="number"
-              value={(input.return_rate_pct as number) ?? ''}
-              onChange={(e) => handleFieldChange('return_rate_pct', parseFloat(e.target.value) || 0)}
-              min={0}
-              max={100}
-              step={0.1}
-              className="h-11 pr-8"
-              placeholder="10"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">%</span>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                id="return_rate_pct"
+                type="number"
+                value={(input.return_rate_pct as number) ?? ''}
+                onChange={(e) => handleFieldChange('return_rate_pct', parseFloat(e.target.value) || 0)}
+                min={0}
+                max={100}
+                step={0.1}
+                className="h-11 pr-8"
+                placeholder="10"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">%</span>
+            </div>
+            {input.marketplace === 'trendyol' && !isDemo && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-11 px-3 text-xs whitespace-nowrap border-orange-500/40 text-orange-500 hover:bg-orange-500/10"
+                onClick={iadeOranCek}
+                disabled={iadeOranCekiliyor}
+              >
+                {iadeOranCekiliyor ? <span className="animate-spin mr-1">⟳</span> : null}
+                Trendyol'dan Çek
+              </Button>
+            )}
           </div>
           <p className="text-[11px] text-muted-foreground">
             Satışlarınızın yüzde kaçının iade edileceğini tahmin edin. Otomatik hesaplanan değeri dilediğinizde manuel değiştirebilirsiniz.
