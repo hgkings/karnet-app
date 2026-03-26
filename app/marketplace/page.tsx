@@ -932,7 +932,87 @@ export default function MarketplacePage() {
                             </div>
                         ) : (
                             /* ─── Disconnected State — Show Form ─── */
-                            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-6">
+                            <div className="space-y-6">
+
+                                {/* ── Fayda Paneli ── */}
+                                <div className="space-y-4">
+                                    <div className="text-center py-4">
+                                        <h3 className="text-lg font-semibold text-foreground mb-1">
+                                            {mpConfig.label} hesabını bağla, gizli kayıpları gör
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Komisyon + kargo + iade + reklam bir arada hesaplanır. Manuel hesap biter.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div className="flex gap-3 items-start bg-muted/40 rounded-xl p-4">
+                                            <span className="text-2xl mt-0.5">📊</span>
+                                            <div>
+                                                <p className="text-sm font-semibold text-foreground">Komisyon otomatik gelir</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {mpConfig.label}&apos;dan gerçek komisyon, kargo ve hakediş verilerini çekiyoruz. Sen hiçbir şey girmiyorsun.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 items-start bg-muted/40 rounded-xl p-4">
+                                            <span className="text-2xl mt-0.5">🔍</span>
+                                            <div>
+                                                <p className="text-sm font-semibold text-foreground">Hangi ürün zararda, anında gör</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Kârlı sandığın ürün aslında zarar ettiriyor olabilir. Bağlayınca hemen göreceksin.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3 items-start bg-muted/40 rounded-xl p-4">
+                                            <span className="text-2xl mt-0.5">⏱️</span>
+                                            <div>
+                                                <p className="text-sm font-semibold text-foreground">Aylarca süren hesap dakikaya iner</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    30 günlük sipariş, iade ve finans verisi tek tıkla analiz edilir.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3 bg-green-500/5 border border-green-500/20 rounded-xl p-4">
+                                        <span className="text-green-500 text-lg mt-0.5">🔒</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-green-400">Mağazana hiçbir şey yapamıyoruz</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                API bağlantısı sadece okuma yetkisi veriyor. Sipariş veremez, ürün değiştiremez, hiçbir işlem yapamayız. Tüm key&apos;ler AES-256-GCM ile şifreli saklanır — bankaların kullandığı standart.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-muted/30 rounded-xl p-4">
+                                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                                            Otomatik çekilen veriler
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {['✅ Komisyon tutarları', '✅ Kargo kesintileri', '✅ İade verileri', '✅ Hakediş ödemeleri', '✅ Sipariş geçmişi', '✅ Ürün listesi'].map((item) => (
+                                                <p key={item} className="text-xs text-muted-foreground">{item}</p>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3 pt-3 border-t border-border">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {['❌ Mağaza şifren', '❌ Müşteri bilgileri', '❌ Ödeme bilgilerin', '❌ Kişisel veriler'].map((item) => (
+                                                    <p key={item} className="text-xs text-muted-foreground">{item}</p>
+                                                ))}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground/60 mt-2">Bu verilere erişimimiz yok ve olmayacak.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 border-t border-border" />
+                                        <p className="text-xs text-muted-foreground">API bilgilerini gir, bağlantını kur</p>
+                                        <div className="flex-1 border-t border-border" />
+                                    </div>
+                                </div>
+
+                                {/* ── Bağlantı Formu ── */}
+                                <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-6">
                                 {/* Info Banner */}
                                 <div className="flex items-start gap-3 rounded-lg border border-blue-500/20 bg-blue-500/10 p-4">
                                     <ExternalLink className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
@@ -1065,7 +1145,8 @@ export default function MarketplacePage() {
                                         Kaydet & Bağlantıyı Test Et
                                     </Button>
                                 </div>
-                            </form>
+                                </form>
+                            </div>
                         )}
                     </div>
                 </div>
