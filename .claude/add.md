@@ -168,6 +168,81 @@ Auth proxy kodu local'de hazir ve test edildi ama production'a DEPLOY EDILMEDI.
 
 ---
 
+## KULLANICI DENEYIMI DENETIM RAPORU (2026-03-31)
+> Terminal Claude tarafindan 6 alanda detayli tarama yapildi.
+> Tum sayfalar kullanici gozuyle incelendi.
+
+### KRITIK (Kullaniciyi dogrudan engelliyor)
+
+| # | Sorun | Sayfa | Detay |
+|---|-------|-------|-------|
+| K1 | Blog sayfalarinda Navbar yok | app/blog/page.tsx, app/blog/[slug]/page.tsx | Kullanici blog'dan cikamaz, geri donemiyor |
+| K2 | Email dogrulama tamamen devre disi | app/auth/page.tsx:176 | Kayit sonrasi email dogrulanmiyor, guvenlik acigi |
+| K3 | Hepsiburada eksik ozellikler | app/marketplace/page.tsx | Komisyon, finans karti, webhook, bekleyen siparisler yok |
+
+### YUKSEK (Ciddi UX/guvenlik sorunu)
+
+| # | Sorun | Sayfa | Detay |
+|---|-------|-------|-------|
+| Y1 | Blog + Pricing sayfalarinda Footer yok | 3 sayfa | Legal sayfalara erisilemez |
+| Y2 | Sifre degistirme mevcut sifreyi sormuyor | app/settings/page.tsx:205 | Session calinirsa sifre degistirilebilir |
+| Y3 | Sifre sifirlama user enumeration | app/auth/forgot-password/page.tsx:32 | "E-posta bulunamadi" mesaji email varligini acikliyor |
+| Y4 | Starter plan sure kontrolu yok | utils/access.ts:56-59 | Suresi dolan Starter hala erisiyor |
+| Y5 | Destek biletlerine kullanici yanit yazamiyor | components/support/ticket-detail-dialog.tsx | Tek yonlu iletisim |
+| Y6 | Marketplace eslestirmede sessiz hata | app/marketplace/matching/page.tsx:58 | Hata yutulur, kullanici bos tablo gorur |
+| Y7 | Eslestirmede arama/filtre yok | app/marketplace/matching/page.tsx | Binlerce urunde arama yapilamiyor |
+| Y8 | Admin yorumlarda pagination yok | app/admin/comments/page.tsx | Binlerce yorum tek seferde yuklenir |
+| Y9 | Settings'te "Stripe" yaziyor ama PayTR kullaniliyor | app/settings/page.tsx:368 | Kullanici kafasi karisir |
+| Y10 | localStorage logout'ta temizlenmiyor | app/break-even/page.tsx:82-95 | Paylasilan cihazda veri sizintisi |
+| Y11 | Fatura/odeme gecmisi sayfasi yok | Eksik sayfa | Kullanici odemelerini goremez |
+| Y12 | Toplu eslestirme (bulk match) UI yok | app/marketplace/matching/page.tsx | API var ama arayuz yok |
+
+### ORTA (UX iyilestirme gerekiyor)
+
+| # | Sorun | Sayfa | Detay |
+|---|-------|-------|-------|
+| O1 | Sifre validasyonu tutarsiz (UI:8, API:6 karakter) | app/auth/page.tsx:129 vs lib/auth.ts:109 | Server 6 kabul eder, UI 8 ister |
+| O2 | Sifre sifirlama 3 sn otomatik yonlendirme | app/auth/reset-password/page.tsx:81 | Cok hizli, kullanici anlayamaz |
+| O3 | "Beni hatirla" checkbox islevsiz | app/auth/page.tsx:74 | Gosteriliyor ama kullanilmiyor |
+| O4 | ParetoChart/SmartInsights/Recommendations bos state yok | Dashboard bilesenleri | Veri yokken null doner, mesaj yok |
+| O5 | API hata mesajlari generic | Tum sayfalar | "Hata olustu" — detay yok, retry yok |
+| O6 | Pricing sayfasinda SEO metadata yok | app/pricing/page.tsx | Title/description eksik |
+| O7 | Admin plan degisikliginde onay dialogu yok | app/admin/users/page.tsx:162 | Yanlislikla plan degistirilebilir |
+| O8 | Admin odeme aktivasyonunda alert() kullaniliyor | app/admin/payments/page.tsx:61 | Toast yerine tarayici alert'i |
+| O9 | Admin odeme toplami sadece mevcut sayfa | app/admin/payments/page.tsx:73 | Yaniltici metrik |
+| O10 | Admin destek biletlerinde pagination yok | app/admin/support/page.tsx | Performans sorunu |
+| O11 | Senkronizasyon sonrasi urun sayisi gosterilmiyor | app/marketplace/page.tsx:407 | "Senkronize edildi" ama kac urun? |
+| O12 | Admin yorum silmede onay dialogu yok | app/admin/comments/page.tsx:138 | Yanlislikla silinebilir |
+| O13 | Manuel odeme aktivasyonunda kullaniciya email gonderilmiyor | app/api/admin/activate-payment/route.ts | Kullanici planin aktif oldugunu bilmez |
+| O14 | Google OAuth yapilandirma belirsiz | app/auth/page.tsx:190 | Google client ID env'de var mi? |
+
+### DUSUK (Kozmetik / ince ayar)
+
+| # | Sorun | Sayfa | Detay |
+|---|-------|-------|-------|
+| D1 | Turkce karakter hatalari (20+ yer) | Cok sayida dosya | "islemi"->"islemi", "urun"->"urun", "gunaydin"->"gunaydin" vb. |
+| D2 | Emoji kullanimi profesyonel degil | products-table.tsx:400 | "Zarar" — is uygulamasina uygun degil |
+| D3 | Blog pagination/arama/kategori yok | app/blog/page.tsx | Blog buyudukce sorun olur |
+| D4 | Custom 404 sayfasi yok | Eksik | Next.js varsayilani kullaniliyor |
+| D5 | sitemap.xml ve robots.txt yok | Eksik | SEO eksikligi |
+| D6 | Cash-plan'da typo: "dayanabiirsiniz" | app/cash-plan/page.tsx:298 | "dayanabilirsiniz" olmali |
+| D7 | Analiz sayfasinda typo'lar | app/analysis/[id]/page.tsx | "bulunamadi", "Panele Don" vb. |
+| D8 | Dashboard'da otomatik yenileme yok | Dashboard | Veri eskiyebilir |
+| D9 | Grafiklerde skeleton loader yok | Dashboard bilesenleri | Bos alan gorunur |
+| D10 | Admin destek yanitinda karakter limiti yok | app/admin/support/page.tsx:341 | Cok uzun yanit UI'i bozabilir |
+
+### SAYI OZETI
+
+| Seviye | Sayi |
+|--------|------|
+| Kritik | 3 |
+| Yuksek | 12 |
+| Orta | 14 |
+| Dusuk | 10 |
+| **TOPLAM** | **39** |
+
+---
+
 ## PROJE DURUMU OZETI
 
 | Alan | Durum | Not |
