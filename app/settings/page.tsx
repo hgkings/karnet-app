@@ -42,7 +42,8 @@ import {
 import { toast } from 'sonner';
 import { deleteAnalysis, getStoredAnalyses } from '@/lib/api/analyses';
 import { analysesToCSV, analysesToJSON } from '@/lib/csv';
-import { MFASetup } from '@/components/auth/mfa-setup';
+// MFASetup devre disi — yakinda aktif edilecek
+// import { MFASetup } from '@/components/auth/mfa-setup';
 import { createClient } from '@/lib/supabase/client';
 import { isProUser } from '@/utils/access';
 import { useRouter } from 'next/navigation';
@@ -694,8 +695,25 @@ export default function SettingsPage() {
                     </div>
                 </section>
 
-                {/* ─── 5. Güvenlik (2FA) ─── */}
-                <MFASetup onComplete={() => toast.success('2FA etkinleştirildi!')} />
+                {/* ─── 5. Güvenlik (2FA) — Yakında ─── */}
+                <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-4 opacity-60">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+                            <Shield className="h-5 w-5 text-emerald-400" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">İki Faktörlü Doğrulama (2FA)</h3>
+                            <p className="text-xs text-muted-foreground">Hesabınızı ek güvenlik katmanıyla koruyun</p>
+                        </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        Google Authenticator, Authy veya benzeri bir uygulama ile 2FA desteği yakında eklenecek.
+                    </p>
+                    <Button disabled className="gap-2 opacity-50 cursor-not-allowed">
+                        <Shield className="h-4 w-4" />
+                        Yakında
+                    </Button>
+                </div>
 
                 {/* ─── 6. Data Management ─── */}
                 <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5">
