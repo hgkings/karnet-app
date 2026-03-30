@@ -78,14 +78,14 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   // Development'ta rate limit atla — performans icin
   if (process.env.NODE_ENV === 'development') {
-    return { success: true, limit: 0, remaining: 0, reset: 0 }
+    return { success: true, limit: -1, remaining: -1, reset: 0 }
   }
 
   const limiter = limiters[type]
 
-  // Fail-open: limiter yoksa gecir
+  // Fail-open: limiter yoksa gecir (Redis baglantisi yoksa)
   if (!limiter) {
-    return { success: true, limit: 0, remaining: 0, reset: 0 }
+    return { success: true, limit: -1, remaining: -1, reset: 0 }
   }
 
   try {

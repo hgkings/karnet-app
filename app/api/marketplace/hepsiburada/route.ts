@@ -1,5 +1,6 @@
 import { requireAuth, callGatewayV1Format, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
+import { ConnectMarketplaceSchema } from '@/lib/validators/schemas/marketplace.schema'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +23,16 @@ export async function POST(req: Request) {
     if (user instanceof Response) return user
 
     const body = await req.json()
-    return callGatewayV1Format('marketplace' as ServiceName, 'connect', { ...body, marketplace: 'hepsiburada' }, user.id)
+
+    const parsed = ConnectMarketplaceSchema.safeParse({ ...body, marketplace: 'hepsiburada' })
+    if (!parsed.success) {
+      return Response.json(
+        { success: false, error: 'Doğrulama hatası', details: parsed.error.errors },
+        { status: 422 }
+      )
+    }
+
+    return callGatewayV1Format('marketplace' as ServiceName, 'connect', parsed.data, user.id)
   } catch (err: unknown) {
     return errorResponse(err)
   }

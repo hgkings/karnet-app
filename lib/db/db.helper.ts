@@ -33,8 +33,9 @@ function getOldKey(): Buffer | null {
 }
 
 function getCurrentVersion(): number {
-  // Key rotation'da version artirilir
-  return process.env.MARKETPLACE_SECRET_KEY_OLD ? 2 : 1
+  // Sabit version — key rotation durumu audit log ile takip edilir
+  // Version blob'ta saklanir ancak operasyonel bilgi ifsa etmez
+  return 1
 }
 
 /**

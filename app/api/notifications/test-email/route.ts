@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic'
 
 // TODO: callGatewayV1Format ile değiştirilecek
 export async function POST(req: NextRequest) {
-  // Block in production — debug-only endpoint
-  if (process.env.VERCEL_ENV === 'production') {
+  // Block in production + preview (sadece local development)
+  if (process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview' || process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Bu endpoint production ortamında devre dışıdır.' }, { status: 404 })
   }
 

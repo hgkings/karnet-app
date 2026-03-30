@@ -1,5 +1,6 @@
 import { requireAuth, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
+import { CreateTicketSchema } from '@/lib/validators/schemas/support.schema'
 
 export async function GET(request: Request) {
   try {
@@ -33,11 +34,19 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
+    const parsed = CreateTicketSchema.safeParse(body)
+    if (!parsed.success) {
+      return Response.json(
+        { success: false, error: 'Doğrulama hatası', details: parsed.error.errors },
+        { status: 422 }
+      )
+    }
+
     const { initializeServices } = await import('@/services/registry')
     initializeServices()
 
     const { gateway } = await import('@/lib/gateway/gateway.adapter')
-    const result = await gateway.handle('support' as ServiceName, 'createTicket', body, user.id)
+    const result = await gateway.handle('support' as ServiceName, 'createTicket', parsed.data, user.id)
 
     if (!result.success) {
       return Response.json({ success: false, error: result.error ?? 'Bir hata oluştu' }, { status: 400 })

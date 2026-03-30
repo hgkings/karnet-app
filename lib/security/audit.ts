@@ -1,8 +1,9 @@
 // ----------------------------------------------------------------
 // Audit Logger — tum onemli aksiyonlari loglar.
-// FAZ5'te repository katmani kurulunca DB'ye yazacak.
-// Simdilik structured console output (development only).
+// Production'da audit_logs tablosuna yazar (fire-and-forget).
 // ----------------------------------------------------------------
+
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type AuditAction =
   | 'auth.login'
@@ -22,6 +23,8 @@ export type AuditAction =
   | 'support.ticket_create'
   | 'support.ticket_reply'
   | 'email.send'
+  | 'user.delete_account'
+  | 'security.cron_auth_fail'
 
 interface AuditEntry {
   action: AuditAction
@@ -33,22 +36,23 @@ interface AuditEntry {
 
 /**
  * Audit log kaydi olusturur.
- * FAZ5 sonrasi: audit_logs tablosuna yazilacak.
- * Simdilik: structured log (sadece development).
+ * DB'ye yazma fire-and-forget — hata olursa sessizce gecer (ana istegi bloklamamali).
  */
 export async function auditLog(entry: AuditEntry): Promise<void> {
   const logEntry = {
-    timestamp: new Date().toISOString(),
     action: entry.action,
-    userId: entry.userId,
-    traceId: entry.traceId,
+    user_id: entry.userId,
+    trace_id: entry.traceId,
     metadata: entry.metadata ?? {},
     ip: entry.ip ?? 'unknown',
+    created_at: new Date().toISOString(),
   }
 
-  // TODO(FAZ5): audit_logs tablosuna BaseRepository uzerinden yaz
-  if (process.env.NODE_ENV === 'development') {
-    console.info('[audit]', JSON.stringify(logEntry))
+  try {
+    const supabase = createAdminClient()
+    await supabase.from('audit_logs').insert(logEntry)
+  } catch {
+    // Fire-and-forget: audit hatasi ana istegi bloklamamali
   }
 }
 

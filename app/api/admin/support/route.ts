@@ -1,5 +1,11 @@
 import { NextRequest } from 'next/server'
 import { requireAdmin, callGatewayV1Format, errorResponse } from '@/lib/api/helpers'
+import { AdminReplySchema } from '@/lib/validators/schemas/support.schema'
+import { z } from 'zod'
+
+const AdminTicketPatchSchema = z.object({
+  id: z.string().uuid('Geçerli bir ticket ID gerekli'),
+}).merge(AdminReplySchema.partial())
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,16 +27,21 @@ export async function PATCH(req: NextRequest) {
     if (auth instanceof Response) return auth
 
     const body = await req.json()
-    const { id, status, admin_note } = body as { id?: string; status?: string; admin_note?: string }
 
-    if (!id) {
-      return Response.json({ success: false, error: 'id zorunludur' }, { status: 400 })
+    const parsed = AdminTicketPatchSchema.safeParse(body)
+    if (!parsed.success) {
+      return Response.json(
+        { success: false, error: 'Doğrulama hatası', details: parsed.error.errors },
+        { status: 422 }
+      )
     }
+
+    const { id, status, admin_reply } = parsed.data
 
     return callGatewayV1Format('support', 'replyToTicket', {
       ticketId: id,
       status,
-      admin_reply: admin_note,
+      admin_reply,
     }, auth.id)
   } catch (error) {
     return errorResponse(error)
