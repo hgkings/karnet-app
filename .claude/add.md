@@ -82,6 +82,12 @@ Auth proxy kodu local'de hazir ve test edildi ama production'a DEPLOY EDILMEDI.
 
 ## SON DEGISIKLIKLER (en yeniden eskiye)
 
+### 2026-03-31 (Terminal Claude — 2FA Devre Disi)
+
+| Tarih | Ajan | Ozet | Dosyalar | Commit |
+|-------|------|------|----------|--------|
+| 03-31 | Terminal Claude | 2FA butonu devre disi — "Yakinda" yazisi, buton kilitli, MFASetup import kaldirildi | app/settings/page.tsx | 09a9e2d |
+
 ### 2026-03-31 (Terminal Claude — Auth Security Proxy) ⚠️ REVERTED
 
 | Tarih | Ajan | Ozet | Dosyalar | Commit |
