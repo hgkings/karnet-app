@@ -402,16 +402,18 @@ karnet-v2/
 
 ## YENİ ÖZELLİK EKLEME KURALI
 
-### ADIM 0 — Başlamadan Önce (PIPELINE)
-Yeni özellik doğrudan kodla başlamaz.
+### ADIM 0 — Başlamadan Önce
+Yeni özellik veya görev doğrudan kodla başlamaz.
 
 ```
-1. PIPELINE.md → INBOX'a ekle:
-   - [ ] #XXX | FEATURE | [özellik adı]
-
-2. Claude Code tek bir SPEC sunar — tüm 7 adımı kapsayan
-
-3. Hilmi onaylar → Claude Code tüm katmanları sırayla uygular
+1. .claude/CLAUDE.md oku → Mimari + kurallar
+2. .claude/add.md oku   → Günlük + durum + kalan işler + kim ne yaptı
+3. add.md'deki "KALAN İŞLER" ve "SON DEĞİŞİKLİKLER" kontrol et
+   → Aynı iş yapılmışsa kullanıcıya bildir
+4. Kullanıcıdan isim al (yoksa sor: "Bana bir isim ver")
+5. SPEC sun — tüm 7 adımı kapsayan
+6. Hilmi onaylar → tüm katmanları sırayla uygula
+7. Bitince add.md'ye kayıt yaz (tarih, ajan adı, özet, dosyalar, commit)
 ```
 
 SPEC formatı (7 adımın tamamı için):
