@@ -191,7 +191,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
 
         <div className="flex flex-wrap items-center gap-2">
           <Select value={marketplaceFilter} onValueChange={setMarketplaceFilter}>
-            <SelectTrigger className="h-9 w-[140px] text-xs">
+            <SelectTrigger className="h-9 w-full sm:w-[140px] text-xs">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Filter className="h-3.5 w-3.5" />
                 <SelectValue placeholder="Pazaryeri" />
@@ -207,7 +207,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
           </Select>
 
           <Select value={riskFilter} onValueChange={setRiskFilter}>
-            <SelectTrigger className="h-9 w-[130px] text-xs">
+            <SelectTrigger className="h-9 w-full sm:w-[130px] text-xs">
               <SelectValue placeholder="Risk Durumu" />
             </SelectTrigger>
             <SelectContent>
@@ -219,7 +219,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
           </Select>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-9 w-[130px] text-xs">
+            <SelectTrigger className="h-9 w-full sm:w-[130px] text-xs">
               <SelectValue placeholder="Durum" />
             </SelectTrigger>
             <SelectContent>
@@ -232,8 +232,79 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
         </div>
       </div>
 
-      {/* --- Table --- */}
-      <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
+      {/* --- Mobile Card View --- */}
+      <div className="md:hidden space-y-2">
+        {paginatedData.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground">
+            Sonuc bulunamadi.
+            <Button variant="link" size="sm" onClick={() => { setSearchTerm(''); setMarketplaceFilter('all'); setRiskFilter('all'); }}>Filtreleri Temizle</Button>
+          </div>
+        ) : (
+          paginatedData.map((a) => (
+            <div key={a.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 space-y-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <Link href={`/analysis/${a.id}`} className="hover:underline">
+                    <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
+                  </Link>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] bg-white/[0.06] px-1.5 py-0.5 rounded text-muted-foreground">
+                      {getMarketplaceLabel(a.input.marketplace)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {new Date(a.createdAt).toLocaleDateString('tr-TR')}
+                    </span>
+                  </div>
+                </div>
+                <RiskBadge level={a.risk.level} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">Birim Kar</span>
+                  <span className={`text-sm font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {formatCurrency(a.result.unit_net_profit)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">Marj</span>
+                  <span className={`text-sm font-bold tabular-nums ${a.result.margin_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {formatPercent(a.result.margin_pct)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">Aylik Kar</span>
+                  <span className={`text-sm font-bold tabular-nums ${a.result.monthly_net_profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {formatCurrency(a.result.monthly_net_profit)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-white/[0.04]">
+                <div className="flex flex-wrap gap-1">
+                  {a.result.margin_pct >= 20 && (a.risk.level === 'safe' || a.risk.level === 'moderate') && (
+                    <span className="text-[9px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded">Yildiz</span>
+                  )}
+                  {a.result.monthly_net_profit <= 0 && (
+                    <span className="text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">Zarar</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Link href={`/analysis/${a.id}`}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button>
+                  </Link>
+                  {onDelete && (
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => onDelete(a.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* --- Desktop Table --- */}
+      <div className="hidden md:block overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -404,57 +475,47 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
           </table>
         </div>
 
-        {/* --- Pagination --- */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-[rgba(255,255,255,0.06)] px-4 py-3 bg-[rgba(255,255,255,0.02)]">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Satır:</span>
-              <Select
-                value={itemsPerPage.toString()}
-                onValueChange={(v) => {
-                  setItemsPerPage(Number(v));
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger className="h-7 w-[60px] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">
-                {currentPage} / {totalPages}
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 rounded-lg"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 rounded-lg"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+      {/* --- Pagination (shared between mobile & desktop) --- */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="hidden sm:inline">Satir:</span>
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={(v) => {
+                setItemsPerPage(Number(v));
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="h-7 w-[60px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              {currentPage} / {totalPages}
+            </span>
+            <div className="flex gap-1">
+              <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
