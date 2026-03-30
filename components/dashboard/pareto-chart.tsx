@@ -1,17 +1,22 @@
 'use client';
 
 import { Analysis } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, formatPercent } from '@/components/shared/format';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { Crown, Medal, Award } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 interface ParetoChartProps {
     analyses: Analysis[];
 }
 
+const MEDAL_CONFIG = [
+    { icon: Crown, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { icon: Medal, color: 'text-gray-300', bg: 'bg-gray-500/10' },
+    { icon: Award, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+];
+
 export function ParetoChart({ analyses }: ParetoChartProps) {
-    // 1. Calculate Total Net Profit (only profitable products)
     const profitableProducts = analyses
         .filter(a => a.result.monthly_net_profit > 0)
         .sort((a, b) => b.result.monthly_net_profit - a.result.monthly_net_profit);
@@ -20,9 +25,8 @@ export function ParetoChart({ analyses }: ParetoChartProps) {
 
     if (totalProfit === 0) return null;
 
-    // 2. Identify Top 80% contributors
     let currentSum = 0;
-    const topContributors = [];
+    const topContributors: Analysis[] = [];
     const threshold = totalProfit * 0.8;
 
     for (const product of profitableProducts) {
@@ -31,63 +35,73 @@ export function ParetoChart({ analyses }: ParetoChartProps) {
         if (currentSum >= threshold) break;
     }
 
-    const remainingCount = analyses.length - topContributors.length;
     const contributionPct = (currentSum / totalProfit) * 100;
 
     return (
-        <Card className="border-l-4 border-l-emerald-500">
-            <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 bg-emerald-500/10 rounded-lg">
-                            <BarChart3 className="h-4 w-4 text-emerald-400" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-base font-bold">Kârın Omurgası (80/20)</CardTitle>
-                            <p className="text-xs text-muted-foreground">
-                                Toplam kârın <b>{Math.round(contributionPct)}%</b>'si bu <b>{topContributors.length}</b> üründen geliyor.
-                            </p>
-                        </div>
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="rounded-xl border border-white/[0.06] bg-gradient-to-br from-white/[0.02] to-transparent overflow-hidden"
+        >
+            <div className="px-5 py-4 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-amber-400" />
+                    <div>
+                        <span className="text-sm font-semibold">Karin Omurgasi (80/20)</span>
+                        <p className="text-[10px] text-muted-foreground">
+                            Karin <b>{Math.round(contributionPct)}%</b>&apos;si <b>{topContributors.length}</b> urunden
+                        </p>
                     </div>
                 </div>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-3 mt-2">
-                    {topContributors.slice(0, 5).map((item, idx) => (
-                        <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-[rgba(255,255,255,0.03)] hover:bg-white/5 transition-colors">
-                            <div className="flex items-center gap-3">
-                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
-                                    {idx + 1}
-                                </span>
-                                <div className="flex flex-col min-w-0 flex-1 px-2">
-                                    <Link href={`/analysis/${item.id}`} className="hover:underline block w-full">
-                                        <span className="text-sm font-medium truncate block w-full">
+            </div>
+
+            <div className="p-4 space-y-2">
+                {topContributors.slice(0, 5).map((item, idx) => {
+                    const share = (item.result.monthly_net_profit / totalProfit) * 100;
+                    const medal = idx < 3 ? MEDAL_CONFIG[idx] : null;
+                    const MedalIcon = medal?.icon;
+
+                    return (
+                        <Link key={item.id} href={`/analysis/${item.id}`}>
+                            <div className="group relative flex items-center justify-between p-2.5 rounded-lg hover:bg-white/[0.03] transition-colors">
+                                {/* Background share bar */}
+                                <div
+                                    className="absolute inset-0 rounded-lg bg-emerald-500/[0.04]"
+                                    style={{ width: `${share}%` }}
+                                />
+                                <div className="relative flex items-center gap-2.5 min-w-0 flex-1">
+                                    {medal && MedalIcon ? (
+                                        <div className={`p-1 rounded-md ${medal.bg}`}>
+                                            <MedalIcon className={`h-3.5 w-3.5 ${medal.color}`} />
+                                        </div>
+                                    ) : (
+                                        <span className="w-6 h-6 flex items-center justify-center rounded-md bg-white/[0.04] text-[10px] font-bold text-muted-foreground">
+                                            {idx + 1}
+                                        </span>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <span className="text-sm font-medium truncate block group-hover:text-emerald-400 transition-colors">
                                             {item.input.product_name}
                                         </span>
-                                    </Link>
-                                    <span className="text-[10px] text-muted-foreground hidden sm:inline whitespace-nowrap">
-                                        Marj: {formatPercent(item.result.margin_pct)}
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {formatPercent(item.result.margin_pct)} marj
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="relative text-right shrink-0 ml-2">
+                                    <span className="text-sm font-bold text-emerald-400 tabular-nums">
+                                        {formatCurrency(item.result.monthly_net_profit)}
+                                    </span>
+                                    <span className="block text-[10px] text-muted-foreground">
+                                        {formatPercent(share)} pay
                                     </span>
                                 </div>
                             </div>
-                            <div className="text-right shrink-0 ml-2">
-                                <p className="text-sm font-bold text-emerald-400 whitespace-nowrap">
-                                    {formatCurrency(item.result.monthly_net_profit)}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                    {formatPercent((item.result.monthly_net_profit / totalProfit) * 100)} pay
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-
-                    {topContributors.length > 5 && (
-                        <p className="text-xs text-center text-muted-foreground pt-1">
-                            ...ve {topContributors.length - 5} diğer kritik ürün.
-                        </p>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+                        </Link>
+                    );
+                })}
+            </div>
+        </motion.div>
     );
 }

@@ -72,7 +72,7 @@ export async function updateProfile(userId: string, updates: Partial<User>): Pro
 export async function login(
   email: string,
   password: string
-): Promise<{ success: boolean; user?: User; error?: string }> {
+): Promise<{ success: boolean; user?: User; error?: string; mfaRequired?: boolean }> {
   try {
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -82,6 +82,16 @@ export async function login(
     }
     if (!data.user || !data.user.email) {
       return { success: false, error: 'Oturum açılamadı.' };
+    }
+
+    // MFA kontrolu — kullanici TOTP kaydetmisse AAL2 gerekir
+    const { data: factorsData } = await supabase.auth.mfa.listFactors();
+    if (factorsData?.totp && factorsData.totp.length > 0) {
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalData && aalData.currentLevel === 'aal1' && aalData.nextLevel === 'aal2') {
+        // MFA dogrulama gerekiyor — session var ama AAL2 degil
+        return { success: true, mfaRequired: true };
+      }
     }
 
     const user = await fetchProfile(data.user.id, data.user.email);

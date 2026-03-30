@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { MFAVerifyForm } from '@/components/auth/mfa-verify-form';
 import {
   Eye, EyeOff, HelpCircle, ArrowRight, Check,
   TrendingUp, TestTube2, Plug,
@@ -78,8 +79,9 @@ function AuthPageContent() {
   const [googleLoading, setGoogleLoading] = useState(false);
   // Kayıt sonrası e-posta doğrulamasına yönlendirildiğinde user redirect'ini engelle
   const [awaitingEmailVerification, setAwaitingEmailVerification] = useState(false);
+  const [showMFA, setShowMFA] = useState(false);
 
-  const { login, register, user } = useAuth();
+  const { login, register, user, completeMFA } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = (() => {
@@ -142,6 +144,11 @@ function AuthPageContent() {
 
     if (mode === 'login') {
       const result = await login(trimmedEmail, password);
+      if (result.success && result.mfaRequired) {
+        setShowMFA(true);
+        setLoading(false);
+        return;
+      }
       if (result.success) {
         router.push(returnUrl);
       } else {
@@ -216,6 +223,27 @@ function AuthPageContent() {
         <div className="w-full max-w-[400px] mb-8">
           <KarnetLogo size={48} />
         </div>
+
+        {/* MFA Verification Screen */}
+        {showMFA && (
+          <div className="w-full max-w-[400px]">
+            <MFAVerifyForm
+              onSuccess={async () => {
+                await completeMFA();
+                router.push(returnUrl);
+              }}
+              onCancel={() => {
+                setShowMFA(false);
+                // Oturumu kapat — MFA'siz devam edemez
+                const supabase = createClient();
+                supabase.auth.signOut();
+              }}
+            />
+          </div>
+        )}
+
+        {showMFA ? null : (<>
+        {/* Original form content continues below */}
 
         {/* Tab Switcher */}
         <div className="w-full max-w-[400px] mb-6">
@@ -525,6 +553,7 @@ function AuthPageContent() {
             <span>%99.9 Uptime</span>
           </div>
         </div>
+        </>)}
       </div>
 
       {/* ── RIGHT PANEL — Branding (desktop only) ── */}

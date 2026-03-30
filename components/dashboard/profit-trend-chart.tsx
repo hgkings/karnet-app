@@ -3,16 +3,13 @@
 import { useMemo, useState } from 'react';
 import { Analysis } from '@/types';
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
+    AreaChart, Area, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { formatCurrency } from '@/components/shared/format';
 import { Button } from '@/components/ui/button';
+import { Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ProfitTrendChartProps {
     analyses: Analysis[];
@@ -27,11 +24,7 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
         startDate.setDate(now.getDate() - days);
 
         const filtered = analyses.filter((a) => new Date(a.createdAt) >= startDate);
-
-        // Group by date
         const grouped: Record<string, number> = {};
-
-        // Initialize all dates in range with 0 if possible, but for simplicity we'll just sort the existing ones
         filtered.forEach((a) => {
             const date = new Date(a.createdAt).toISOString().split('T')[0];
             grouped[date] = (grouped[date] || 0) + a.result.monthly_net_profit;
@@ -47,55 +40,71 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
     }, [analyses, days]);
 
     return (
-        <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-base font-bold text-foreground">Aylık Kâr Trendi</h3>
-                <div className="flex gap-1 bg-[rgba(255,255,255,0.04)] p-1 rounded-xl">
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="rounded-xl border border-white/[0.06] bg-gradient-to-br from-white/[0.02] to-transparent overflow-hidden"
+        >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-emerald-400" />
+                    <div>
+                        <span className="text-sm font-semibold">Kar Trendi</span>
+                        <p className="text-[10px] text-muted-foreground">Son {days === 365 ? '1 yil' : `${days} gun`}</p>
+                    </div>
+                </div>
+                <div className="flex gap-1 bg-white/[0.03] p-1 rounded-lg">
                     {[30, 90, 365].map((d) => (
                         <Button
                             key={d}
                             size="sm"
                             variant="ghost"
-                            className={`h-7 px-3 text-xs rounded-lg transition-all ${days === d
-                                    ? 'bg-background text-foreground shadow-sm font-semibold'
-                                    : 'text-muted-foreground hover:text-foreground'
+                            className={`h-7 px-3 text-xs rounded-md transition-all ${days === d
+                                ? 'bg-emerald-500/15 text-emerald-400 shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             onClick={() => setDays(d)}
                         >
-                            {d === 365 ? '1 Yıl' : `${d} Gün`}
+                            {d === 365 ? '1 Yil' : `${d} Gun`}
                         </Button>
                     ))}
                 </div>
             </div>
 
-            <div className="h-[300px] w-full">
+            <div className="px-2 py-4 h-[280px]">
                 {data.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <AreaChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                             <XAxis
                                 dataKey="formattedDate"
-                                fontSize={11}
+                                tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
+                                axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
                                 tickLine={false}
-                                axisLine={false}
-                                stroke="hsl(var(--muted-foreground))"
-                                dy={10}
                             />
                             <YAxis
-                                fontSize={11}
-                                tickLine={false}
+                                tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
                                 axisLine={false}
-                                stroke="hsl(var(--muted-foreground))"
-                                tickFormatter={(val) => `₺${val / 1000}k`}
+                                tickLine={false}
+                                tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
+                                width={45}
                             />
                             <Tooltip
                                 content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
+                                    if (active && payload?.length) {
+                                        const val = payload[0].value as number;
                                         return (
-                                            <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#1C1917] p-3 shadow-lg">
-                                                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{payload[0].payload.formattedDate}</p>
-                                                <p className="text-lg font-bold text-primary">
-                                                    {formatCurrency(payload[0].value as number)}
+                                            <div className="rounded-xl border border-white/10 bg-[#1a1a2e]/95 backdrop-blur-xl px-4 py-3 shadow-2xl">
+                                                <p className="text-xs text-white/50 mb-1">{payload[0].payload.formattedDate}</p>
+                                                <p className={`text-sm font-bold ${val >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    {formatCurrency(val)}
                                                 </p>
                                             </div>
                                         );
@@ -103,25 +112,27 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
                                     return null;
                                 }}
                             />
-                            <Line
+                            <ReferenceLine y={0} stroke="rgba(255,255,255,0.08)" strokeDasharray="4 4" />
+                            <Area
                                 type="monotone"
                                 dataKey="profit"
-                                stroke="hsl(var(--primary))"
-                                strokeWidth={3}
-                                dot={{ fill: 'hsl(var(--background))', stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                                activeDot={{ r: 6, strokeWidth: 0, fill: 'hsl(var(--primary))' }}
+                                stroke="#22c55e"
+                                strokeWidth={2.5}
+                                fill="url(#profitGrad)"
+                                dot={{ fill: '#22c55e', r: 3, strokeWidth: 0 }}
+                                activeDot={{ r: 5, fill: '#22c55e', stroke: '#22c55e', strokeWidth: 2, strokeOpacity: 0.3 }}
                             />
-                        </LineChart>
+                        </AreaChart>
                     </ResponsiveContainer>
                 ) : (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <div className="h-10 w-10 rounded-full bg-[rgba(255,255,255,0.06)] flex items-center justify-center">
-                            <span className="text-xl">📊</span>
+                        <div className="h-10 w-10 rounded-full bg-white/[0.04] flex items-center justify-center">
+                            <Activity className="h-5 w-5 text-muted-foreground/40" />
                         </div>
-                        <p>Bu zaman aralığında veri bulunamadı.</p>
+                        <p>Bu zaman araliginda veri bulunamadi.</p>
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 }

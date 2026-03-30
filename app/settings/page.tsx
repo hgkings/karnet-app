@@ -42,6 +42,7 @@ import {
 import { toast } from 'sonner';
 import { deleteAnalysis, getStoredAnalyses } from '@/lib/api/analyses';
 import { analysesToCSV, analysesToJSON } from '@/lib/csv';
+import { MFASetup } from '@/components/auth/mfa-setup';
 import { createClient } from '@/lib/supabase/client';
 import { isProUser } from '@/utils/access';
 import { useRouter } from 'next/navigation';
@@ -693,7 +694,10 @@ export default function SettingsPage() {
                     </div>
                 </section>
 
-                {/* ─── 5. Data Management ─── */}
+                {/* ─── 5. Güvenlik (2FA) ─── */}
+                <MFASetup onComplete={() => toast.success('2FA etkinleştirildi!')} />
+
+                {/* ─── 6. Data Management ─── */}
                 <section className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6 space-y-5">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">

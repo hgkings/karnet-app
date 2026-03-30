@@ -10,11 +10,13 @@ const supabase = createClient();
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  mfaRequired: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; mfaRequired?: boolean }>;
   register: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   upgradePlan: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  completeMFA: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -66,11 +69,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const result = await authLogin(email, password);
+    if (result.success && result.mfaRequired) {
+      setMfaRequired(true);
+      return { success: true, mfaRequired: true };
+    }
     if (result.success && result.user) {
       setUser(result.user);
+      setMfaRequired(false);
     }
     return { success: result.success, error: result.error };
   }, []);
+
+  const completeMFA = useCallback(async () => {
+    setMfaRequired(false);
+    await refreshUser();
+  }, [refreshUser]);
 
   const register = useCallback(async (email: string, password: string) => {
     const result = await authRegister(email, password);
@@ -103,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, upgradePlan, refreshUser, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, mfaRequired, login, register, logout, upgradePlan, refreshUser, completeMFA, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
