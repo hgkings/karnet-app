@@ -56,7 +56,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             // Merge: DB notifications + local (deduplicate by dedupe_key)
             const existingKeys = new Set(dbNotifications.map(n => n.dedupe_key).filter(Boolean));
             const newLocals = localNotifications.filter(n => !existingKeys.has(n.dedupe_key));
-            setNotifications([...dbNotifications, ...newLocals]);
+            setNotifications([...dbNotifications, ...(newLocals as Notification[])]);
         } catch {
             // silent
         } finally {
