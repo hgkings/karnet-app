@@ -644,6 +644,30 @@ Tüm kutular geçmedikçe görev **DONE sayılmaz**.
 
 ---
 
+---
+
+## MULTI-AGENT GELISTIRME PROTOKOLU
+
+```
+HER YENI SOHBET BASINDA ZORUNLU 3 ADIM:
+
+1. .claude/CLAUDE.md oku (bu dosya — mimari + kurallar)
+2. .claude/add.md oku (gelistirme gunlugu + durum + kalan isler)
+3. Kullaniciya sor: "Bana bir isim ver ve ne yapmami istedigini soyle."
+
+GOREV ALMADAN ONCE BU 3 ADIM TAMAMLANMALI.
+BU SIRALAMA DEGISMEZ.
+
+Gorev bitince: add.md'ye kayit yaz (tarih, ajan adi, ozet, dosyalar, commit)
+Ayni is yapildiysa: Kullaniciya bildir, onay al
+```
+
+> **add.md** dosyasi Karnet'in merkezi hafizasidir.
+> Tum ajanlar bu dosyayi okumak ve yazmak ZORUNDADIR.
+> Detaylar icin: `.claude/add.md`
+
+---
+
 *Bu mimari Kârnet'in temelidir.*
 *Değişmez. Silinmez. Unutulmaz.*
 *Dünya yansa bu kurallar geçerlidir.*
