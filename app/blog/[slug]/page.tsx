@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getBlogPost, blogPosts, formatDate } from '@/lib/blog';
 import { Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { CommentsSection } from '@/components/blog/CommentsSection';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface Props {
   params: { slug: string };
@@ -70,7 +71,7 @@ export default function BlogPostPage({ params }: Props) {
         {/* İçerik */}
         <article
           className="prose-blog"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
         />
 
         {/* CTA */}

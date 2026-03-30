@@ -25,8 +25,9 @@ export async function PATCH(
       ticketId: params.id,
       ...parsed.data,
     }, auth.id)
-  } catch {
-    return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+    return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
   }
 }
 
@@ -40,7 +41,8 @@ export async function DELETE(
   try {
     await callGatewayV1Format('support' as ServiceName, 'deleteTicket', { ticketId: params.id }, auth.id)
     return new NextResponse(null, { status: 204 })
-  } catch {
-    return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+    return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
   }
 }

@@ -12,14 +12,13 @@ export function getDefaultServiceFee(marketplace: string): number {
   return 0;
 }
 
-export const n = (v: any, fallback = 0) => {
+export const n = (v: unknown, fallback = 0): number => {
   if (v === null || v === undefined) return fallback;
   const num = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
   return Number.isFinite(num) ? num : fallback;
 };
 
 export function calculateProfit(input: ProductInput): CalculationResult {
-  console.debug('[Calculation] Input:', input);
   const sale_price = n(input.sale_price);
   const product_cost = n(input.product_cost);
   const commission_pct = n(input.commission_pct);

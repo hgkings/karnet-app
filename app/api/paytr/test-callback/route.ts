@@ -65,7 +65,8 @@ export async function GET() {
             payment_plan_raw: payment.plan,
         });
 
-    } catch {
-        return NextResponse.json({ success: false, message: 'Hata' }, { status: 500 });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+        return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 });
     }
 }

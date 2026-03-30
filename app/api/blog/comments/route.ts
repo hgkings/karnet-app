@@ -63,7 +63,8 @@ export async function POST(request: Request) {
     }
 
     return Response.json({ success: true })
-  } catch {
-    return Response.json({ error: 'Geçersiz istek' }, { status: 400 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+    return Response.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
   }
 }

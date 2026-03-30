@@ -34,7 +34,8 @@ export async function GET(req: Request) {
         // Pro aktivasyonu yalnızca callback route üzerinden gerçekleşir.
         return NextResponse.json({ isPro: false, paymentStatus: payment.status });
 
-    } catch {
-        return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+        return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 });
     }
 }

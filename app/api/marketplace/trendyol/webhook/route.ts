@@ -36,13 +36,13 @@ export async function POST(request: Request) {
     let payload: unknown
     try {
       payload = JSON.parse(body)
-    } catch {
+    } catch (_parseError) {
       // Gecersiz JSON — yine de 200 don
       return Response.json({ success: true }, { status: 200 })
     }
 
     await callGatewayV1Format('marketplace' as ServiceName, 'handleTrendyolWebhook', payload, 'webhook')
-  } catch {
+  } catch (_webhookError) {
     // Trendyol 200 almazsa tekrar gonderir — hata olsa da 200 don
   }
 

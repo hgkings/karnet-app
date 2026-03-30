@@ -259,20 +259,6 @@ export default function AnalysisResultPage() {
 
   const { input, result, risk } = analysis;
 
-  // Debug log for VAT calculation verification
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[VAT Debug]', {
-      product: input.product_name,
-      sale_price: input.sale_price,
-      vat_pct: input.vat_pct,
-      vat_amount: result.vat_amount,
-      types: {
-        sale_price_type: typeof input.sale_price,
-        vat_pct_type: typeof input.vat_pct
-      }
-    });
-  }
-
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -586,7 +572,7 @@ export default function AnalysisResultPage() {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Konum</Label>
-                  <Select value={targetPos} onValueChange={(v: any) => setTargetPos(v)}>
+                  <Select value={targetPos} onValueChange={(v: string) => setTargetPos(v as 'cheaper' | 'same' | 'premium')}>
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>

@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
 
     const filters = filterParsed.success ? filterParsed.data : {}
     return callGatewayV1Format('support' as ServiceName, 'listAllTickets', { ...filters }, auth.id)
-  } catch {
-    return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+    return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
   }
 }

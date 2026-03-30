@@ -32,7 +32,6 @@ export async function sendEmail({
       text,
       replyTo: replyTo ?? 'karnet.destek@gmail.com',
     })
-    console.log('Email sent:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error('Email error:', error)

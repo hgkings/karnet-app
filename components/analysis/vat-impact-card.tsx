@@ -106,6 +106,12 @@ export function VatImpactCard({ input, result }: VatImpactCardProps) {
 }
 
 // Internal helper for Badge if needed (or import from UI)
-function Badge({ children, variant, className }: any) {
+interface BadgeProps {
+    children: React.ReactNode;
+    variant?: string;
+    className?: string;
+}
+
+function Badge({ children, className }: BadgeProps) {
     return <span className={`px-1.5 py-0.5 rounded text-xs border ${className}`}>{children}</span>;
 }

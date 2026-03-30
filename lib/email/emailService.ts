@@ -76,13 +76,13 @@ export const emailService = {
                 throw new Error(`SMTP Error: ${errorMsg}`);
             }
 
-            console.log(`[Email Sent] Successfully sent ${templateName} to ${to} (ID: ${result.messageId})`);
             await this.logEmailAttempt(userId, to, templateName, subject, 'sent', result.messageId || null, null);
             return { success: true, provider_message_id: result.messageId };
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
             console.error(`[Email Service Exception] Failed to send email to ${to}:`, err);
-            await this.logEmailAttempt(userId, to, templateName, subject, 'failed', null, err.message);
+            await this.logEmailAttempt(userId, to, templateName, subject, 'failed', null, errorMessage);
             throw err;
         }
     },
@@ -184,7 +184,6 @@ export const emailService = {
     async sendProExpiryWarning(user: UserInfo, options: { daysLeft: number; expiresAt: string }) {
         const allowed = await checkEmailPreference(user.id, 'email_pro_expiry');
         if (!allowed) {
-            console.log(`[Email Skip] Pro expiry warning skipped for ${user.email} (preference disabled)`);
             return { success: false, skipped: true };
         }
         const template = getProExpiryWarningTemplate(options.daysLeft, options.expiresAt);
@@ -205,7 +204,6 @@ export const emailService = {
     }) {
         const allowed = await checkEmailPreference(user.id, 'email_weekly_report');
         if (!allowed) {
-            console.log(`[Email Skip] Weekly report skipped for ${user.email} (preference disabled)`);
             return { success: false, skipped: true };
         }
         const template = getWeeklyReportTemplate(user.name || '', stats);
@@ -222,7 +220,6 @@ export const emailService = {
     async sendRiskAlert(user: UserInfo, options: { productName: string; currentPrice?: number; loss: number }) {
         const allowed = await checkEmailPreference(user.id, 'email_risk_alert');
         if (!allowed) {
-            console.log(`[Email Skip] Risk alert skipped for ${user.email} (preference disabled)`);
             return { success: false, skipped: true };
         }
         const template = getRiskAlertTemplate(options.productName, options.currentPrice || 0, options.loss);
@@ -239,7 +236,6 @@ export const emailService = {
     async sendMarginAlert(user: UserInfo, options: { productName: string; currentMargin: number; targetMargin: number }) {
         const allowed = await checkEmailPreference(user.id, 'email_margin_alert');
         if (!allowed) {
-            console.log(`[Email Skip] Margin alert skipped for ${user.email} (preference disabled)`);
             return { success: false, skipped: true };
         }
         const template = getMarginAlertTemplate(options.productName, options.currentMargin, options.targetMargin);

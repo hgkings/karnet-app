@@ -142,7 +142,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ]);
       font = await pdfDoc.embedFont(r);
       fontBold = await pdfDoc.embedFont(b);
-    } catch {
+    } catch (_fontError) {
       useFallback = true;
       font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);

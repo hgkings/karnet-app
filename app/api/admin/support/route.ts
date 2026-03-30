@@ -40,8 +40,9 @@ export async function GET(req: NextRequest) {
     }))
 
     return NextResponse.json({ tickets: result })
-  } catch {
-    return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+    return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
   }
 }
 
@@ -62,7 +63,8 @@ export async function PATCH(req: NextRequest) {
     if (error) throw error
 
     return NextResponse.json({ success: true })
-  } catch {
-    return NextResponse.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
+    return NextResponse.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
   }
 }

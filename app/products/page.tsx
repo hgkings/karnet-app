@@ -7,6 +7,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProductsTable } from '@/components/dashboard/products-table';
 import { deleteAnalysis, saveAnalysis, generateId } from '@/lib/api/analyses';
 import { parseCSV, analysesToCSV, analysesToJSON } from '@/lib/csv';
+import { ProductInput } from '@/types';
 import { calculateProfit } from '@/utils/calculations';
 import { calculateRisk } from '@/utils/risk-engine';
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
@@ -37,7 +38,7 @@ export default function ProductsPage() {
     await refresh();
   };
 
-  const performImport = async (data: any[]) => {
+  const performImport = async (data: ProductInput[]) => {
     if (!user) return;
 
     if (!isPro && analyses.length + data.length > 5) {
