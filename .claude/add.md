@@ -49,7 +49,7 @@ BU SIRALAMA DEGISMEZ. GOREV ALMADAN ONCE BU 3 ADIM TAMAMLANMALI.
 | # | Gorev | Zorluk | Durum |
 |---|-------|--------|-------|
 | 2 | npm audit + bagimlilk guncelleme | Kolay | ✅ YAPILDI (Terminal Claude, 03-31) |
-| 3 | Admin 2FA (Supabase MFA) | Orta | BEKLIYOR |
+| 3 | Admin 2FA (Supabase MFA) | Orta | ✅ YAPILDI (Terminal Claude, 03-31) |
 | 4 | User-ID bazli rate limiting | Orta | BEKLIYOR |
 | 5 | Cloudflare WAF entegrasyonu | Orta | BEKLIYOR |
 | 6 | Monitoring/Alerting sistemi | Orta-Zor | BEKLIYOR |
@@ -81,6 +81,7 @@ BU SIRALAMA DEGISMEZ. GOREV ALMADAN ONCE BU 3 ADIM TAMAMLANMALI.
 
 | Tarih | Ajan | Ozet | Dosyalar | Commit |
 |-------|------|------|----------|--------|
+| 03-31 | Terminal Claude | Admin 2FA (TOTP MFA) — enrollment + login verify + ayarlar | mfa-setup.tsx, mfa-verify-form.tsx, auth.ts, auth-context.tsx, auth/page.tsx, settings/page.tsx | 9d742b1 |
 | 03-31 | Terminal Claude | Next.js 13.5→14.2.35 yukseltme, middleware %50 kuculdu | server.ts, helpers.ts, layout.tsx, 4 route + package.json | 81b4bfd |
 | 03-31 | Terminal Claude | npm audit — Next.js 13.5.1→13.5.11, 18→5 zafiyet | package.json, package-lock.json | 0433c7a |
 | 03-31 | Terminal Claude | add.md + CLAUDE.md multi-agent protokol | .claude/add.md, .claude/CLAUDE.md | 9ee993d, c228775 |
