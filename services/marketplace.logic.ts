@@ -10,6 +10,15 @@ import { encryptCredentials, decryptCredentials } from '@/lib/marketplace/crypto
 import * as trendyolApi from '@/lib/marketplace/trendyol.api'
 import * as hepsiburadaApi from '@/lib/marketplace/hepsiburada.api'
 import type { MarketplaceRepository } from '@/repositories/marketplace.repository'
+import type { ProductRepository } from '@/repositories/product.repository'
+import type { AnalysisRepository } from '@/repositories/analysis.repository'
+import {
+  normalizeProducts,
+  normalizeOrderMetrics,
+  type RawProduct,
+  type RawOrder,
+  type ProductMapping,
+} from '@/lib/marketplace/normalizer'
 
 // ----------------------------------------------------------------
 // Tipler
@@ -48,7 +57,11 @@ export interface SyncResult {
 // ----------------------------------------------------------------
 
 export class MarketplaceLogic {
-  constructor(private readonly marketplaceRepo: MarketplaceRepository) {}
+  constructor(
+    private readonly marketplaceRepo: MarketplaceRepository,
+    private readonly productRepo: ProductRepository,
+    private readonly analysisRepo: AnalysisRepository,
+  ) {}
 
   /**
    * Marketplace baglantisi kurar.
@@ -385,8 +398,109 @@ export class MarketplaceLogic {
     payload: unknown,
     userId: string
   ): Promise<{ matched: number; created: number; manual: number }> {
-    // TODO: normalizer entegrasyonu — rawProducts ve analyses repo'dan çekilecek
-    return { matched: 0, created: 0, manual: 0 }
+    const { connectionId } = payload as { connectionId: string }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+
+    // 1. Tum urunleri cek (sayfalama)
+    const allProducts: Record<string, unknown>[] = []
+    let page = 0
+    let totalPages = 1
+    while (page < totalPages) {
+      const result = await trendyolApi.fetchProducts(creds, page, 50)
+      allProducts.push(...result.content)
+      totalPages = result.totalPages
+      page++
+    }
+
+    // 2. Mevcut analizleri cek
+    const analyses = await this.analysisRepo.findByUserId(userId)
+
+    // 3. Raw → RawProduct formatina map et
+    const rawProducts: RawProduct[] = allProducts.map(p => ({
+      external_product_id: String(p.id ?? ''),
+      barcode: (p.barcode as string) ?? undefined,
+      merchant_sku: (p.stockCode as string) ?? undefined,
+      title: (p.title as string) ?? undefined,
+      sale_price: (p.salePrice as number) ?? 0,
+    }))
+
+    // 4. Normalizer cagir (AnalysisRow → ExistingAnalysis uyumlulugu)
+    const existingAnalyses = analyses.map(a => ({
+      id: a.id,
+      product_name: a.product_name ?? undefined,
+      barcode: a.barcode ?? undefined,
+      merchant_sku: a.merchant_sku ?? undefined,
+      inputs: (a.inputs ?? undefined) as Record<string, unknown> | undefined,
+    }))
+    const normalized = normalizeProducts(rawProducts, existingAnalyses, 'trendyol')
+
+    // 5. Sonuclari DB'ye yaz
+    for (const r of normalized.results) {
+      if (r.internalId && r.analysisUpdate) {
+        // Eslesme bulundu — map kaydet + analiz guncelle
+        await this.productRepo.upsertMap({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          internal_product_id: r.internalId,
+          match_confidence: r.mapEntry.match_confidence,
+          connection_id: connectionId,
+        })
+        const updateData: Record<string, unknown> = {
+          barcode: r.analysisUpdate.barcode,
+          merchant_sku: r.analysisUpdate.merchant_sku,
+          marketplace_source: r.analysisUpdate.marketplace_source,
+          auto_synced: true,
+        }
+        if (r.analysisUpdate.inputs) {
+          updateData.inputs = r.analysisUpdate.inputs
+        }
+        await this.analysisRepo.update(r.internalId, updateData)
+      } else if (r.newAnalysis) {
+        // Yeni urun — analiz olustur, sonra map kaydet
+        const newRow = await this.analysisRepo.create({
+          user_id: userId,
+          marketplace: r.newAnalysis.marketplace,
+          product_name: r.newAnalysis.product_name,
+          barcode: r.newAnalysis.barcode,
+          merchant_sku: r.newAnalysis.merchant_sku,
+          marketplace_source: r.newAnalysis.marketplace_source,
+          auto_synced: true,
+          inputs: r.newAnalysis.inputs,
+          outputs: r.newAnalysis.outputs,
+          risk_score: r.newAnalysis.risk_score,
+          risk_level: r.newAnalysis.risk_level,
+        })
+        await this.productRepo.upsertMap({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          internal_product_id: newRow.id,
+          match_confidence: r.mapEntry.match_confidence,
+          connection_id: connectionId,
+        })
+      } else {
+        // Manuel eslestirme gerekli
+        await this.productRepo.upsertMap({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          match_confidence: 'manual_required',
+          connection_id: connectionId,
+        })
+      }
+    }
+
+    return { matched: normalized.matched, created: normalized.created, manual: normalized.manual }
   }
 
   async normalizeTrendyolOrders(
@@ -394,8 +508,54 @@ export class MarketplaceLogic {
     payload: unknown,
     userId: string
   ): Promise<{ metricsUpdated: number; unmatchedOrders: number }> {
-    // TODO: normalizer entegrasyonu — rawOrders ve productMap repo'dan çekilecek
-    return { metricsUpdated: 0, unmatchedOrders: 0 }
+    const { connectionId, days } = payload as { connectionId: string; days?: number }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+
+    // 1. Son N gun siparisleri cek
+    const end = new Date()
+    const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
+    const orders = await trendyolApi.fetchAllOrders(creds, start.getTime(), end.getTime())
+
+    // 2. Urun eslestirme haritasini cek
+    const mapRows = await this.productRepo.getMapByUserId(userId, 'trendyol')
+    const productMappings: ProductMapping[] = mapRows.map(m => ({
+      external_product_id: m.external_product_id,
+      internal_product_id: m.internal_product_id,
+    }))
+
+    // 3. Siparisleri RawOrder formatina map et
+    const rawOrders: RawOrder[] = orders.map(o => ({
+      order_number: String(o.orderNumber ?? o.id ?? ''),
+      order_date: (o.orderDate as string) ?? new Date().toISOString(),
+      status: (o.status as string) ?? 'Unknown',
+      raw_json: o as Record<string, unknown>,
+    }))
+
+    // 4. Normalizer cagir
+    const result = normalizeOrderMetrics(rawOrders, productMappings, 'trendyol')
+
+    // 5. Metrikleri kaydet
+    for (const metric of result.metrics) {
+      await this.productRepo.upsertSalesMetrics({
+        user_id: userId,
+        internal_product_id: metric.internal_product_id,
+        marketplace: metric.marketplace,
+        period_month: metric.period_month,
+        sold_qty: metric.sold_qty,
+        returned_qty: metric.returned_qty,
+        gross_revenue: metric.gross_revenue,
+        net_revenue: metric.net_revenue,
+      })
+    }
+
+    // 6. Otomatik satis adedini guncelle
+    for (const update of result.autoSalesUpdates) {
+      await this.analysisRepo.update(update.productId, {
+        auto_sales_qty: update.netQty,
+      })
+    }
+
+    return { metricsUpdated: result.metricsUpdated, unmatchedOrders: result.unmatchedOrders }
   }
 
   async getTrendyolUnsuppliedOrders(
@@ -544,8 +704,98 @@ export class MarketplaceLogic {
     payload: unknown,
     userId: string
   ): Promise<{ matched: number; created: number; manual: number }> {
-    // TODO: normalizer entegrasyonu — rawProducts ve analyses repo'dan çekilecek
-    return { matched: 0, created: 0, manual: 0 }
+    const { connectionId } = payload as { connectionId: string }
+    const creds = await this.resolveHbCredentials(connectionId, traceId)
+
+    // 1. Tum urunleri cek
+    const { items: allProducts } = await hepsiburadaApi.fetchAllProducts(creds)
+
+    // 2. Mevcut analizleri cek
+    const analyses = await this.analysisRepo.findByUserId(userId)
+
+    // 3. Raw → RawProduct formatina map et
+    const rawProducts: RawProduct[] = allProducts.map(p => ({
+      external_product_id: String(p.hepsiburadaSku ?? p.merchantSku ?? ''),
+      barcode: (p.barcode as string) ?? undefined,
+      merchant_sku: (p.merchantSku as string) ?? undefined,
+      title: (p.productName as string) ?? (p.urunAdi as string) ?? undefined,
+      sale_price: (p.price as number) ?? (p.fiyat as number) ?? 0,
+    }))
+
+    // 4. Normalizer cagir (AnalysisRow → ExistingAnalysis uyumlulugu)
+    const existingAnalyses = analyses.map(a => ({
+      id: a.id,
+      product_name: a.product_name ?? undefined,
+      barcode: a.barcode ?? undefined,
+      merchant_sku: a.merchant_sku ?? undefined,
+      inputs: (a.inputs ?? undefined) as Record<string, unknown> | undefined,
+    }))
+    const normalized = normalizeProducts(rawProducts, existingAnalyses, 'hepsiburada')
+
+    // 5. Sonuclari DB'ye yaz
+    for (const r of normalized.results) {
+      if (r.internalId && r.analysisUpdate) {
+        await this.productRepo.upsertMap({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          internal_product_id: r.internalId,
+          match_confidence: r.mapEntry.match_confidence,
+          connection_id: connectionId,
+        })
+        const updateData: Record<string, unknown> = {
+          barcode: r.analysisUpdate.barcode,
+          merchant_sku: r.analysisUpdate.merchant_sku,
+          marketplace_source: r.analysisUpdate.marketplace_source,
+          auto_synced: true,
+        }
+        if (r.analysisUpdate.inputs) {
+          updateData.inputs = r.analysisUpdate.inputs
+        }
+        await this.analysisRepo.update(r.internalId, updateData)
+      } else if (r.newAnalysis) {
+        const newRow = await this.analysisRepo.create({
+          user_id: userId,
+          marketplace: r.newAnalysis.marketplace,
+          product_name: r.newAnalysis.product_name,
+          barcode: r.newAnalysis.barcode,
+          merchant_sku: r.newAnalysis.merchant_sku,
+          marketplace_source: r.newAnalysis.marketplace_source,
+          auto_synced: true,
+          inputs: r.newAnalysis.inputs,
+          outputs: r.newAnalysis.outputs,
+          risk_score: r.newAnalysis.risk_score,
+          risk_level: r.newAnalysis.risk_level,
+        })
+        await this.productRepo.upsertMap({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          internal_product_id: newRow.id,
+          match_confidence: r.mapEntry.match_confidence,
+          connection_id: connectionId,
+        })
+      } else {
+        await this.productRepo.upsertMap({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          match_confidence: 'manual_required',
+          connection_id: connectionId,
+        })
+      }
+    }
+
+    return { matched: normalized.matched, created: normalized.created, manual: normalized.manual }
   }
 
   async normalizeHepsiburadaOrders(
@@ -553,8 +803,54 @@ export class MarketplaceLogic {
     payload: unknown,
     userId: string
   ): Promise<{ metricsUpdated: number; unmatchedOrders: number }> {
-    // TODO: normalizer entegrasyonu — rawOrders ve productMap repo'dan çekilecek
-    return { metricsUpdated: 0, unmatchedOrders: 0 }
+    const { connectionId, days } = payload as { connectionId: string; days?: number }
+    const creds = await this.resolveHbCredentials(connectionId, traceId)
+
+    // 1. Son N gun siparisleri cek
+    const end = new Date()
+    const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
+    const orders = await hepsiburadaApi.fetchAllOrders(creds, start, end)
+
+    // 2. Urun eslestirme haritasini cek
+    const mapRows = await this.productRepo.getMapByUserId(userId, 'hepsiburada')
+    const productMappings: ProductMapping[] = mapRows.map(m => ({
+      external_product_id: m.external_product_id,
+      internal_product_id: m.internal_product_id,
+    }))
+
+    // 3. Siparisleri RawOrder formatina map et
+    const rawOrders: RawOrder[] = orders.map((o: Record<string, unknown>) => ({
+      order_number: String(o.orderNumber ?? o.id ?? ''),
+      order_date: (o.orderDate as string) ?? new Date().toISOString(),
+      status: (o.status as string) ?? 'Unknown',
+      raw_json: o,
+    }))
+
+    // 4. Normalizer cagir
+    const result = normalizeOrderMetrics(rawOrders, productMappings, 'hepsiburada')
+
+    // 5. Metrikleri kaydet
+    for (const metric of result.metrics) {
+      await this.productRepo.upsertSalesMetrics({
+        user_id: userId,
+        internal_product_id: metric.internal_product_id,
+        marketplace: metric.marketplace,
+        period_month: metric.period_month,
+        sold_qty: metric.sold_qty,
+        returned_qty: metric.returned_qty,
+        gross_revenue: metric.gross_revenue,
+        net_revenue: metric.net_revenue,
+      })
+    }
+
+    // 6. Otomatik satis adedini guncelle
+    for (const update of result.autoSalesUpdates) {
+      await this.analysisRepo.update(update.productId, {
+        auto_sales_qty: update.netQty,
+      })
+    }
+
+    return { metricsUpdated: result.metricsUpdated, unmatchedOrders: result.unmatchedOrders }
   }
 
   async rotateKeys(

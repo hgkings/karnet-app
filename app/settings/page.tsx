@@ -142,19 +142,23 @@ export default function SettingsPage() {
         setSaving(false);
     }, [user, updateProfile]);
 
-    // Delete all data
+    // Delete all data + account
     const handleDeleteAll = async () => {
         if (!user) return;
         setDeleting(true);
         try {
-            const all = await getStoredAnalyses();
-            await Promise.all(all.map((a) => deleteAnalysis(a.id)));
-            setAnalyses([]);
-            toast.success('Tüm analiz verileri silindi.');
+            const res = await fetch('/api/user/delete', { method: 'DELETE' });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Silme başarısız');
+            }
+            toast.success('Hesabınız ve tüm verileriniz kalıcı olarak silindi.');
             setDeleteDialogOpen(false);
             setDeleteConfirmText('');
-        } catch {
-            toast.error('Silme sırasında hata oluştu.');
+            // Oturumu kapat ve ana sayfaya yonlendir
+            window.location.href = '/';
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Silme sırasında hata oluştu.');
         } finally {
             setDeleting(false);
         }
@@ -726,7 +730,7 @@ export default function SettingsPage() {
                             <p className="text-sm font-medium text-red-400">Tehlikeli Bölge</p>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Tüm analiz geçmişinizi ve kaydedilen ürün verilerinizi kalıcı olarak silebilirsiniz. Bu işlem geri alınamaz.
+                            Hesabınızı ve tüm verilerinizi (analizler, pazaryeri bağlantıları, bildirimler, destek talepleri) kalıcı olarak silebilirsiniz. Bu işlem geri alınamaz.
                         </p>
                         <Dialog open={deleteDialogOpen} onOpenChange={(v) => {
                             setDeleteDialogOpen(v);
@@ -739,25 +743,39 @@ export default function SettingsPage() {
                                     className="gap-1.5 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-[10px]"
                                 >
                                     <Trash2 className="h-4 w-4" />
-                                    Tüm Verileri Sil
+                                    Hesabımı ve Tüm Verilerimi Sil
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-w-md">
                                 <DialogHeader>
-                                    <DialogTitle className="flex items-center gap-2">
+                                    <DialogTitle className="flex items-center gap-2 text-red-400">
                                         <AlertTriangle className="h-5 w-5 text-red-500" />
-                                        Tüm Verileri Sil
+                                        Hesabı Kalıcı Olarak Sil
                                     </DialogTitle>
-                                    <DialogDescription>
-                                        Bu işlem tüm analizlerinizi kalıcı olarak silecek. Onaylamak için aşağıya <strong>KARNET</strong> yazın.
+                                    <DialogDescription className="pt-1">
+                                        Bu işlem geri alınamaz. Hesabınız ve aşağıdaki tüm verileriniz kalıcı olarak silinecektir:
                                     </DialogDescription>
                                 </DialogHeader>
-                                <div className="space-y-2 py-2">
+
+                                <div className="rounded-lg border border-red-500/10 bg-red-500/5 p-3 space-y-1.5 text-xs text-muted-foreground">
+                                    <p className="flex items-center gap-2"><span className="text-red-400">&#x2022;</span> Tüm ürün analizleriniz ve kârlılık hesaplamalarınız</p>
+                                    <p className="flex items-center gap-2"><span className="text-red-400">&#x2022;</span> Pazaryeri bağlantılarınız ve API anahtarlarınız</p>
+                                    <p className="flex items-center gap-2"><span className="text-red-400">&#x2022;</span> Ürün eşleştirmeleri ve satış metrikleri</p>
+                                    <p className="flex items-center gap-2"><span className="text-red-400">&#x2022;</span> Komisyon oranları ve özel ayarlarınız</p>
+                                    <p className="flex items-center gap-2"><span className="text-red-400">&#x2022;</span> Bildirimler, destek talepleri ve ödeme geçmişiniz</p>
+                                    <p className="flex items-center gap-2"><span className="text-red-400">&#x2022;</span> Hesap bilgileriniz ve oturum verileriniz</p>
+                                </div>
+
+                                <p className="text-xs text-muted-foreground">
+                                    Onaylamak için aşağıya <strong className="text-red-400">KARNET</strong> yazın.
+                                </p>
+
+                                <div className="space-y-2">
                                     <Input
-                                        placeholder='Onaylamak için "KARNET" yazın'
+                                        placeholder='KARNET'
                                         value={deleteConfirmText}
                                         onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                        className="font-mono"
+                                        className="font-mono border-red-500/20 focus-visible:ring-red-500/30"
                                     />
                                 </div>
                                 <DialogFooter>
@@ -773,7 +791,7 @@ export default function SettingsPage() {
                                         onClick={handleDeleteAll}
                                         disabled={deleting || deleteConfirmText !== 'KARNET'}
                                     >
-                                        {deleting ? 'Siliniyor...' : 'Evet, Tümünü Sil'}
+                                        {deleting ? 'Siliniyor...' : 'Evet, Hesabımı Sil'}
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>

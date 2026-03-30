@@ -17,6 +17,7 @@ import { MarketplaceRepository } from '@/repositories/marketplace.repository'
 import { CommissionRepository } from '@/repositories/commission.repository'
 import { BlogRepository } from '@/repositories/blog.repository'
 import { PaymentRepository } from '@/repositories/payment.repository'
+import { ProductRepository } from '@/repositories/product.repository'
 
 import { AnalysisLogic } from './analysis.logic'
 import { RiskLogic } from './risk.logic'
@@ -28,6 +29,7 @@ import { SupportLogic } from './support.logic'
 import { PdfLogic } from './pdf.logic'
 import { BlogLogic } from './blog.logic'
 import { PaymentLogic } from './payment.logic'
+import { ProductLogic } from './product.logic'
 
 let initialized = false
 
@@ -50,18 +52,20 @@ export function initializeServices(): void {
   const commissionRepo = new CommissionRepository(supabase)
   const blogRepo = new BlogRepository(supabase)
   const paymentRepo = new PaymentRepository(supabase)
+  const productRepo = new ProductRepository(supabase)
 
   // Service instance'lari (repo DI)
   const analysisLogic = new AnalysisLogic(analysisRepo)
   const riskLogic = new RiskLogic()
   const commissionLogic = new CommissionLogic(commissionRepo)
   const userLogic = new UserLogic(userRepo)
-  const marketplaceLogic = new MarketplaceLogic(marketplaceRepo)
+  const marketplaceLogic = new MarketplaceLogic(marketplaceRepo, productRepo, analysisRepo)
   const notificationLogic = new NotificationLogic(notificationRepo)
   const supportLogic = new SupportLogic(supportRepo)
   const pdfLogic = new PdfLogic(analysisRepo)
   const blogLogic = new BlogLogic(blogRepo)
   const paymentLogic = new PaymentLogic(paymentRepo)
+  const productLogic = new ProductLogic(analysisRepo, productRepo)
 
   // ServiceBridge'e kaydet
   serviceBridge.register('analysis', analysisLogic as unknown as LogicService)
@@ -75,6 +79,7 @@ export function initializeServices(): void {
   serviceBridge.register('blog', blogLogic as unknown as LogicService)
 
   serviceBridge.register('payment', paymentLogic as unknown as LogicService)
+  serviceBridge.register('product', productLogic as unknown as LogicService)
 
   initialized = true
 }

@@ -20,6 +20,7 @@ export type ServiceName =
   | 'support'
   | 'pdf'
   | 'blog'
+  | 'product'
 
 /**
  * Servis adi → rate limit tipi eslesmesi.
@@ -36,6 +37,7 @@ export const SERVICE_RATE_LIMIT_MAP: Record<ServiceName, RateLimitType> = {
   support: 'api',
   pdf: 'api',
   blog: 'comment',
+  product: 'api',
 }
 
 /**

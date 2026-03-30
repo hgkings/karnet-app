@@ -305,6 +305,28 @@ export class UserLogic {
   }
 
   /**
+   * Kullanici hesabini ve tum verilerini kalici olarak siler.
+   * Tum bagli tablolar cascade silinir, ardindan auth kaydı kaldirilir.
+   */
+  async deleteAccount(
+    traceId: string,
+    _payload: unknown,
+    userId: string
+  ): Promise<{ success: boolean; deletedTables: string[] }> {
+    const profile = await this.userRepo.findById(userId)
+    if (!profile) {
+      throw new ServiceError('Kullanıcı profili bulunamadı', {
+        code: 'PROFILE_NOT_FOUND',
+        statusCode: 404,
+        traceId,
+      })
+    }
+
+    const result = await this.userRepo.deleteAllUserData(userId)
+    return { success: true, deletedTables: result.deletedTables }
+  }
+
+  /**
    * Plan icin limitleri cozumler.
    */
   resolveLimits(plan: PlanType): PlanLimits {
