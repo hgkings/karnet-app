@@ -81,6 +81,7 @@ BU SIRALAMA DEGISMEZ. GOREV ALMADAN ONCE BU 3 ADIM TAMAMLANMALI.
 
 | Tarih | Ajan | Ozet | Dosyalar | Commit |
 |-------|------|------|----------|--------|
+| 03-31 | Terminal Claude | Next.js 13.5→14.2.35 yukseltme, middleware %50 kuculdu | server.ts, helpers.ts, layout.tsx, 4 route + package.json | 81b4bfd |
 | 03-31 | Terminal Claude | npm audit — Next.js 13.5.1→13.5.11, 18→5 zafiyet | package.json, package-lock.json | 0433c7a |
 | 03-31 | Terminal Claude | add.md + CLAUDE.md multi-agent protokol | .claude/add.md, .claude/CLAUDE.md | 9ee993d, c228775 |
 | 03-31 | Terminal Claude | Runtime UX duzeltmeleri — timeout, unmount, hata gosterimi | auth/page.tsx, dashboard/page.tsx, alert-context.tsx, settings/page.tsx, marketplace/page.tsx | 22f4b90 |
