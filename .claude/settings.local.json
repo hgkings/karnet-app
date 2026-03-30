@@ -10,7 +10,10 @@
       "Bash(npm install:*)",
       "mcp__ide__getDiagnostics",
       "Bash(curl -sI http://localhost:3000)",
-      "Bash(curl -s http://localhost:3000)"
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(grep -r next/image /c/Users/isbil/Trendyol-1/app /c/Users/isbil/Trendyol-1/components --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"dangerouslySetInnerHTML\\\\|innerHTML\" /c/Users/isbil/Trendyol-1/app /c/Users/isbil/Trendyol-1/components --include=*.tsx)",
+      "Bash(grep -r \"getStaticProps\\\\|getServerSideProps\" /c/Users/isbil/Trendyol-1/app --include=*.ts*)"
     ]
   }
 }

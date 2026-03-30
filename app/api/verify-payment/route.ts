@@ -15,7 +15,7 @@ export async function GET(req: Request) {
         // ── Token-based polling (new flow) ───────────────────────────────────
         if (token) {
             // 1. Authenticate the caller
-            const supabase = createServerSupabase();
+            const supabase = await createServerSupabase();
 
             const { data: { user }, error: authError } = await supabase.auth.getUser();
             if (authError || !user) {

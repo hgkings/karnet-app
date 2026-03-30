@@ -12,7 +12,7 @@ interface AuthUser {
  * Authenticated user'i dondurur veya null.
  */
 export async function getAuthUser(): Promise<AuthUser | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const {
     data: { user },
     error,

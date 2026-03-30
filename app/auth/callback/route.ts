@@ -13,7 +13,7 @@ export async function GET(request: Request) {
         ? rawNext
         : '/dashboard';
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // ── Email doğrulama: token_hash + type (Supabase PKCE / magic link flow) ──
     if (token_hash && type) {
