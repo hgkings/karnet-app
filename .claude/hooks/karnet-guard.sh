@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 # ============================================================================
-# KÂRNET CODE GUARD v2.0 — PostToolUse Hook
+# KÂRNET CODE GUARD v3.0 — PostToolUse Hook
 # ============================================================================
 # 9 Katmanlı mimari kurallarını her dosya yazımında denetler.
 # CLAUDE.md'deki değişmez kuralların otomatik bekçisi.
 #
-# v2.0 Güncellemeler (2026-03-31):
-#   - K1 iyileştirildi: createAdminClient app/ içinde yakalanır
-#   - K3 iyileştirildi: console.error/warn izinli, sadece console.log yasak
-#   - K6 iyileştirildi: fire-and-forget pattern tanınır
-#   - K10 eklendi: API response body'de token/secret sızıntısı
-#   - K11 eklendi: SSRF koruması (request header ile fetch)
-#   - K12 eklendi: API route'larda Zod validasyon zorunluluğu
-#   - K13 eklendi: Türkçe karakter hataları (yaygın yanlışlar)
-#   - K14 eklendi: Büyük dosya uyarısı (>500 satır)
-#   - K15 eklendi: Kullanılmayan import tespiti
+# v3.0 Güncellemeler (2026-03-31):
+#   Kullanıcı deneyimi denetiminden (39 bulgu) çıkan kurallar eklendi:
+#   - K21: Marketing/blog sayfalarında layout wrapper zorunluluğu
+#   - K22: page.tsx'te SEO metadata export zorunluluğu
+#   - K23: Auth route'larda user enumeration koruması
+#   - K24: Yanlış marka referansı tespiti (Stripe vs PayTR)
+#   - K25: localStorage kullanımında cleanup uyarısı
+#   - K26: Component'te return null yerine empty state mesajı
 #
 # Denetimler:
 #   [K1]  UI katmanında DB/Service/Repository import yasağı
@@ -37,6 +35,16 @@
 #   [K18] fetch() timeout kontrolü
 #   [K19] Hardcoded localhost URL tespiti
 #   [K20] .map() içinde key prop kontrolü
+#   [K21] Marketing/blog sayfalarında layout wrapper zorunluluğu
+#   [K22] page.tsx'te SEO metadata export zorunluluğu
+#   [K23] Auth route'larda user enumeration koruması
+#   [K24] Yanlış marka referansı tespiti (Stripe vs PayTR)
+#   [K25] localStorage kullanımında cleanup uyarısı
+#   [K26] Component'te return null — empty state mesajı gerekli
+#   [K27] Pagination kontrolü — büyük veri listelerinde zorunlu
+#   [K28] Erişilebilirlik — button/link'te aria-label veya metin zorunlu
+#   [K29] Şifre validasyonu tutarlılığı (min 8 karakter)
+#   [K30] API route'larda Türkçe hata mesajı zorunluluğu
 # ============================================================================
 
 set -uo pipefail
@@ -450,6 +458,179 @@ if [[ "$FILE_NAME" =~ \.(tsx)$ ]]; then
         fi
       fi
     done <<< "$MAP_LINES"
+  fi
+fi
+
+# ============================================================================
+# [K21] MARKETING/BLOG SAYFALARINDA LAYOUT WRAPPER ZORUNLULUĞU
+# Blog ve marketing sayfalarında Navbar + Footer olmalı
+# Bulgu: K1 (blog'da navbar yok), Y1 (footer yok)
+# ============================================================================
+if [[ "$FILE_NAME" == "page.tsx" ]]; then
+  # Blog sayfaları
+  if [[ "$FILE_PATH" =~ app/blog/ ]] || [[ "$FILE_PATH" =~ app/pricing/ ]]; then
+    HAS_NAVBAR=$(echo "$FILE_CONTENT" | grep -qE "(Navbar|Header|LegalPageLayout|MarketingLayout)" && echo "true" || echo "false")
+    HAS_FOOTER=$(echo "$FILE_CONTENT" | grep -qE "(Footer|LegalPageLayout|MarketingLayout)" && echo "true" || echo "false")
+    if [[ "$HAS_NAVBAR" == "false" ]]; then
+      echo "❌ [K21] Marketing/blog sayfasında Navbar/Header eksik — kullanıcı sayfadan çıkamaz — $REL_PATH" >&2
+      ((ERRORS++))
+    fi
+    if [[ "$HAS_FOOTER" == "false" ]]; then
+      echo "❌ [K21] Marketing/blog sayfasında Footer eksik — legal sayfalara erişilemez — $REL_PATH" >&2
+      ((ERRORS++))
+    fi
+  fi
+  # Hakkımızda, iletişim vb. marketing sayfaları
+  if [[ "$FILE_PATH" =~ app/(hakkimizda|iletisim|gizlilik|kullanim|mesafeli|iade)/ ]]; then
+    if ! echo "$FILE_CONTENT" | grep -qE "(LegalPageLayout|Navbar|Header)"; then
+      echo "⚠️  [K21] Marketing sayfasında layout wrapper eksik — $REL_PATH"
+      ((WARNS++))
+    fi
+  fi
+fi
+
+# ============================================================================
+# [K22] PAGE.TSX'TE SEO METADATA EXPORT ZORUNLULUĞU
+# Her page.tsx'te metadata export olmalı (dashboard hariç)
+# Bulgu: O6 (pricing'de metadata yok)
+# ============================================================================
+if [[ "$FILE_NAME" == "page.tsx" ]]; then
+  # Dashboard ve auth sayfaları hariç — onlar dinamik
+  if [[ ! "$FILE_PATH" =~ app/(dashboard|settings|admin|support|analysis|products|marketplace|cash-plan|break-even|billing|auth|basari|demo)/ ]]; then
+    if ! echo "$FILE_CONTENT" | grep -qE "export (const|async function) (metadata|generateMetadata)"; then
+      echo "⚠️  [K22] SEO: page.tsx'te metadata export eksik — $REL_PATH"
+      ((WARNS++))
+    fi
+  fi
+fi
+
+# ============================================================================
+# [K23] AUTH ROUTE'LARDA USER ENUMERATION KORUMASI
+# Auth endpoint'lerinde farklı HTTP status ile email varlığı açıklanmamalı
+# Bulgu: Y3 (şifre sıfırlama enumeration)
+# ============================================================================
+if [[ "$IS_API" == "true" ]] && [[ "$FILE_PATH" =~ app/api/auth/ ]]; then
+  # "bulunamadı", "not found", "kayıtlı" gibi email varlığını açıklayan mesajlar
+  ENUM_RISK=$(echo "$FILE_CONTENT" | grep -nEi "(bulunamad|not found|already registered|zaten kayitli|zaten kayıtlı)" | grep -v "^\s*//" || true)
+  if [[ -n "$ENUM_RISK" ]]; then
+    echo "❌ [K23] GÜVENLİK: Auth route'ta user enumeration riski — generic mesaj kullan — $REL_PATH" >&2
+    echo "$ENUM_RISK" | head -2 | while read -r line; do
+      echo "   → $line" >&2
+    done
+    ((ERRORS++))
+  fi
+  # Auth route'larda 409 status yasak (email var/yok ayrımı yapılmamalı)
+  if echo "$FILE_CONTENT" | grep -qE "status:\s*409"; then
+    echo "❌ [K23] GÜVENLİK: Auth route'ta 409 status — user enumeration riski — $REL_PATH" >&2
+    ((ERRORS++))
+  fi
+fi
+
+# ============================================================================
+# [K24] YANLIŞ MARKA REFERANSI TESPİTİ
+# Kârnet PayTR kullanıyor — Stripe referansları yanlış
+# Bulgu: Y9 (settings'te "Stripe" yazıyor)
+# ============================================================================
+if echo "$FILE_CONTENT" | grep -qEi "stripe" | grep -vq "//"; then
+  STRIPE_REFS=$(echo "$FILE_CONTENT" | grep -nEi "stripe" | grep -v "^\s*//" | grep -v "\.stripe\." || true)
+  if [[ -n "$STRIPE_REFS" ]]; then
+    echo "❌ [K24] Yanlış marka: 'Stripe' referansı — Kârnet PayTR kullanıyor — $REL_PATH" >&2
+    echo "$STRIPE_REFS" | head -2 | while read -r line; do
+      echo "   → $line" >&2
+    done
+    ((ERRORS++))
+  fi
+fi
+
+# ============================================================================
+# [K25] LOCALSTORAGE KULLANIMINDA CLEANUP UYARISI
+# localStorage.setItem varsa logout'ta temizlenmeli
+# Bulgu: Y10 (break-even'da localStorage temizlenmiyor)
+# ============================================================================
+if [[ "$IS_UI" == "true" ]]; then
+  if echo "$FILE_CONTENT" | grep -qE "localStorage\.(setItem|getItem)"; then
+    if ! echo "$FILE_CONTENT" | grep -qE "localStorage\.(removeItem|clear)"; then
+      echo "⚠️  [K25] localStorage kullanımı var ama cleanup (removeItem/clear) yok — logout'ta temizlenmeli — $REL_PATH"
+      ((WARNS++))
+    fi
+  fi
+fi
+
+# ============================================================================
+# [K26] COMPONENT'TE RETURN NULL — EMPTY STATE MESAJI GEREKLİ
+# Component null dönüyorsa kullanıcı boş ekran görür
+# Bulgu: O4 (ParetoChart/SmartInsights null dönüyor)
+# ============================================================================
+if [[ "$IS_UI" == "true" ]] && [[ "$FILE_NAME" =~ \.(tsx)$ ]]; then
+  # "return null" satırlarını bul
+  NULL_RETURNS=$(echo "$FILE_CONTENT" | grep -nE "^\s*return null\s*;?\s*$" | grep -v "^\s*//" || true)
+  if [[ -n "$NULL_RETURNS" ]]; then
+    NULL_COUNT=$(echo "$NULL_RETURNS" | wc -l)
+    echo "⚠️  [K26] Component'te 'return null' ($NULL_COUNT yer) — kullanıcı boş ekran görür, empty state mesajı ekle — $REL_PATH"
+    echo "$NULL_RETURNS" | head -2 | while read -r line; do
+      echo "   → $line"
+    done
+    ((WARNS++))
+  fi
+fi
+
+# ============================================================================
+# [K27] PAGİNATION KONTROLÜ
+# Büyük veri listelerinde pagination zorunlu
+# Bulgu: Y8 (admin yorumlarda pagination yok), O10 (destek biletlerinde yok)
+# ============================================================================
+if [[ "$IS_UI" == "true" ]] && [[ "$FILE_NAME" == "page.tsx" ]]; then
+  # Admin sayfaları — tablo/liste varsa pagination olmalı
+  if [[ "$FILE_PATH" =~ app/admin/ ]]; then
+    HAS_LIST=$(echo "$FILE_CONTENT" | grep -qE "\.map\s*\(" && echo "true" || echo "false")
+    HAS_PAGINATION=$(echo "$FILE_CONTENT" | grep -qEi "(pagination|sayfa|page.*size|per.*page|limit.*offset)" && echo "true" || echo "false")
+    if [[ "$HAS_LIST" == "true" ]] && [[ "$HAS_PAGINATION" == "false" ]]; then
+      echo "⚠️  [K27] Admin sayfasında liste var ama pagination yok — performans sorunu — $REL_PATH"
+      ((WARNS++))
+    fi
+  fi
+fi
+
+# ============================================================================
+# [K28] ERİŞİLEBİLİRLİK — BUTTON/LINK'TE ERİŞİLEBİLİRLİK
+# İkon-only butonlarda aria-label zorunlu
+# ============================================================================
+if [[ "$IS_UI" == "true" ]] && [[ "$FILE_NAME" =~ \.(tsx)$ ]]; then
+  # İkon-only butonlar (içinde sadece Icon component var, metin yok)
+  ICON_BUTTONS=$(echo "$FILE_CONTENT" | grep -nE "<(button|Button)[^>]*>" | grep -v "aria-label" | grep -v "title=" || true)
+  if [[ -n "$ICON_BUTTONS" ]]; then
+    # İçinde metin olmayan butonları filtrele (sadece ikon varsa)
+    ICON_ONLY=$(echo "$ICON_BUTTONS" | grep -E "Icon|<[A-Z][a-z]+\s*/>" | head -3 || true)
+    if [[ -n "$ICON_ONLY" ]]; then
+      echo "⚠️  [K28] Erişilebilirlik: İkon-only buton'da aria-label eksik olabilir — $REL_PATH"
+      ((WARNS++))
+    fi
+  fi
+fi
+
+# ============================================================================
+# [K29] ŞİFRE VALİDASYONU TUTARLILIĞI
+# Şifre kontrolü yapılıyorsa minimum 8 karakter olmalı (6 değil)
+# Bulgu: O1 (UI:8 vs API:6 tutarsızlığı)
+# ============================================================================
+if echo "$FILE_CONTENT" | grep -qE "password.*min.*6|\.min\(6.*ifre|\.length\s*<\s*6"; then
+  echo "⚠️  [K29] Şifre validasyonu: min 6 karakter tespit — standart min 8 olmalı — $REL_PATH"
+  ((WARNS++))
+fi
+
+# ============================================================================
+# [K30] API ROUTE'LARDA TÜRKÇE HATA MESAJI ZORUNLULUĞU
+# Kullanıcıya gösterilen hatalar Türkçe olmalı
+# Bulgu: O5 (generic İngilizce hatalar)
+# ============================================================================
+if [[ "$IS_API" == "true" ]]; then
+  ENG_ERRORS=$(echo "$FILE_CONTENT" | grep -nE "error:\s*['\"]" | grep -iE "(unauthorized|forbidden|not found|bad request|internal server error|something went wrong)" | grep -v "^\s*//" || true)
+  if [[ -n "$ENG_ERRORS" ]]; then
+    echo "⚠️  [K30] API'de İngilizce hata mesajı — Türkçe olmalı — $REL_PATH"
+    echo "$ENG_ERRORS" | head -2 | while read -r line; do
+      echo "   → $line"
+    done
+    ((WARNS++))
   fi
 fi
 
