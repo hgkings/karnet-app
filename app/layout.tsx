@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { AlertProvider } from '@/contexts/alert-context';
 import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/next';
+import { CookieConsent } from '@/components/shared/cookie-consent';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -75,6 +76,7 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         <Analytics />
+        <CookieConsent />
       </body>
     </html>
   );

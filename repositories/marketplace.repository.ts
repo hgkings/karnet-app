@@ -80,11 +80,39 @@ export class MarketplaceRepository {
     return data as MarketplaceConnectionRow
   }
 
+  async getConnectionByIdAndUserId(id: string, userId: string): Promise<MarketplaceConnectionRow | null> {
+    const { data, error } = await this.supabase
+      .from('marketplace_connections')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') return null
+      throw new Error(`Baglanti getirilemedi: ${error.message}`)
+    }
+
+    return data as MarketplaceConnectionRow
+  }
+
   async updateConnectionStatus(id: string, status: string): Promise<void> {
     const { error } = await this.supabase
       .from('marketplace_connections')
       .update({ status })
       .eq('id', id)
+
+    if (error) {
+      throw new Error(`Baglanti durumu guncellenemedi: ${error.message}`)
+    }
+  }
+
+  async updateConnectionStatusByUser(id: string, userId: string, status: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('marketplace_connections')
+      .update({ status })
+      .eq('id', id)
+      .eq('user_id', userId)
 
     if (error) {
       throw new Error(`Baglanti durumu guncellenemedi: ${error.message}`)

@@ -295,8 +295,8 @@ export default function CashPlanPage() {
         if (stats.runway > 0 && stats.runway < 3 && stats.avgMonthlyNet < 0) {
             tips.push({
                 icon: AlertTriangle,
-                title: `Sadece ${stats.runway} ay dayanabiirsiniz`,
-                desc: 'Acil olarak gelir artirici veya gider azaltici onlem alin.',
+                title: `Sadece ${stats.runway} ay dayanabilirsiniz`,
+                desc: 'Acil olarak gelir artırıcı veya gider azaltıcı önlem alın.',
                 type: 'danger',
             });
         }

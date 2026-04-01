@@ -78,10 +78,10 @@ export default function AnalysisDetailPage() {
         return (
             <DashboardLayout>
                 <div className="flex h-[60vh] flex-col items-center justify-center space-y-4">
-                    <p className="text-xl font-semibold">Kayit bulunamadi.</p>
+                    <p className="text-xl font-semibold">Kayıt bulunamadı.</p>
                     <Link href="/dashboard">
                         <Button variant="outline">
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Panele Don
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Panele Dön
                         </Button>
                     </Link>
                 </div>

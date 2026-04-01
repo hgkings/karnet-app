@@ -32,9 +32,9 @@ export function MarketplaceComparison({ input }: MarketplaceComparisonProps) {
 
   return (
     <div className="rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-6">
-      <h3 className="text-sm font-semibold">Pazaryeri Karsilastirmasi</h3>
+      <h3 className="text-sm font-semibold">Pazaryeri Karşılaştırması</h3>
       <p className="mt-1 text-xs text-muted-foreground">
-        Ayni urunun farkli pazaryerlerindeki performansini karsilastirin.
+        Aynı ürünün farklı pazaryerlerindeki performansını karşılaştırın.
       </p>
 
       <div className="mt-4 space-y-3">

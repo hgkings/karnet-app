@@ -45,8 +45,8 @@ export function SmartInsights({ analyses }: SmartInsightsProps) {
         if (adRatio > 25) {
             tips.push({
                 icon: Target,
-                title: `Reklam maliyeti yuksek: %${adRatio.toFixed(0)}`,
-                desc: 'Toplam reklam harcamaniz gelirin onemli bir kismini olusturuyor.',
+                title: `Reklam maliyeti yüksek: %${adRatio.toFixed(0)}`,
+                desc: 'Toplam reklam harcamanız gelirin önemli bir kısmını oluşturuyor.',
                 type: 'warning',
             });
         }
@@ -55,7 +55,7 @@ export function SmartInsights({ analyses }: SmartInsightsProps) {
         if (riskyCount > 0) {
             tips.push({
                 icon: AlertTriangle,
-                title: `${riskyCount} urun risk bolgesinde`,
+                title: `${riskyCount} ürün risk bölgesinde`,
                 desc: 'Fiyat veya maliyet optimizasyonu yaparak riski azaltabilirsiniz.',
                 type: 'danger',
             });
@@ -65,8 +65,8 @@ export function SmartInsights({ analyses }: SmartInsightsProps) {
         if (avgMargin < 15 && avgMargin > 0) {
             tips.push({
                 icon: TrendingDown,
-                title: `Ortalama marj dusuk: ${formatPercent(avgMargin)}`,
-                desc: 'Ideal marj %15+ olmalidir. Komisyon ve kargo optimizasyonu deneyin.',
+                title: `Ortalama marj düşük: ${formatPercent(avgMargin)}`,
+                desc: 'İdeal marj %15+ olmalıdır. Komisyon ve kargo optimizasyonu deneyin.',
                 type: 'warning',
             });
         }
@@ -75,7 +75,7 @@ export function SmartInsights({ analyses }: SmartInsightsProps) {
         if (totalProfit > 0 && lossCount === 0) {
             tips.push({
                 icon: TrendingUp,
-                title: 'Tum urunler karli',
+                title: 'Tüm ürünler kârlı',
                 desc: `Toplam aylik net kar: ${formatCurrency(totalProfit)}`,
                 type: 'success',
             });
@@ -85,8 +85,8 @@ export function SmartInsights({ analyses }: SmartInsightsProps) {
         if (lossCount > 0) {
             tips.push({
                 icon: Lightbulb,
-                title: `${lossCount} urun zarar ediyor`,
-                desc: 'Bu urunleri fiyatlandirma veya portfoyden cikarmayi dusunun.',
+                title: `${lossCount} ürün zarar ediyor`,
+                desc: 'Bu ürünleri fiyatlandırma veya portföyden çıkarmayı düşünün.',
                 type: 'danger',
             });
         }

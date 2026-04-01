@@ -15,6 +15,10 @@ import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
+// Idempotency: son 1000 webhook hash'ini tutarak duplicate'leri engelle
+const processedHashes = new Set<string>()
+const MAX_CACHE = 1000
+
 export async function POST(request: Request) {
   try {
     const webhookSecret = process.env.TRENDYOL_WEBHOOK_SECRET
@@ -41,6 +45,17 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Gecersiz imza' }, { status: 401 })
     }
 
+    // Idempotency: ayni body tekrar islenmez
+    const bodyHash = crypto.createHash('sha256').update(body).digest('hex').slice(0, 16)
+    if (processedHashes.has(bodyHash)) {
+      return Response.json({ success: true, duplicate: true }, { status: 200 })
+    }
+    processedHashes.add(bodyHash)
+    if (processedHashes.size > MAX_CACHE) {
+      const first = processedHashes.values().next().value
+      if (first) processedHashes.delete(first)
+    }
+
     void auditLog({
       action: 'marketplace.sync',
       userId: null,
@@ -57,8 +72,11 @@ export async function POST(request: Request) {
     }
 
     await callGatewayV1Format('marketplace' as ServiceName, 'handleTrendyolWebhook', payload, 'webhook')
-  } catch (_webhookError) {
+  } catch (webhookError) {
     // Trendyol 200 almazsa tekrar gonderir — hata olsa da 200 don
+    // Ancak hatayi logla ki debug edilebilsin
+    const msg = webhookError instanceof Error ? webhookError.message : 'Unknown webhook error'
+    console.error(`[trendyol-webhook] Error: ${msg}`)
   }
 
   return Response.json({ success: true }, { status: 200 })

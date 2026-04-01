@@ -148,8 +148,8 @@ export default function BreakEvenPage() {
         if (!isValidContribution && avgPrice > 0) {
             tips.push({
                 icon: AlertTriangle,
-                title: 'Negatif katki payi',
-                desc: `Satis fiyati (${formatCurrency(avgPrice)}) degisken maliyetin (${formatCurrency(avgVarCost)}) altinda. Fiyat artirin veya maliyet dusurun.`,
+                title: 'Negatif katkı payı',
+                desc: `Satış fiyatı (${formatCurrency(avgPrice)}) değişken maliyetin (${formatCurrency(avgVarCost)}) altında. Fiyat artırın veya maliyet düşürün.`,
                 type: 'danger',
             });
         }
@@ -157,8 +157,8 @@ export default function BreakEvenPage() {
         if (isValidContribution && contributionMargin < 20) {
             tips.push({
                 icon: Percent,
-                title: `Katki marji dusuk: %${contributionMargin.toFixed(1)}`,
-                desc: 'Ideal katki marji %30+ olmalidir. Komisyon veya kargo optimizasyonu dusunun.',
+                title: `Katkı marjı düşük: %${contributionMargin.toFixed(1)}`,
+                desc: 'İdeal katkı marjı %30+ olmalıdır. Komisyon veya kargo optimizasyonu düşünün.',
                 type: 'warning',
             });
         }
@@ -166,8 +166,8 @@ export default function BreakEvenPage() {
         if (isValidContribution && breakEvenOrders > 0 && dailyBreakEvenOrders > 20) {
             tips.push({
                 icon: Package,
-                title: `Gunluk ${dailyBreakEvenOrders} siparis zor olabilir`,
-                desc: 'Sabit giderleri azaltarak basabas noktasini dusurmeyi deneyin.',
+                title: `Günlük ${dailyBreakEvenOrders} sipariş zor olabilir`,
+                desc: 'Sabit giderleri azaltarak başabaş noktasını düşürmeyi deneyin.',
                 type: 'warning',
             });
         }
@@ -175,8 +175,8 @@ export default function BreakEvenPage() {
         if (isValidContribution && targetOrders > 0 && targetOrders <= breakEvenOrders * 1.3) {
             tips.push({
                 icon: Lightbulb,
-                title: 'Hedefiniz basabasa cok yakin',
-                desc: 'Daha yuksek bir kar hedefi belirleyerek motivasyonunuzu artirin.',
+                title: 'Hedefiniz başabaşa çok yakın',
+                desc: 'Daha yüksek bir kâr hedefi belirleyerek motivasyonunuzu artırın.',
                 type: 'success',
             });
         }
@@ -457,7 +457,7 @@ export default function BreakEvenPage() {
                                         <div>
                                             <h3 className="text-sm font-semibold text-red-400">Negatif Katki Payi</h3>
                                             <p className="text-xs text-muted-foreground mt-0.5">
-                                                Satis fiyati degisken maliyeti karsilamiyor. Fiyat artirin veya maliyetleri dusurun.
+                                                Satış fiyatı değişken maliyeti karşılamıyor. Fiyat artırın veya maliyetleri düşürün.
                                             </p>
                                         </div>
                                     </motion.div>

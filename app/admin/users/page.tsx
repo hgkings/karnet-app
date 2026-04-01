@@ -75,6 +75,13 @@ export default function AdminUsersPage() {
 
     const handleSave = async () => {
         if (!editUser) return;
+        if (newPlan === editUser.plan) {
+            toast.info('Plan zaten aynı.');
+            return;
+        }
+        if (!confirm(`${editUser.email} kullanıcısının planını "${editUser.plan}" → "${newPlan}" olarak değiştirmek istediğinize emin misiniz?`)) {
+            return;
+        }
         setSaving(true);
         const res = await fetch('/api/admin/users', {
             method: 'PATCH',

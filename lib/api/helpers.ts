@@ -63,6 +63,15 @@ export function requireCronSecret(request: Request): true | Response {
   const cronSecret = process.env.CRON_SECRET
   const authHeader = request.headers.get('authorization')
 
+  // Replay attack korunmasi: x-cron-timestamp header'i varsa 60 saniye icinde olmali
+  const timestampHeader = request.headers.get('x-cron-timestamp')
+  if (timestampHeader) {
+    const ts = parseInt(timestampHeader, 10)
+    if (isNaN(ts) || Math.abs(Date.now() - ts) > 60_000) {
+      return Response.json({ error: 'Request expired' }, { status: 401 })
+    }
+  }
+
   const expected = `Bearer ${cronSecret}`
   if (!cronSecret || !authHeader || authHeader.length !== expected.length
     || !crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))) {

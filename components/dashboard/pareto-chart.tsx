@@ -50,7 +50,7 @@ export function ParetoChart({ analyses }: ParetoChartProps) {
                     <div>
                         <span className="text-sm font-semibold">Karin Omurgasi (80/20)</span>
                         <p className="text-[10px] text-muted-foreground">
-                            Karin <b>{Math.round(contributionPct)}%</b>&apos;si <b>{topContributors.length}</b> urunden
+                            Karin <b>{Math.round(contributionPct)}%</b>&apos;si <b>{topContributors.length}</b> üründen
                         </p>
                     </div>
                 </div>

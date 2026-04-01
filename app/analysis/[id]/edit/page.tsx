@@ -50,10 +50,10 @@ export default function EditAnalysisPage() {
         return (
             <DashboardLayout>
                 <div className="flex h-[60vh] flex-col items-center justify-center space-y-4">
-                    <p className="text-xl font-semibold">Analiz bulunamadi veya erisim yetkiniz yok.</p>
+                    <p className="text-xl font-semibold">Analiz bulunamadı veya erişim yetkiniz yok.</p>
                     <Link href="/dashboard">
                         <Button variant="outline">
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Panele Don
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Panele Dön
                         </Button>
                     </Link>
                 </div>
@@ -66,11 +66,11 @@ export default function EditAnalysisPage() {
             <div className="mx-auto max-w-4xl space-y-8">
                 <div>
                     <Link href="/dashboard" className="mb-4 flex items-center text-sm text-muted-foreground hover:text-foreground">
-                        <ArrowLeft className="mr-1 h-3 w-3" /> Panele Don
+                        <ArrowLeft className="mr-1 h-3 w-3" /> Panele Dön
                     </Link>
-                    <h1 className="text-3xl font-bold tracking-tight">Analiz Duzenle</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Analiz Düzenle</h1>
                     <p className="text-muted-foreground">
-                        {analysis.input.product_name} isimli urunun analiz verilerini guncelleyin.
+                        {analysis.input.product_name} isimli ürünün analiz verilerini güncelleyin.
                     </p>
                 </div>
 

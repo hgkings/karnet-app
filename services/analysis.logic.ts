@@ -706,6 +706,28 @@ export class AnalysisLogic {
         traceId,
       })
     }
+    // Negatif deger kontrolu — maliyet kalemleri negatif olamaz
+    const numericFields: Array<{ key: keyof AnalysisInput; label: string }> = [
+      { key: 'productCost', label: 'Ürün maliyeti' },
+      { key: 'shippingCost', label: 'Kargo maliyeti' },
+      { key: 'packagingCost', label: 'Paketleme maliyeti' },
+      { key: 'adCostPerSale', label: 'Reklam maliyeti' },
+      { key: 'otherCost', label: 'Diğer maliyet' },
+      { key: 'commissionPct', label: 'Komisyon oranı' },
+      { key: 'returnRatePct', label: 'İade oranı' },
+      { key: 'vatPct', label: 'KDV oranı' },
+      { key: 'monthlySalesVolume', label: 'Aylık satış adedi' },
+    ]
+    for (const { key, label } of numericFields) {
+      const val = input[key] as number
+      if (typeof val === 'number' && (val < 0 || !isFinite(val))) {
+        throw new ServiceError(`${label} negatif veya geçersiz olamaz`, {
+          code: 'INVALID_INPUT',
+          statusCode: 400,
+          traceId,
+        })
+      }
+    }
   }
 }
 

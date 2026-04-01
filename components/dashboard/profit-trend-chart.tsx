@@ -129,7 +129,7 @@ export function ProfitTrendChart({ analyses }: ProfitTrendChartProps) {
                         <div className="h-10 w-10 rounded-full bg-white/[0.04] flex items-center justify-center">
                             <Activity className="h-5 w-5 text-muted-foreground/40" />
                         </div>
-                        <p>Bu zaman araliginda veri bulunamadi.</p>
+                        <p>Bu zaman aralığında veri bulunamadı.</p>
                     </div>
                 )}
             </div>

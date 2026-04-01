@@ -96,6 +96,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await authLogout();
     setUser(null);
+    // Kullanıcı verilerini temizle
+    try {
+      localStorage.removeItem('be_avgPrice');
+      localStorage.removeItem('be_avgVarCost');
+    } catch {
+      // localStorage erişim hatası — yoksay
+    }
     window.location.href = '/';
   }, []);
 

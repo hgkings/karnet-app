@@ -1,0 +1,86 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * 1' # Her Pazartesi 09:00 UTC
+
+jobs:
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: NPM Audit
+        run: npm audit --audit-level=high
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: GitLeaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  typescript-check:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Type Check
+        run: npx tsc --noEmit
+
+  architecture-guard:
+    name: Architecture Guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check UI layer DB imports
+        run: |
+          echo "Checking for Supabase imports in UI layer..."
+          if grep -r "from.*supabase" app/ components/ --include="*.ts" --include="*.tsx" \
+            | grep -v "lib/supabase" \
+            | grep -v "contexts/auth" \
+            | grep -v "app/api/" \
+            | grep -v "node_modules"; then
+            echo "FAIL: DB import found in UI layer"
+            exit 1
+          fi
+          echo "PASS: No DB imports in UI layer"
+
+      - name: Check for console.log in production code
+        run: |
+          echo "Checking for console.log..."
+          if grep -rn "console\.\(log\|debug\)" app/ services/ lib/ --include="*.ts" --include="*.tsx" \
+            | grep -v "node_modules" \
+            | grep -v ".test." \
+            | grep -v "// console"; then
+            echo "WARNING: console.log found"
+          fi
+          echo "DONE"
+
+      - name: Check for getSession usage
+        run: |
+          echo "Checking for getSession()..."
+          if grep -rn "getSession()" app/api/ lib/ services/ --include="*.ts"; then
+            echo "FAIL: getSession() found — use getUser() instead"
+            exit 1
+          fi
+          echo "PASS: No getSession() usage"

@@ -68,6 +68,8 @@ export default function AdminSupportPage() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const debouncedSearch = useDebounce(searchInput, 500)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 20
 
   const fetchTickets = useCallback(async () => {
     setLoading(true)
@@ -98,7 +100,7 @@ export default function AdminSupportPage() {
     }
   }, [statusFilter, priorityFilter, categoryFilter, debouncedSearch])
 
-  useEffect(() => { fetchTickets() }, [fetchTickets])
+  useEffect(() => { fetchTickets(); setPage(1); }, [fetchTickets])
 
   const handleOpenTicket = (ticket: Ticket) => {
     setSelectedTicket(ticket)
@@ -122,8 +124,10 @@ export default function AdminSupportPage() {
       const json = await res.json()
       const updated: Ticket = json.data
       setTickets(prev => prev.map(t => t.id === updated.id ? updated : t))
-      setSelectedTicket(updated)
+      setSelectedTicket(null)
       toast.success('Talep güncellendi')
+      // Stats'i yenile
+      fetchTickets()
     } catch {
       toast.error('Güncelleme başarısız')
     } finally {
@@ -155,6 +159,7 @@ export default function AdminSupportPage() {
 
   const handleDelete = async () => {
     if (!selectedTicket) return
+    if (!confirm(`"${selectedTicket.subject}" talebini silmek istediğinize emin misiniz?`)) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/admin/support/tickets/${selectedTicket.id}`, {
@@ -272,8 +277,9 @@ export default function AdminSupportPage() {
             <p>Gösterilecek destek talebi yok</p>
           </div>
         ) : (
+          <>
           <div className="space-y-2">
-            {tickets.map(ticket => (
+            {tickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(ticket => (
               <Card key={ticket.id} className="hover:bg-muted/10 transition-colors">
                 <CardContent className="p-4 flex flex-col sm:flex-row gap-4 justify-between">
                   <div
@@ -309,6 +315,23 @@ export default function AdminSupportPage() {
               </Card>
             ))}
           </div>
+          {/* Pagination */}
+          {tickets.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between pt-3">
+              <p className="text-xs text-muted-foreground">
+                {tickets.length} talep, sayfa {page}/{Math.ceil(tickets.length / PAGE_SIZE)}
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+                  Önceki
+                </Button>
+                <Button size="sm" variant="outline" disabled={page * PAGE_SIZE >= tickets.length} onClick={() => setPage(p => p + 1)}>
+                  Sonraki
+                </Button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
 
@@ -342,8 +365,10 @@ export default function AdminSupportPage() {
                     value={reply}
                     onChange={e => setReply(e.target.value)}
                     rows={4}
+                    maxLength={2000}
                     placeholder="Kullanıcıya cevap yaz..."
                   />
+                  <p className="text-xs text-muted-foreground text-right">{reply.length}/2000</p>
                 </div>
 
                 <div className="space-y-2">

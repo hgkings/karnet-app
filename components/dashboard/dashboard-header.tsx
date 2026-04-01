@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import { Analysis } from '@/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, AlertTriangle, AlertOctagon, ArrowRight, Calendar } from 'lucide-react';
 import Link from 'next/link';
@@ -10,17 +10,17 @@ import { motion } from 'framer-motion';
 
 function getGreeting(): string {
     const h = new Date().getHours();
-    if (h < 6) return 'Iyi geceler';
-    if (h < 12) return 'Gunaydin';
-    if (h < 17) return 'Iyi gunler';
-    return 'Iyi aksamlar';
+    if (h < 6) return 'İyi geceler';
+    if (h < 12) return 'Günaydın';
+    if (h < 17) return 'İyi günler';
+    return 'İyi akşamlar';
 }
 
 function getNameFromEmail(email?: string): string {
     if (!email) return '';
     const prefix = email.split('@')[0];
     const cleaned = prefix.replace(/[._\-0-9]/g, ' ').trim().split(' ')[0];
-    if (!cleaned || cleaned.length < 2) return '';
+    if (!cleaned || cleaned.length < 2) return 'Kullanıcı';
     return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
 }
 
@@ -59,9 +59,11 @@ export function DashboardHeader({ analyses }: DashboardHeaderProps) {
 
     const name = getNameFromEmail(user?.email);
     const greeting = getGreeting();
-    const profitableCount = analyses.filter(a => a.result.monthly_net_profit > 0).length;
-    const riskyCount = analyses.filter(a => a.risk.level === 'risky' || a.risk.level === 'dangerous').length;
-    const dateStr = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const { profitableCount, riskyCount } = useMemo(() => ({
+        profitableCount: analyses.filter(a => a.result.monthly_net_profit > 0).length,
+        riskyCount: analyses.filter(a => a.risk.level === 'risky' || a.risk.level === 'dangerous').length,
+    }), [analyses]);
+    const dateStr = useMemo(() => new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' }), []);
 
     const riskConfig = {
         safe: { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
@@ -87,14 +89,14 @@ export function DashboardHeader({ analyses }: DashboardHeaderProps) {
                 </h1>
                 {analyses.length > 0 && (
                     <p className="text-sm text-muted-foreground">
-                        {profitableCount > 0 && <span className="text-emerald-400">{profitableCount} urun karli</span>}
+                        {profitableCount > 0 && <span className="text-emerald-400">{profitableCount} ürün kârlı</span>}
                         {profitableCount > 0 && riskyCount > 0 && ', '}
-                        {riskyCount > 0 && <span className="text-red-400">{riskyCount} urun riskli</span>}
-                        {profitableCount === 0 && riskyCount === 0 && 'Urun portfoyunuzun ozeti'}
+                        {riskyCount > 0 && <span className="text-red-400">{riskyCount} ürün riskli</span>}
+                        {profitableCount === 0 && riskyCount === 0 && 'Ürün portföyünüzün özeti'}
                     </p>
                 )}
                 {analyses.length === 0 && (
-                    <p className="text-sm text-muted-foreground">Urun portfoyunuzun anlik karlilik ve risk durumu.</p>
+                    <p className="text-sm text-muted-foreground">Ürün portföyünüzün anlık kârlılık ve risk durumu.</p>
                 )}
             </div>
 

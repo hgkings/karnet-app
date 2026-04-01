@@ -189,9 +189,10 @@ export default function MarketplacePage() {
             const startDate = baslangic.toISOString().split('T')[0];
             const endDate = bugun.toISOString().split('T')[0];
 
-            const response = await fetch(
-                `/api/marketplace/trendyol/finance?startDate=${startDate}&endDate=${endDate}`
-            );
+            const financeUrl = selectedMarketplace === 'trendyol'
+                ? `/api/marketplace/trendyol/finance?startDate=${startDate}&endDate=${endDate}`
+                : `/api/marketplace/hepsiburada/finance?gun=${gun}`;
+            const response = await fetch(financeUrl);
             if (!response.ok) {
                 const err = await response.json();
                 throw new Error(err.error || 'Finans verisi alınamadı');
@@ -217,8 +218,7 @@ export default function MarketplacePage() {
     useEffect(() => {
         if (
             connection?.status === 'connected' &&
-            connection?.seller_id &&
-            selectedMarketplace === 'trendyol'
+            connection?.seller_id
         ) {
             finansVerisiniGetir(seciliAralik);
         }
@@ -226,14 +226,19 @@ export default function MarketplacePage() {
     }, [connection, seciliAralik, selectedMarketplace]);
 
     useEffect(() => {
-        if (connection?.status === 'connected' && selectedMarketplace === 'trendyol') {
+        if (connection?.status === 'connected') {
             const controller = new AbortController()
             const timeout = setTimeout(() => controller.abort(), 10000)
 
-            fetch('/api/marketplace/trendyol/unsupplied-orders', { signal: controller.signal })
+            const url = selectedMarketplace === 'trendyol'
+                ? '/api/marketplace/trendyol/unsupplied-orders'
+                : '/api/marketplace/hepsiburada/claims?gun=30';
+
+            fetch(url, { signal: controller.signal })
                 .then((r) => r.ok ? r.json() : null)
                 .then((data) => {
                     if (data && typeof data.toplam === 'number') setAskidakiSiparis(data.toplam);
+                    else if (data && Array.isArray(data.data)) setAskidakiSiparis(data.data.length);
                 })
                 .catch(() => {
                     // Timeout veya hata — varsayilan 0 kalir
@@ -247,27 +252,39 @@ export default function MarketplacePage() {
     }, [connection, selectedMarketplace]);
 
     const komisyonCek = async () => {
-        if (selectedMarketplace !== 'trendyol') {
-            toast.info(`${mpConfig.label} için komisyon çekme özelliği yakında eklenecek.`);
-            return;
-        }
         setKomisyonYukleniyor(true);
         setKomisyonSonucu(null);
         try {
-            const bitis = new Date();
-            const baslangic = new Date();
-            baslangic.setDate(bitis.getDate() - 30);
-            const fmt = (d: Date) => d.toISOString().slice(0, 10);
-            const res = await fetch(`/api/marketplace/trendyol/finance?startDate=${fmt(baslangic)}&endDate=${fmt(bitis)}`);
+            const mp = selectedMarketplace;
+            let res: Response;
+            if (mp === 'trendyol') {
+                const bitis = new Date();
+                const baslangic = new Date();
+                baslangic.setDate(bitis.getDate() - 30);
+                const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                res = await fetch(`/api/marketplace/trendyol/finance?startDate=${fmt(baslangic)}&endDate=${fmt(bitis)}`);
+            } else {
+                res = await fetch(`/api/marketplace/hepsiburada/finance?gun=30`);
+            }
             if (!res.ok) throw new Error('Finans verisi alınamadı');
             const json = await res.json();
             const rows: Array<{ komisyonOrani?: number; komisyonTutari?: number; saticiHakedis?: number }> = json.data ?? [];
-            // komisyonOrani direkt yüzde olarak geliyor; ortalamasını al
+            // Agirlikli ortalama: hakedis tutarina gore (hacim bazli, daha dogru sonuc verir)
             const oranlıRows = rows.filter(r => (r.komisyonOrani ?? 0) > 0);
             if (oranlıRows.length > 0) {
-                const ortalamaOran = parseFloat(
-                    (oranlıRows.reduce((s, r) => s + (r.komisyonOrani ?? 0), 0) / oranlıRows.length).toFixed(2)
-                );
+                const toplamHakedis = oranlıRows.reduce((s, r) => s + (r.saticiHakedis ?? 1), 0);
+                let ortalamaOran: number;
+                if (toplamHakedis > 0) {
+                    // Agirlikli ortalama: her satirin komisyon oranini hakedis ile ağırlıkla
+                    ortalamaOran = parseFloat(
+                        (oranlıRows.reduce((s, r) => s + (r.komisyonOrani ?? 0) * (r.saticiHakedis ?? 1), 0) / toplamHakedis).toFixed(2)
+                    );
+                } else {
+                    // Fallback: basit ortalama
+                    ortalamaOran = parseFloat(
+                        (oranlıRows.reduce((s, r) => s + (r.komisyonOrani ?? 0), 0) / oranlıRows.length).toFixed(2)
+                    );
+                }
                 setKomisyonSonucu({ oran: ortalamaOran });
             } else {
                 toast.info('Son 30 günde yeterli satış verisi bulunamadı.');
@@ -403,8 +420,10 @@ export default function MarketplacePage() {
             const res = await fetch(`${apiBase}/sync-products`, { method: 'POST' });
             const data = await res.json();
             if (data.success) {
-                toast.success(data.message || 'Ürünler senkronize edildi!');
-                setLastLog(data.message);
+                const count = data.count ?? data.total ?? '';
+                const msg = data.message || (count ? `${count} ürün senkronize edildi!` : 'Ürünler senkronize edildi!');
+                toast.success(msg);
+                setLastLog(msg);
             } else {
                 toast.error(data.error || 'Ürün senkronizasyonu başarısız.');
                 setLastLog(data.error);
@@ -656,15 +675,17 @@ export default function MarketplacePage() {
                                 )}
 
                                 {/* Askıdaki Sipariş Uyarısı */}
-                                {askidakiSiparis > 0 && selectedMarketplace === 'trendyol' && (
+                                {askidakiSiparis > 0 && (
                                     <div className="flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
                                         <AlertTriangle className="h-5 w-5 text-orange-500 shrink-0" />
                                         <div>
                                             <p className="text-sm font-semibold text-orange-400">
-                                                {askidakiSiparis} Askıdaki Sipariş
+                                                {askidakiSiparis} {selectedMarketplace === 'trendyol' ? 'Askıdaki Sipariş' : 'Bekleyen Talep'}
                                             </p>
                                             <p className="text-xs text-muted-foreground mt-0.5">
-                                                Tedarik edilemeyen siparişleriniz var. Trendyol panelinden kontrol edin.
+                                                {selectedMarketplace === 'trendyol'
+                                                    ? 'Tedarik edilemeyen siparişleriniz var. Trendyol panelinden kontrol edin.'
+                                                    : 'Bekleyen talepleriniz var. Hepsiburada panelinden kontrol edin.'}
                                             </p>
                                         </div>
                                     </div>
@@ -737,16 +758,16 @@ export default function MarketplacePage() {
                                 </div>
 
                                 {/* Webhook */}
-                                {selectedMarketplace === 'trendyol' && (
-                                    <div className="rounded-xl border border-dashed border-orange-500/30 bg-orange-500/5 p-4 space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm font-semibold text-foreground">Otomatik Bildirimler</p>
-                                                <p className="text-xs text-muted-foreground mt-0.5">
-                                                    Webhook kurulunca siparişler anında Kârnet&apos;e gelir.
-                                                </p>
-                                            </div>
-                                            {connection?.webhook_active ? (
+                                <div className="rounded-xl border border-dashed border-orange-500/30 bg-orange-500/5 p-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-semibold text-foreground">Otomatik Bildirimler</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                Webhook kurulunca siparişler anında Kârnet&apos;e gelir.
+                                            </p>
+                                        </div>
+                                        {selectedMarketplace === 'trendyol' ? (
+                                            connection?.webhook_active ? (
                                                 <span className="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
                                                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
                                                     Aktif
@@ -764,10 +785,14 @@ export default function MarketplacePage() {
                                                         : <RefreshCw className="h-3.5 w-3.5" />}
                                                     {webhookKuruluyor ? 'Kuruluyor…' : 'Webhook Kur'}
                                                 </Button>
-                                            )}
-                                        </div>
+                                            )
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded-md bg-white/5 border border-white/10">
+                                                Yakında
+                                            </span>
+                                        )}
                                     </div>
-                                )}
+                                </div>
 
                                 {/* Metrics Panel */}
                                 {orderMetrics && (
@@ -820,16 +845,16 @@ export default function MarketplacePage() {
                                     )}
                                 </div>
 
-                                {/* ─── Finans Kartı — sadece Trendyol + bağlı + seller_id varsa ─── */}
-                                {connection?.status === 'connected' && connection?.seller_id && selectedMarketplace === 'trendyol' && (
+                                {/* ─── Finans Kartı — bağlı + seller_id varsa ─── */}
+                                {connection?.status === 'connected' && connection?.seller_id && (
                                     <div className="rounded-xl border border-border bg-card p-6">
                                         {/* Başlık + Zaman aralığı */}
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-lg">📊</span>
                                                 <div>
-                                                    <h3 className="font-semibold text-sm">Trendyol Finansal Özet</h3>
-                                                    <p className="text-xs text-muted-foreground">Trendyol'dan otomatik çekilen komisyon ve kesinti verileri</p>
+                                                    <h3 className="font-semibold text-sm">{mpConfig.label} Finansal Özet</h3>
+                                                    <p className="text-xs text-muted-foreground">{mpConfig.label}&apos;dan otomatik çekilen komisyon ve kesinti verileri</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-1">

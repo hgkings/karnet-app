@@ -21,6 +21,8 @@ export default function AdminCommentsPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'pending' | 'approved'>('pending')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 20
 
   const fetchComments = useCallback(() => {
     setLoading(true)
@@ -35,6 +37,7 @@ export default function AdminCommentsPage() {
   }, [fetchComments])
 
   async function handleAction(id: string, action: 'approve' | 'reject') {
+    if (action === 'reject' && !confirm('Bu yorumu silmek istediğinize emin misiniz?')) return
     setActionLoading(id)
     try {
       const res = await fetch('/api/admin/blog-comments', {
@@ -65,7 +68,7 @@ export default function AdminCommentsPage() {
           {(['pending', 'approved'] as const).map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => { setTab(t); setPage(1); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 tab === t
                   ? 'bg-primary text-primary-foreground'
@@ -94,8 +97,9 @@ export default function AdminCommentsPage() {
                 {tab === 'pending' ? 'Bekleyen yorum yok.' : 'Onaylanan yorum yok.'}
               </p>
             ) : (
+              <>
               <div className="divide-y">
-                {comments.map((c) => (
+                {comments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((c) => (
                   <div key={c.id} className="py-4 space-y-2">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -154,6 +158,33 @@ export default function AdminCommentsPage() {
                   </div>
                 ))}
               </div>
+              {/* Pagination */}
+              {comments.length > PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-4 border-t mt-2">
+                  <p className="text-xs text-muted-foreground">
+                    {comments.length} yorumdan {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, comments.length)} gösteriliyor
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={page <= 1}
+                      onClick={() => setPage(p => p - 1)}
+                    >
+                      Önceki
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={page * PAGE_SIZE >= comments.length}
+                      onClick={() => setPage(p => p + 1)}
+                    >
+                      Sonraki
+                    </Button>
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </CardContent>
         </Card>

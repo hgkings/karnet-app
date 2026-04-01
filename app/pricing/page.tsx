@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Navbar } from '@/components/layout/navbar';
+import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import {
   Check, X, Crown, Loader2, RefreshCw, Zap,
@@ -164,8 +165,8 @@ function PricingContent() {
       const data = await res.json();
       if (data.paymentUrl) {
         window.open(data.paymentUrl, '_blank');
+        // Token URL'de gosterilmez — guvenlik riski (referer header, browser history)
         const params = new URLSearchParams({ paymentId: data.paymentId });
-        if (data.token) params.set('token', data.token);
         window.location.href = `/basari?${params.toString()}`;
       } else {
         toast.error(data.error || 'Ödeme başlatılamadı.');
@@ -192,7 +193,6 @@ function PricingContent() {
       if (data.paymentUrl) {
         window.open(data.paymentUrl, '_blank');
         const params = new URLSearchParams({ paymentId: data.paymentId });
-        if (data.token) params.set('token', data.token);
         window.location.href = `/basari?${params.toString()}`;
       } else {
         toast.error(data.error || 'Ödeme başlatılamadı.');
@@ -424,6 +424,7 @@ function PricingContent() {
         </div>
 
       </div>
+      <Footer />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { errorResponse } from '@/lib/api/helpers'
+import { errorResponse, getIp } from '@/lib/api/helpers'
+import { checkRateLimit } from '@/lib/security/rate-limit'
 import type { ServiceName } from '@/lib/gateway/types'
 
 export async function GET(request: Request) {
@@ -28,6 +29,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // IP bazli rate limit — bot spam engelleme
+    const ip = getIp(request) || 'unknown'
+    const rateCheck = await checkRateLimit('comment', `ip:${ip}`)
+    if (!rateCheck.success) {
+      return Response.json({ error: 'Cok fazla yorum gonderdiniz. Lutfen bekleyin.' }, { status: 429 })
+    }
+
     const body = await request.json()
     const { slug, author_name, content } = body as {
       slug?: string
@@ -64,7 +72,6 @@ export async function POST(request: Request) {
 
     return Response.json({ success: true })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Bilinmeyen hata'
-    return Response.json({ success: false, error: 'Bir hata oluştu', message }, { status: 500 })
+    return Response.json({ success: false, error: 'Bir hata oluştu' }, { status: 500 })
   }
 }

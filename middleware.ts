@@ -2,6 +2,14 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
+    // CVE-2025-29927 korumasi — bypass header'lari varsa reddet
+    if (
+        request.headers.get('x-middleware-subrequest') ||
+        request.headers.get('x-middleware-invoke')
+    ) {
+        return new NextResponse('Forbidden', { status: 403 })
+    }
+
     // PayTR callback must NEVER go through auth - PayTR sends server-to-server POST without cookies
     if (request.nextUrl.pathname.startsWith('/api/paytr/')) {
         return NextResponse.next()

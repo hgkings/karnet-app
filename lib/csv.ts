@@ -41,6 +41,16 @@ export function parseCSV(text: string): { data: ProductInput[]; errors: string[]
     return { data: [], errors: ['CSV dosyası en az bir başlık ve bir veri satırı içermelidir.'], missingColumns: [] };
   }
 
+  // Dosya boyutu ve satir limiti — performans korumasi
+  const MAX_ROWS = 500;
+  const MAX_TEXT_SIZE = 5 * 1024 * 1024; // 5 MB
+  if (text.length > MAX_TEXT_SIZE) {
+    return { data: [], errors: ['CSV dosyası çok büyük (maks. 5 MB).'], missingColumns: [] };
+  }
+  if (lines.length - 1 > MAX_ROWS) {
+    return { data: [], errors: [`CSV dosyası en fazla ${MAX_ROWS} satır içerebilir (${lines.length - 1} satır bulundu).`], missingColumns: [] };
+  }
+
   const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
 
   for (const col of EXPECTED_COLUMNS) {

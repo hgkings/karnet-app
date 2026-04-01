@@ -43,16 +43,17 @@ export default function DashboardPage() {
     }, []);
 
     const handleDelete = async (id: string) => {
+        if (!confirm('Bu analizi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
         try {
             const res = await storageDeleteAnalysis(id);
             if (res.success) {
                 toast.success('Analiz silindi.');
                 await refresh();
             } else {
-                toast.error('Silme islemi basarisiz.');
+                toast.error('Silme işlemi başarısız.');
             }
         } catch {
-            toast.error('Hata olustu.');
+            toast.error('Hata oluştu.');
         }
     };
 
@@ -69,9 +70,28 @@ export default function DashboardPage() {
     if (loading && analyses.length === 0) {
         return (
             <DashboardLayout>
-                <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-                    <p className="text-sm text-muted-foreground">Veriler yukleniyor...</p>
+                <div className="space-y-6 animate-pulse">
+                    {/* Header skeleton */}
+                    <div className="space-y-2">
+                        <div className="h-7 w-48 bg-muted/30 rounded-lg" />
+                        <div className="h-4 w-64 bg-muted/20 rounded-lg" />
+                    </div>
+                    {/* KPI cards skeleton */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-5 space-y-3">
+                                <div className="h-3 w-20 bg-muted/20 rounded" />
+                                <div className="h-6 w-24 bg-muted/30 rounded" />
+                            </div>
+                        ))}
+                    </div>
+                    {/* Charts skeleton */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] h-64" />
+                        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] h-64" />
+                    </div>
+                    {/* Table skeleton */}
+                    <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] h-48" />
                 </div>
             </DashboardLayout>
         );
@@ -102,16 +122,16 @@ export default function DashboardPage() {
                         <EnhancedKPICard
                             title="Ortalama Marj"
                             value={formatPercent(avgMargin)}
-                            subtitle={`${analyses.length} aktif urun`}
+                            subtitle={`${analyses.length} aktif ürün`}
                             icon={Percent}
                             color={avgMargin >= 15 ? 'blue' : avgMargin >= 5 ? 'amber' : 'red'}
                             href="/break-even"
                             delay={0.07}
                         />
                         <EnhancedKPICard
-                            title="Kritik Urun"
+                            title="Kritik Ürün"
                             value={riskyCount.toString()}
-                            subtitle={riskyCount > 0 ? 'Acil aksiyon gerekli' : 'Risk bulunamadi'}
+                            subtitle={riskyCount > 0 ? 'Acil aksiyon gerekli' : 'Risk bulunamadı'}
                             icon={AlertTriangle}
                             color={riskyCount > 0 ? 'red' : 'emerald'}
                             delay={0.09}

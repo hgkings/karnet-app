@@ -29,12 +29,11 @@ export default function ForgotPasswordPage() {
 
     if (resetError) {
       const msg = resetError.message.toLowerCase();
-      if (msg.includes('user not found') || msg.includes('not found')) {
-        setError('Bu e-posta adresi sistemde bulunamadı.');
-      } else if (msg.includes('rate limit') || msg.includes('too many')) {
+      if (msg.includes('rate limit') || msg.includes('too many')) {
         setError('Çok fazla deneme yaptınız. Lütfen bekleyin.');
       } else {
-        setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+        // User enumeration koruması: kayitli olsun olmasin ayni mesaj
+        setSent(true);
       }
     } else {
       setSent(true);

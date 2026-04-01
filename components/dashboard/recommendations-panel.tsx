@@ -60,8 +60,8 @@ export function RecommendationsPanel({ analyses }: RecommendationsPanelProps) {
                         <AlertTriangle className="h-4 w-4 text-amber-400" />
                     </div>
                     <div>
-                        <span className="text-sm font-semibold">Kritik Urun Onerileri</span>
-                        <p className="text-[10px] text-muted-foreground">Acil aksiyon gerektiren {criticalProducts.length} urun</p>
+                        <span className="text-sm font-semibold">Kritik Ürün Önerileri</span>
+                        <p className="text-[10px] text-muted-foreground">Acil aksiyon gerektiren {criticalProducts.length} ürün</p>
                     </div>
                 </div>
             </div>

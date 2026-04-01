@@ -83,7 +83,22 @@ export default function GizlilikPolitikasiPage() {
       </ul>
       <p>
         Haklarınızı kullanmak için:{' '}
-        <a href="mailto:karnet.destek@gmail.com">karnet.destek@gmail.com</a>
+        <a href="mailto:karnet.destek@gmail.com">karnet.destek@gmail.com</a> adresine yazabilir
+        veya <strong>Ayarlar</strong> sayfasından <strong>Verilerimi Dışa Aktar</strong> seçeneğini kullanabilirsiniz.
+      </p>
+
+      <h2>Veri Taşınabilirliği</h2>
+      <p>
+        KVKK Madde 11/ğ uyarınca, kişisel verilerinizi yapılandırılmış ve makine tarafından
+        okunabilir formatta (JSON) alma hakkınız bulunmaktadır. Bu işlemi Ayarlar sayfasından
+        veya e-posta talebiyle gerçekleştirebilirsiniz.
+      </p>
+
+      <h2>Veri Güvenliği</h2>
+      <p>
+        Kişisel verileriniz AES-256-GCM şifreleme standardı ile korunmaktadır.
+        Tüm veri iletişimleri TLS 1.2+ üzerinden gerçekleştirilir. Erişim kontrolleri
+        Supabase Row Level Security (RLS) ile sağlanır.
       </p>
 
       <h2>Çerezler (Cookies)</h2>
@@ -98,7 +113,7 @@ export default function GizlilikPolitikasiPage() {
         Bu politika güncellenebilir. Önemli değişikliklerde e-posta ile bildirim yapılır.
       </p>
       <p>
-        <strong>Son güncelleme:</strong> Mart 2026
+        <strong>Son güncelleme:</strong> Nisan 2026
       </p>
     </LegalPageLayout>
   );

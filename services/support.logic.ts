@@ -114,7 +114,7 @@ export class SupportLogic {
   async getTicket(
     traceId: string,
     payload: unknown,
-    _userId: string
+    userId: string
   ): Promise<unknown> {
     const { ticketId } = payload as { ticketId: string }
     if (!ticketId) {
@@ -124,7 +124,15 @@ export class SupportLogic {
         traceId,
       })
     }
-    return this.supportRepo.findById(ticketId)
+    const ticket = await this.supportRepo.findByIdAndUserId(ticketId, userId)
+    if (!ticket) {
+      throw new ServiceError('Talep bulunamadi', {
+        code: 'TICKET_NOT_FOUND',
+        statusCode: 404,
+        traceId,
+      })
+    }
+    return ticket
   }
 
   /**
@@ -193,7 +201,7 @@ export class SupportLogic {
   async closeTicket(
     traceId: string,
     payload: unknown,
-    _userId: string
+    userId: string
   ): Promise<{ success: boolean }> {
     const { ticketId } = payload as { ticketId: string }
     if (!ticketId) {
@@ -203,7 +211,16 @@ export class SupportLogic {
         traceId,
       })
     }
-    await this.supportRepo.updateStatus(ticketId, 'kapali')
+    // Sahiplik kontrolu — kullanici sadece kendi talebini kapatabilir
+    const ticket = await this.supportRepo.findByIdAndUserId(ticketId, userId)
+    if (!ticket) {
+      throw new ServiceError('Talep bulunamadi', {
+        code: 'TICKET_NOT_FOUND',
+        statusCode: 404,
+        traceId,
+      })
+    }
+    await this.supportRepo.updateStatusByUser(ticketId, userId, 'kapali')
     return { success: true }
   }
 

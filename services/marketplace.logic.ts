@@ -435,20 +435,16 @@ export class MarketplaceLogic {
     const normalized = normalizeProducts(rawProducts, existingAnalyses, 'trendyol')
 
     // 5. Sonuclari DB'ye yaz
+    // Batch optimizasyonu — N+1 sorgu yerine toplu islem
+    const mapBatchRows: Array<{
+      user_id: string; marketplace: string; external_product_id: string;
+      merchant_sku?: string; barcode?: string; external_title?: string;
+      internal_product_id?: string; match_confidence: string; connection_id?: string;
+    }> = []
+
     for (const r of normalized.results) {
       if (r.internalId && r.analysisUpdate) {
-        // Eslesme bulundu — map kaydet + analiz guncelle
-        await this.productRepo.upsertMap({
-          user_id: userId,
-          marketplace: r.mapEntry.marketplace,
-          external_product_id: r.mapEntry.external_product_id,
-          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
-          barcode: r.mapEntry.barcode ?? undefined,
-          external_title: r.mapEntry.external_title,
-          internal_product_id: r.internalId,
-          match_confidence: r.mapEntry.match_confidence,
-          connection_id: connectionId,
-        })
+        // Eslesme bulundu — analiz guncelle (sirayla, ID gerekli)
         const updateData: Record<string, unknown> = {
           barcode: r.analysisUpdate.barcode,
           merchant_sku: r.analysisUpdate.merchant_sku,
@@ -459,8 +455,19 @@ export class MarketplaceLogic {
           updateData.inputs = r.analysisUpdate.inputs
         }
         await this.analysisRepo.update(r.internalId, updateData)
+
+        mapBatchRows.push({
+          user_id: userId, marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          internal_product_id: r.internalId,
+          match_confidence: r.mapEntry.match_confidence,
+          connection_id: connectionId,
+        })
       } else if (r.newAnalysis) {
-        // Yeni urun — analiz olustur, sonra map kaydet
+        // Yeni urun — analiz olustur, sonra map batch'e ekle
         const newRow = await this.analysisRepo.create({
           user_id: userId,
           marketplace: r.newAnalysis.marketplace,
@@ -474,9 +481,8 @@ export class MarketplaceLogic {
           risk_score: r.newAnalysis.risk_score,
           risk_level: r.newAnalysis.risk_level,
         })
-        await this.productRepo.upsertMap({
-          user_id: userId,
-          marketplace: r.mapEntry.marketplace,
+        mapBatchRows.push({
+          user_id: userId, marketplace: r.mapEntry.marketplace,
           external_product_id: r.mapEntry.external_product_id,
           merchant_sku: r.mapEntry.merchant_sku ?? undefined,
           barcode: r.mapEntry.barcode ?? undefined,
@@ -486,10 +492,9 @@ export class MarketplaceLogic {
           connection_id: connectionId,
         })
       } else {
-        // Manuel eslestirme gerekli
-        await this.productRepo.upsertMap({
-          user_id: userId,
-          marketplace: r.mapEntry.marketplace,
+        // Manuel eslestirme gerekli — batch'e ekle
+        mapBatchRows.push({
+          user_id: userId, marketplace: r.mapEntry.marketplace,
           external_product_id: r.mapEntry.external_product_id,
           merchant_sku: r.mapEntry.merchant_sku ?? undefined,
           barcode: r.mapEntry.barcode ?? undefined,
@@ -498,6 +503,11 @@ export class MarketplaceLogic {
           connection_id: connectionId,
         })
       }
+    }
+
+    // Tum map satirlarini tek batch ile kaydet
+    if (mapBatchRows.length > 0) {
+      await this.productRepo.upsertMapBatch(mapBatchRows)
     }
 
     return { matched: normalized.matched, created: normalized.created, manual: normalized.manual }

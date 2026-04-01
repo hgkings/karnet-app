@@ -50,11 +50,12 @@ export class NotificationRepository extends BaseRepository<NotificationRow> {
     return data as NotificationRow
   }
 
-  async markAsRead(id: string): Promise<void> {
+  async markAsRead(id: string, userId: string): Promise<void> {
     const { error } = await this.supabase
       .from(this.tableName)
       .update({ is_read: true })
       .eq('id', id)
+      .eq('user_id', userId)
 
     if (error) {
       throw new Error(`Bildirim okundu isaretlenemedi: ${error.message}`)

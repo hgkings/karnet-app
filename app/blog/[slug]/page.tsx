@@ -71,7 +71,11 @@ export default function BlogPostPage({ params }: Props) {
         {/* İçerik */}
         <article
           className="prose-blog"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, {
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre', 'span', 'div', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img', 'hr'],
+            ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'target', 'rel'],
+            ALLOW_DATA_ATTR: false,
+          }) }}
         />
 
         {/* CTA */}

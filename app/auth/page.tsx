@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { MFAVerifyForm } from '@/components/auth/mfa-verify-form';
 import {
-  Eye, EyeOff, HelpCircle, ArrowRight, Check,
+  Eye, EyeOff, HelpCircle, ArrowRight, Check, Mail,
   TrendingUp, TestTube2, Plug,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -71,7 +71,6 @@ function AuthPageContent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [error, setError] = useState('');
@@ -173,8 +172,9 @@ function AuthPageContent() {
           }
         }
 
-        // Email doğrulama geçici olarak devre dışı — direkt dashboard'a yönlendir
-        router.push(returnUrl);
+        // Kayıt başarılı — email doğrulama ekranı göster
+        setAwaitingEmailVerification(true);
+        toast.success('Kayıt başarılı! Lütfen e-postanızı kontrol edin.');
       } else {
         setError(translateError(result.error || ''));
       }
@@ -242,7 +242,43 @@ function AuthPageContent() {
           </div>
         )}
 
-        {showMFA ? null : (<>
+        {/* Email Verification Pending Screen */}
+        {awaitingEmailVerification && !showMFA && (
+          <div className="w-full max-w-[400px] text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                <Mail className="h-8 w-8 text-amber-400" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-white">E-postanızı Doğrulayın</h2>
+              <p className="text-sm text-white/50 leading-relaxed">
+                <span className="font-medium text-white/70">{email}</span> adresine bir doğrulama bağlantısı gönderdik.
+                Gelen kutunuzu kontrol edin ve bağlantıya tıklayın.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-left space-y-2">
+              <p className="text-xs text-white/40">E-posta gelmedi mi?</p>
+              <ul className="text-xs text-white/50 space-y-1">
+                <li>Spam/gereksiz klasörünü kontrol edin</li>
+                <li>E-posta adresinin doğru olduğundan emin olun</li>
+                <li>Birkaç dakika bekleyin ve tekrar deneyin</li>
+              </ul>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setAwaitingEmailVerification(false);
+                switchMode('login');
+              }}
+              className="w-full h-11 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-white/70 hover:bg-white/10 transition-all"
+            >
+              Giriş Sayfasına Dön
+            </button>
+          </div>
+        )}
+
+        {showMFA || awaitingEmailVerification ? null : (<>
         {/* Original form content continues below */}
 
         {/* Tab Switcher */}
@@ -459,21 +495,7 @@ function AuthPageContent() {
               </div>
             )}
 
-            {/* Beni hatırla — sadece giriş modunda */}
-            {mode === 'login' && (
-              <div className="flex items-center gap-2">
-                <input
-                  id="rememberMe"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 accent-amber-600 cursor-pointer"
-                />
-                <label htmlFor="rememberMe" className="text-sm text-white/50 cursor-pointer select-none">
-                  Beni hatırla
-                </label>
-              </div>
-            )}
+            {/* Beni hatırla kaldırıldı — Supabase session yönetimi otomatik */}
 
             {/* Kullanım şartları — sadece kayıt modunda */}
             {mode === 'register' && (

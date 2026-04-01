@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Payment {
     id: string;
@@ -58,10 +59,10 @@ export default function AdminPaymentsPage() {
             });
             const data = await res.json();
             if (data.success) {
-                alert('Pro plan aktive edildi!');
+                toast.success('Pro plan aktive edildi!');
                 fetchPayments();
             } else {
-                alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+                toast.error(data.error || 'Aktivasyon başarısız');
             }
         } finally {
             setActivating(null);

@@ -77,8 +77,8 @@ export default function ResetPasswordPage() {
     setSuccess(true);
     setLoading(false);
 
-    // 3 saniye sonra giriş sayfasına yönlendir
-    setTimeout(() => router.push('/auth'), 3000);
+    // 5 saniye sonra giriş sayfasına yönlendir
+    setTimeout(() => router.push('/auth'), 5000);
   };
 
   return (

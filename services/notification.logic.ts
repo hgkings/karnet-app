@@ -80,7 +80,7 @@ export class NotificationLogic {
   async markAsRead(
     traceId: string,
     payload: unknown,
-    _userId: string
+    userId: string
   ): Promise<{ success: boolean }> {
     const { notificationId } = payload as { notificationId: string }
     if (!notificationId) {
@@ -90,7 +90,7 @@ export class NotificationLogic {
         traceId,
       })
     }
-    await this.notificationRepo.markAsRead(notificationId)
+    await this.notificationRepo.markAsRead(notificationId, userId)
     return { success: true }
   }
 

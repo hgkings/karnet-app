@@ -65,7 +65,7 @@ export function RiskChart({ analyses }: RiskChartProps) {
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-2xl font-bold tabular-nums">{total}</span>
-                            <span className="text-[10px] text-muted-foreground">urun</span>
+                            <span className="text-[10px] text-muted-foreground">ürün</span>
                         </div>
                     </div>
                     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-4">
@@ -81,7 +81,7 @@ export function RiskChart({ analyses }: RiskChartProps) {
             ) : (
                 <div className="flex flex-col items-center justify-center h-[160px] text-muted-foreground text-xs">
                     <ShieldCheck className="h-8 w-8 text-muted-foreground/20 mb-2" />
-                    Henuz urun yok
+                    Henüz ürün yok
                 </div>
             )}
         </motion.div>

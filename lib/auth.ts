@@ -106,8 +106,8 @@ export async function register(
   email: string,
   password: string
 ): Promise<{ success: boolean; user?: User; error?: string }> {
-  if (password.length < 6) {
-    return { success: false, error: 'Şifre en az 6 karakter olmalıdır.' };
+  if (password.length < 8) {
+    return { success: false, error: 'Şifre en az 8 karakter olmalıdır.' };
   }
 
   try {

@@ -30,11 +30,11 @@ export default function ProductsPage() {
   const handleDelete = async (id: string) => {
     const result = await deleteAnalysis(id);
     if (!result.success) {
-      toast.error(`Silme islemi basarisiz: ${result.error}`);
+      toast.error(`Silme işlemi başarısız: ${result.error}`);
       return;
     }
 
-    toast.success('Urun analizi silindi.');
+    toast.success('Ürün analizi silindi.');
     await refresh();
   };
 
@@ -43,11 +43,11 @@ export default function ProductsPage() {
 
     if (!isPro && analyses.length + data.length > 5) {
       setShowUpgrade(true);
-      toast.error('Ucretsiz planda en fazla 5 analiz yapabilirsiniz. Toplu yukleme icin Pro plana gecmelisiniz.');
+      toast.error('Ücretsiz planda en fazla 5 analiz yapabilirsiniz. Toplu yükleme için Pro plana geçmelisiniz.');
       return;
     }
 
-    toast.info(`${data.length} urun yukleniyor...`);
+    toast.info(`${data.length} ürün yükleniyor...`);
     for (const input of data) {
       const result = calculateProfit(input);
       const risk = calculateRisk(input, result);
@@ -60,7 +60,7 @@ export default function ProductsPage() {
         createdAt: new Date().toISOString(),
       });
     }
-    toast.success('Import tamamlandi.');
+    toast.success('İçe aktarma tamamlandı.');
     await refresh();
   };
 

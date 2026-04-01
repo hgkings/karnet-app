@@ -55,7 +55,24 @@ export function isProUser(user: User | null | undefined): boolean {
  */
 export function isStarterUser(user: User | null | undefined): boolean {
     if (!user) return false;
-    return user.plan === 'starter' || user.plan === 'starter_monthly' || user.plan === 'starter_yearly';
+    const isStarter = user.plan === 'starter' || user.plan === 'starter_monthly' || user.plan === 'starter_yearly';
+    if (!isStarter) return false;
+
+    // Süre kontrolü — süresi dolmuşsa starter değil
+    if (user.pro_expires_at) {
+        const expiresAt = new Date(user.pro_expires_at);
+        if (!isNaN(expiresAt.getTime()) && expiresAt <= new Date()) {
+            return false; // Süresi dolmuş
+        }
+    }
+    // Legacy fallback
+    if (user.pro_until) {
+        const d = new Date(user.pro_until);
+        if (!isNaN(d.getTime()) && d <= new Date()) {
+            return false; // Süresi dolmuş
+        }
+    }
+    return true;
 }
 
 const STARTER_PLANS: string[] = ['starter', 'starter_monthly', 'starter_yearly'];

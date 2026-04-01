@@ -38,7 +38,7 @@ export class PdfLogic {
   async checkMonthlyLimit(
     traceId: string,
     payload: unknown,
-    _userId: string
+    userId: string
   ): Promise<{ allowed: boolean; used: number; limit: number }> {
     const { plan } = payload as { plan: PlanType }
 
@@ -64,9 +64,24 @@ export class PdfLogic {
       })
     }
 
-    // PDF indirme sayisi icin ayri tablo yok — simdilik limit kontrolu yapilir
-    // Gercek say takibi icin email_logs veya ayri tablo gerekecek
-    const usedThisMonth = 0
+    // PDF indirme sayisini audit_logs tablosundan say
+    let usedThisMonth = 0
+    try {
+      const { createAdminClient } = await import('@/lib/supabase/admin')
+      const admin = createAdminClient()
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      const { count } = await admin
+        .from('audit_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('action', 'pdf_download')
+        .gte('created_at', startOfMonth.toISOString())
+      usedThisMonth = count ?? 0
+    } catch {
+      // Sayim basarisiz olursa guvenli tarafta kal — 0 kabul et
+    }
 
     if (usedThisMonth >= monthlyLimit) {
       throw new ServiceError(

@@ -56,6 +56,38 @@ export class ProductRepository {
     return result as ProductMarketplaceMapRow
   }
 
+  /**
+   * Toplu upsert — N+1 sorgu yerine tek batch islem.
+   * Supabase .upsert() native array destegi kullanir.
+   */
+  async upsertMapBatch(rows: Array<{
+    user_id: string
+    marketplace: string
+    external_product_id: string
+    merchant_sku?: string
+    barcode?: string
+    external_title?: string
+    internal_product_id?: string
+    match_confidence: string
+    connection_id?: string
+  }>): Promise<number> {
+    if (rows.length === 0) return 0
+    // Supabase max 1000 row per batch
+    const BATCH_SIZE = 500
+    let total = 0
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE)
+      const { error } = await this.supabase
+        .from('product_marketplace_map')
+        .upsert(batch, { onConflict: 'user_id,marketplace,external_product_id' })
+      if (error) {
+        throw new Error(`Toplu eslestirme guncellenemedi: ${error.message}`)
+      }
+      total += batch.length
+    }
+    return total
+  }
+
   async getMapById(userId: string, mapId: string): Promise<ProductMarketplaceMapRow | null> {
     const { data, error } = await this.supabase
       .from('product_marketplace_map')

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /auth/
+
+Sitemap: https://karnet.com.tr/sitemap.xml

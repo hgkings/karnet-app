@@ -47,7 +47,7 @@ export function BulkUpdateModal({ open, onOpenChange, analyses, onComplete }: Bu
 
     const handleApply = async () => {
         if (filteredAnalyses.length === 0) {
-            toast.error('Guncellenecek urun bulunamadi.');
+            toast.error('Güncellenecek ürün bulunamadı.');
             return;
         }
 
@@ -87,12 +87,12 @@ export function BulkUpdateModal({ open, onOpenChange, analyses, onComplete }: Bu
                 if (res.success) successCount++;
             }
 
-            toast.success(`${successCount} urun basariyla guncellendi.`);
+            toast.success(`${successCount} ürün başarıyla güncellendi.`);
             onComplete();
             onOpenChange(false);
         } catch (error) {
             console.error('Bulk update error:', error);
-            toast.error('Toplu guncelleme sirasinda bir hata olustu.');
+            toast.error('Toplu güncelleme sırasında bir hata oluştu.');
         } finally {
             setLoading(false);
         }

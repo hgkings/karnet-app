@@ -90,6 +90,7 @@ export default function SettingsPage() {
     const [providers, setProviders] = useState<string[]>([]);
 
     // — Password change —
+    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
 
@@ -195,19 +196,34 @@ export default function SettingsPage() {
         toast.success('JSON dışa aktarıldı.');
     };
 
-    // Password change
+    // Password change — mevcut şifre doğrulaması ile
     const handlePasswordChange = async () => {
-        if (newPassword.length < 6) {
-            toast.error('Şifre en az 6 karakter olmalıdır.');
+        if (!currentPassword) {
+            toast.error('Mevcut şifrenizi girin.');
+            return;
+        }
+        if (newPassword.length < 8) {
+            toast.error('Yeni şifre en az 8 karakter olmalıdır.');
             return;
         }
         setPasswordLoading(true);
         const supabase = createClient();
+        // Mevcut şifreyi doğrula
+        const { error: verifyError } = await supabase.auth.signInWithPassword({
+            email: user?.email ?? '',
+            password: currentPassword,
+        });
+        if (verifyError) {
+            toast.error('Mevcut şifre hatalı.');
+            setPasswordLoading(false);
+            return;
+        }
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) {
             toast.error(`Hata: ${error.message}`);
         } else {
             toast.success('Şifre başarıyla değiştirildi.');
+            setCurrentPassword('');
             setNewPassword('');
         }
         setPasswordLoading(false);
@@ -366,7 +382,12 @@ export default function SettingsPage() {
                                     <CreditCard className="h-5 w-5 text-emerald-600" />
                                 </div>
                                 <p className="text-xs font-medium">Ödeme Yöntemi</p>
-                                <p className="text-[10px] text-muted-foreground">Kart bilgileriniz Stripe üzerinden güvenle saklanmaktadır.</p>
+                                <p className="text-[10px] text-muted-foreground">Ödeme işlemleri PayTR üzerinden güvenle gerçekleştirilmektedir.</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">
+                                    Ödeme geçmişiniz ve fatura bilgileriniz için{' '}
+                                    <a href="mailto:destek@karnet.com" className="text-amber-500 hover:text-amber-400">destek@karnet.com</a>
+                                    {' '}adresine yazabilirsiniz.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -649,22 +670,31 @@ export default function SettingsPage() {
                     {(providers.includes('email') || providers.length === 0) && (
                         <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] p-4 space-y-3">
                             <p className="text-sm font-medium">Şifre Değiştir</p>
-                            <div className="flex gap-2">
+                            <div className="space-y-2">
                                 <Input
                                     type="password"
-                                    placeholder="Yeni şifre (min 6 karakter)"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className="h-10 flex-1"
+                                    placeholder="Mevcut şifre"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    className="h-10"
                                 />
-                                <Button
-                                    size="sm"
-                                    disabled={passwordLoading || newPassword.length < 6}
-                                    onClick={handlePasswordChange}
-                                    className="rounded-[10px] h-10"
-                                >
-                                    {passwordLoading ? 'Değiştiriliyor...' : 'Değiştir'}
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="password"
+                                        placeholder="Yeni şifre (min 8 karakter)"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        className="h-10 flex-1"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        disabled={passwordLoading || newPassword.length < 8 || !currentPassword}
+                                        onClick={handlePasswordChange}
+                                        className="rounded-[10px] h-10"
+                                    >
+                                        {passwordLoading ? 'Değiştiriliyor...' : 'Değiştir'}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -811,7 +841,7 @@ export default function SettingsPage() {
                                     <Button
                                         variant="destructive"
                                         onClick={handleDeleteAll}
-                                        disabled={deleting || deleteConfirmText !== 'KARNET'}
+                                        disabled={deleting || deleteConfirmText.toUpperCase() !== 'KARNET'}
                                     >
                                         {deleting ? 'Siliniyor...' : 'Evet, Hesabımı Sil'}
                                     </Button>

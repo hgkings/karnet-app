@@ -101,7 +101,7 @@ export default function AnalysisResultPage() {
         toast.success('Rakip bilgileri kaydedildi.');
       }
     } catch (e) {
-      toast.error('Hata olustu.');
+      toast.error('Hata oluştu.');
     } finally {
       setSaving(false);
     }
@@ -132,10 +132,10 @@ export default function AnalysisResultPage() {
       const res = await saveAnalysis(updatedAnalysis);
       if (res.success) {
         setAnalysis(updatedAnalysis);
-        toast.success('Fiyat guncellendi ve yeniden hesaplandi.');
+        toast.success('Fiyat güncellendi ve yeniden hesaplandı.');
       }
     } catch (e) {
-      toast.error('Hata olustu.');
+      toast.error('Hata oluştu.');
     } finally {
       setSaving(false);
     }
@@ -156,14 +156,19 @@ export default function AnalysisResultPage() {
 
   const handleExportCSV = () => {
     if (!analysis || !isPro) return;
-    const csv = analysesToCSV([analysis]);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${analysis.input.product_name}-analiz.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const csv = analysesToCSV([analysis]);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${analysis.input.product_name}-analiz.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('CSV dosyası indirildi.');
+    } catch {
+      toast.error('CSV dışa aktarma başarısız.');
+    }
   };
 
 
@@ -248,7 +253,7 @@ export default function AnalysisResultPage() {
     return (
       <DashboardLayout>
         <div className="py-20 text-center">
-          <p className="text-muted-foreground">Analiz bulunamadi.</p>
+          <p className="text-muted-foreground">Analiz bulunamadı.</p>
           <Link href="/dashboard">
             <Button className="mt-4">Panele Don</Button>
           </Link>
@@ -568,7 +573,7 @@ export default function AnalysisResultPage() {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Rakip Fiyatı</Label>
-                  <Input className="h-8 text-xs tabular-nums" type="number" value={compPrice || ''} onChange={e => setCompPrice(parseFloat(e.target.value))} />
+                  <Input className="h-8 text-xs tabular-nums" type="number" min={0} value={compPrice || ''} onChange={e => { const v = parseFloat(e.target.value); setCompPrice(isNaN(v) || v < 0 ? 0 : v); }} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Konum</Label>

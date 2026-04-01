@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api/helpers';
+import { auditLog } from '@/lib/security/audit';
 import { PDFDocument, rgb, StandardFonts, PDFFont, PDFPage } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
@@ -144,7 +145,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ]);
       font = await pdfDoc.embedFont(r);
       fontBold = await pdfDoc.embedFont(b);
-    } catch (_fontError) {
+    } catch (fontError) {
+      const msg = fontError instanceof Error ? fontError.message : 'Font load failed'
+      console.warn(`[pdf] Font fallback aktif: ${msg}`)
       useFallback = true;
       font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -417,6 +420,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       .replace(/[^a-zA-Z0-9 _-]/g, '')
       .trim().slice(0, 50);
     const filename = `Karnet_Rapor_${safeName}_${createdAt.toISOString().split('T')[0]}.pdf`;
+
+    // PDF indirme audit log — aylik limit takibi icin
+    auditLog({ action: 'pdf_download', userId: authResult.id, traceId: `pdf_${Date.now()}`, metadata: { analysisId: params.id } })
 
     return new NextResponse(pdfBytes, {
       status: 200,

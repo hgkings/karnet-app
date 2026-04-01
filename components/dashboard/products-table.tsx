@@ -190,7 +190,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={marketplaceFilter} onValueChange={setMarketplaceFilter}>
+          <Select value={marketplaceFilter} onValueChange={(v) => { setMarketplaceFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="h-9 w-full sm:w-[140px] text-xs">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Filter className="h-3.5 w-3.5" />
@@ -206,7 +206,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
             </SelectContent>
           </Select>
 
-          <Select value={riskFilter} onValueChange={setRiskFilter}>
+          <Select value={riskFilter} onValueChange={(v) => { setRiskFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="h-9 w-full sm:w-[130px] text-xs">
               <SelectValue placeholder="Risk Durumu" />
             </SelectTrigger>
@@ -218,7 +218,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
             </SelectContent>
           </Select>
 
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="h-9 w-full sm:w-[130px] text-xs">
               <SelectValue placeholder="Durum" />
             </SelectTrigger>
@@ -236,8 +236,8 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
       <div className="md:hidden space-y-2">
         {paginatedData.length === 0 ? (
           <div className="text-center py-8 text-sm text-muted-foreground">
-            Sonuc bulunamadi.
-            <Button variant="link" size="sm" onClick={() => { setSearchTerm(''); setMarketplaceFilter('all'); setRiskFilter('all'); }}>Filtreleri Temizle</Button>
+            Sonuç bulunamadı.
+            <Button variant="link" size="sm" onClick={() => { setSearchTerm(''); setMarketplaceFilter('all'); setRiskFilter('all'); setStatusFilter('all'); setCurrentPage(1); }}>Filtreleri Temizle</Button>
           </div>
         ) : (
           paginatedData.map((a) => (
@@ -397,7 +397,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                         )}
                         {a.result.monthly_net_profit <= 0 && (
                           <span className="inline-flex items-center rounded-sm bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-400">
-                            🩸 Zarar
+                            Zarar
                           </span>
                         )}
                       </div>

@@ -24,6 +24,34 @@ export interface TicketStats {
 export class SupportRepository extends BaseRepository<TicketRow> {
   protected tableName = 'tickets'
 
+  async findByIdAndUserId(id: string, userId: string): Promise<TicketRow | null> {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') return null
+      throw new Error(`Talep getirilemedi: ${error.message}`)
+    }
+
+    return data as TicketRow
+  }
+
+  async updateStatusByUser(id: string, userId: string, status: string): Promise<void> {
+    const { error } = await this.supabase
+      .from(this.tableName)
+      .update({ status })
+      .eq('id', id)
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Talep durumu guncellenemedi: ${error.message}`)
+    }
+  }
+
   async findByUserId(userId: string): Promise<TicketRow[]> {
     const { data, error } = await this.supabase
       .from(this.tableName)
@@ -117,12 +145,12 @@ export class SupportRepository extends BaseRepository<TicketRow> {
       dataQuery = dataQuery.eq('category', filters.category)
     }
     if (filters.search) {
-      // Ozel karakterleri escape et (Supabase OR filter injection korunmasi)
-      const safeSearch = filters.search.replace(/[%_,()]/g, '')
-      if (safeSearch.length > 0) {
-        const searchFilter = `user_email.ilike.%${safeSearch}%,subject.ilike.%${safeSearch}%`
-        countQuery = countQuery.or(searchFilter)
-        dataQuery = dataQuery.or(searchFilter)
+      // Tum ozel karakterleri temizle — sadece alfanumerik, bosluk ve @ (email) izin ver
+      const safeSearch = filters.search.replace(/[^a-zA-Z0-9@.\s\u00C0-\u024F]/g, '').trim()
+      if (safeSearch.length > 0 && safeSearch.length <= 100) {
+        // Supabase ilike ile guvenli arama — .or() string injection onlendi
+        countQuery = countQuery.or(`user_email.ilike.%${safeSearch}%,subject.ilike.%${safeSearch}%`)
+        dataQuery = dataQuery.or(`user_email.ilike.%${safeSearch}%,subject.ilike.%${safeSearch}%`)
       }
     }
 

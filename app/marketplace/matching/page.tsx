@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStoredAnalyses } from '@/lib/api/analyses';
-import { getProductMap, manualMatchProduct } from '@/lib/api/products';
+import { getProductMap, manualMatchProduct, bulkMatchProducts } from '@/lib/api/products';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 
@@ -39,6 +39,8 @@ export default function MatchingPage() {
     const [analyses, setAnalyses] = useState<AnalysisOption[]>([]);
     const [savingId, setSavingId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'manual_required'>('manual_required');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [bulkMatching, setBulkMatching] = useState(false);
 
     const fetchData = useCallback(async () => {
         if (!user) return;
@@ -55,7 +57,7 @@ export default function MatchingPage() {
 
             setAnalyses(anl || []);
         } catch {
-            // silent
+            toast.error('Veriler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.');
         } finally {
             setLoading(false);
         }
@@ -78,9 +80,54 @@ export default function MatchingPage() {
         }
     };
 
-    const filteredMappings = filter === 'all'
-        ? mappings
-        : mappings.filter(m => m.match_confidence === 'manual_required');
+    const handleBulkAutoMatch = async () => {
+        const unmatched = mappings.filter(m => m.match_confidence === 'manual_required');
+        if (unmatched.length === 0) {
+            toast.info('Eşleştirilecek ürün yok.');
+            return;
+        }
+        if (!confirm(`${unmatched.length} eşleşmemiş ürün otomatik eşleştirilecek. Devam etmek istiyor musunuz?`)) return;
+        setBulkMatching(true);
+        try {
+            const matches: Array<{ mapId: string; internalProductId: string | null }> = [];
+            for (const mapping of unmatched) {
+                const title = (mapping.external_title || '').toLowerCase().trim();
+                if (!title) continue;
+                // En iyi eşleşmeyi bul — basit includes kontrolü
+                const match = analyses.find(a =>
+                    title.includes(a.product_name.toLowerCase()) ||
+                    a.product_name.toLowerCase().includes(title)
+                );
+                if (match) {
+                    matches.push({ mapId: mapping.id, internalProductId: match.id });
+                }
+            }
+            if (matches.length === 0) {
+                toast.info('Otomatik eşleştirilebilecek ürün bulunamadı. Manuel eşleştirme yapın.');
+            } else {
+                await bulkMatchProducts(matches);
+                toast.success(`${matches.length} ürün otomatik eşleştirildi!`);
+                fetchData();
+            }
+        } catch {
+            toast.error('Toplu eşleştirme sırasında hata oluştu.');
+        } finally {
+            setBulkMatching(false);
+        }
+    };
+
+    const filteredMappings = mappings
+        .filter(m => filter === 'all' || m.match_confidence === 'manual_required')
+        .filter(m => {
+            if (!searchQuery.trim()) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+                (m.external_title?.toLowerCase().includes(q)) ||
+                (m.merchant_sku?.toLowerCase().includes(q)) ||
+                (m.barcode?.toLowerCase().includes(q)) ||
+                m.external_product_id.toLowerCase().includes(q)
+            );
+        });
 
     const manualCount = mappings.filter(m => m.match_confidence === 'manual_required').length;
 
@@ -113,29 +160,55 @@ export default function MatchingPage() {
                             Trendyol ürünlerini Kârnet analizleriyle eşleştirin.
                         </p>
                     </div>
-                    {manualCount > 0 && (
-                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-500/10 text-red-400">
-                            {manualCount} eşleşmemiş
-                        </span>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {manualCount > 0 && (
+                            <>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={handleBulkAutoMatch}
+                                    disabled={bulkMatching || analyses.length === 0}
+                                    className="gap-1.5"
+                                >
+                                    {bulkMatching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                                    Otomatik Eşleştir
+                                </Button>
+                                <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-500/10 text-red-400">
+                                    {manualCount} eşleşmemiş
+                                </span>
+                            </>
+                        )}
+                    </div>
                 </div>
 
-                {/* Filter */}
-                <div className="flex gap-2">
-                    <Button
-                        variant={filter === 'manual_required' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setFilter('manual_required')}
-                    >
-                        Eşleşmeyenler ({manualCount})
-                    </Button>
-                    <Button
-                        variant={filter === 'all' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setFilter('all')}
-                    >
-                        Tümü ({mappings.length})
-                    </Button>
+                {/* Filter + Search */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex gap-2">
+                        <Button
+                            variant={filter === 'manual_required' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setFilter('manual_required')}
+                        >
+                            Eşleşmeyenler ({manualCount})
+                        </Button>
+                        <Button
+                            variant={filter === 'all' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setFilter('all')}
+                        >
+                            Tümü ({mappings.length})
+                        </Button>
+                    </div>
+                    <div className="relative flex-1 max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder="Ürün ara..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full h-9 pl-9 pr-3 rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] text-sm placeholder:text-muted-foreground focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20"
+                        />
+                    </div>
                 </div>
 
                 {/* Table */}
