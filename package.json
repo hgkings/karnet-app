@@ -59,7 +59,7 @@
     "date-fns": "^3.6.0",
     "dotenv": "^17.3.1",
     "embla-carousel-react": "^8.3.0",
-    "eslint": "8.49.0",
+    "eslint": "10.1.0",
     "eslint-config-next": "^14.2.35",
     "framer-motion": "^12.38.0",
     "geist": "^1.7.0",
