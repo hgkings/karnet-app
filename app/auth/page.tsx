@@ -59,9 +59,9 @@ function getPasswordStrength(pwd: string): { level: 0 | 1 | 2 | 3; label: string
 
 // ── Input ortak sınıflar ──
 const inputClasses =
-  'h-11 w-full rounded-xl bg-card border border-border px-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 transition-all disabled:opacity-50';
+  'auth-input h-11 w-full rounded-xl bg-card border border-border px-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 transition-all disabled:opacity-50';
 
-const autofillStyle = { WebkitBoxShadow: '0 0 0 30px #0c0a09 inset', WebkitTextFillColor: 'white' };
+// autofill stili CSS ile yönetiliyor (globals.css — auth-input-autofill)
 
 function AuthPageContent() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -363,7 +363,6 @@ function AuthPageContent() {
                   className={inputClasses}
                   autoComplete="name"
                   disabled={loading}
-                  style={autofillStyle}
                 />
               </div>
             )}
@@ -381,7 +380,6 @@ function AuthPageContent() {
                 className={inputClasses}
                 autoComplete="email"
                 disabled={loading}
-                style={autofillStyle}
               />
             </div>
 
@@ -411,7 +409,6 @@ function AuthPageContent() {
                   className={`${inputClasses} pr-10`}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   disabled={loading}
-                  style={autofillStyle}
                 />
                 <button
                   type="button"
@@ -472,7 +469,6 @@ function AuthPageContent() {
                     }`}
                     autoComplete="new-password"
                     disabled={loading}
-                    style={autofillStyle}
                   />
                   <button
                     type="button"
