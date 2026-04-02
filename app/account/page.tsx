@@ -34,7 +34,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PLAN_LIMITS } from '@/config/plans';
-import { isProUser } from '@/utils/access';
+import { isProUser, isStarterUser, hasPaidPlan, getPlanLabel } from '@/utils/access';
 import { getStoredAnalyses } from '@/lib/api/analyses';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -76,6 +76,9 @@ export default function AccountPage() {
   const router = useRouter();
 
   const isPro = isProUser(user);
+  const isStarter = isStarterUser(user);
+  const hasPaid = hasPaidPlan(user);
+  const planLabel = getPlanLabel(user?.plan);
 
   // — Stats & analyses state —
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
@@ -407,29 +410,36 @@ export default function AccountPage() {
         <div className="rounded-2xl border border-border/40 bg-card p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${isPro ? 'bg-amber-500/10' : 'bg-muted'}`}>
-                <Crown className={`h-5 w-5 ${isPro ? 'text-amber-500' : 'text-muted-foreground'}`} />
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                isPro ? 'bg-amber-500/10' : isStarter ? 'bg-blue-500/10' : 'bg-muted'
+              }`}>
+                <Crown className={`h-5 w-5 ${
+                  isPro ? 'text-amber-500' : isStarter ? 'text-blue-500' : 'text-muted-foreground'
+                }`} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-semibold">{isPro ? 'Pro Plan' : 'Ücretsiz Plan'}</h2>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${isPro
-                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                    : 'bg-muted text-muted-foreground'
-                    }`}>
-                    {isPro ? 'Aktif' : 'Temel'}
+                  <h2 className="font-semibold">{planLabel} Plan</h2>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    hasPaid
+                      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {hasPaid ? 'Aktif' : 'Temel'}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {isPro
                     ? 'Sınırsız analiz · PRO muhasebe · CSV/PDF dışa aktarma'
-                    : `Maksimum ${PLAN_LIMITS.free.maxProducts} analiz. Pro için yükseltin.`}
+                    : isStarter
+                      ? '25 ürün analizi · CSV içe/dışa aktarma · Başabaş hesaplama'
+                      : `Maksimum ${PLAN_LIMITS.free.maxProducts} analiz. Planınızı yükseltin.`}
                 </p>
               </div>
             </div>
           </div>
 
-          {isPro ? (
+          {hasPaid ? (
             <>
               {/* Plan detay bilgileri */}
               <div className="mt-5 grid grid-cols-3 gap-3">
@@ -474,13 +484,18 @@ export default function AccountPage() {
 
               {/* Özellikler */}
               <div className="mt-4 flex flex-wrap gap-2">
-                {[
+                {(isPro ? [
                   'Sınırsız analiz',
                   'PRO muhasebe modu',
                   'CSV içe/dışa aktarma',
                   'Hassasiyet analizi',
                   'Nakit akışı tahmini',
-                ].map((f) => (
+                ] : [
+                  '25 ürün analizi',
+                  'CSV içe/dışa aktarma',
+                  'Başabaş hesaplama',
+                  'Duyarlılık analizi',
+                ]).map((f) => (
                   <span key={f} className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-2.5 py-1 text-xs">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                     {f}
@@ -488,18 +503,25 @@ export default function AccountPage() {
                 ))}
               </div>
 
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 pt-4 border-t flex gap-2">
                 <Link href="/pricing">
                   <Button variant="outline" size="sm" className="gap-1.5 rounded-[10px]">
                     Planı Yönet
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
                 </Link>
+                {isStarter && (
+                  <Link href="/pricing">
+                    <Button size="sm" className="gap-1.5 rounded-[10px]">
+                      Pro&apos;ya Yükselt
+                    </Button>
+                  </Link>
+                )}
               </div>
             </>
           ) : (
             <div className="mt-4 flex gap-2">
-              <Button onClick={() => window.location.href = '/pricing'} className="rounded-[10px]">Pro&apos;ya Yükselt</Button>
+              <Button onClick={() => window.location.href = '/pricing'} className="rounded-[10px]">Planınızı Yükseltin</Button>
               <Link href="/pricing">
                 <Button variant="outline" className="rounded-[10px]">Planları Gör</Button>
               </Link>
