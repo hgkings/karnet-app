@@ -3,11 +3,13 @@
  *
  * Maps marketplace raw data → Kârnet analysis/product structures.
  * Supports: trendyol, hepsiburada
- * Does NOT touch calculation formulas — only fills input fields.
  *
  * NO DB calls — data is passed in as parameters.
  * Callers (Logic Services) are responsible for fetching and persisting data.
  */
+
+import { calculateProfit } from '@/utils/calculations'
+import type { ProductInput } from '@/types'
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -303,25 +305,26 @@ export function normalizeProducts(
                     stock_quantity: typeof raw.quantity === 'number' ? raw.quantity : 0,
                     image_url: typeof raw.image_url === 'string' ? raw.image_url : undefined,
                 },
-                outputs: {
-                    commission_amount: 0,
-                    vat_amount: 0,
-                    expected_return_loss: 0,
-                    unit_variable_cost: 0,
-                    unit_total_cost: 0,
-                    unit_net_profit: 0,
-                    margin_pct: 0,
-                    monthly_net_profit: 0,
-                    monthly_revenue: 0,
-                    monthly_total_cost: 0,
-                    breakeven_price: 0,
-                    sale_price: salePrice,
-                    sale_price_excl_vat: 0,
-                    output_vat_monthly: 0,
-                    input_vat_monthly: 0,
-                    vat_position_monthly: 0,
-                    monthly_net_sales: 0,
-                },
+                outputs: (() => {
+                    // Gerçek hesaplama yap — outputs sıfır olmasın
+                    const calcInput: ProductInput = {
+                        marketplace: marketplace as ProductInput['marketplace'],
+                        product_name: title,
+                        sale_price: salePrice,
+                        product_cost: 0,
+                        commission_pct: defaults.commission_pct,
+                        shipping_cost: 0,
+                        packaging_cost: 0,
+                        ad_cost_per_sale: 0,
+                        return_rate_pct: defaults.return_rate_pct,
+                        vat_pct: 20,
+                        other_cost: 0,
+                        monthly_sales_volume: 0,
+                        payout_delay_days: defaults.payout_delay_days,
+                    }
+                    const calc = calculateProfit(calcInput)
+                    return { ...calc, sale_price: salePrice }
+                })(),
                 risk_score: 50,
                 risk_level: 'moderate',
             };
