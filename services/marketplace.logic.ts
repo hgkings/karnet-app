@@ -504,13 +504,24 @@ export class MarketplaceLogic {
     payload: unknown,
     _userId: string
   ): Promise<{ settlements: trendyolApi.SellerSettlement[]; otherFinancials: trendyolApi.OtherFinancial[] }> {
-    const { connectionId, days } = payload as { connectionId: string; days?: number }
+    const { connectionId, days, startDate, endDate } = payload as {
+      connectionId: string; days?: number; startDate?: string; endDate?: string
+    }
     const creds = await this.resolveCredentials(connectionId, traceId)
 
-    const end = new Date()
-    const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
-    const startStr = start.toISOString()
-    const endStr = end.toISOString()
+    // Öncelik: explicit startDate/endDate > days hesaplaması
+    let startStr: string
+    let endStr: string
+
+    if (startDate && endDate) {
+      startStr = startDate
+      endStr = endDate
+    } else {
+      const end = new Date()
+      const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
+      startStr = start.toISOString()
+      endStr = end.toISOString()
+    }
 
     const [settlements, otherFinancials] = await Promise.all([
       trendyolApi.getSellerSettlements(creds, startStr, endStr),

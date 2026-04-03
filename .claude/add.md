@@ -257,6 +257,7 @@ Auth proxy kodu local'de hazir ve test edildi ama production'a DEPLOY EDILMEDI.
 | 04-03 | Opus 4.6 | ULTRA-7: Marketplace sayfasi finans veri parse duzeltildi — json.data→json.settlements, cift json() parse hatasi | app/marketplace/page.tsx | — |
 | 04-03 | Opus 4.6 | ULTRA-8: any tipi temizlendi — 3 yer catch(err:any)→catch(err:unknown), data as any[]→explicit type | app/marketplace/page.tsx | — |
 | 04-03 | Opus 4.6 | ULTRA-9: Unsupplied orders response parse — data.orders eklendi (gateway formatiyla uyumlu) | app/marketplace/page.tsx | — |
+| 04-03 | Opus 4.6 | VERIFY-1: Finans tarih filtresi duzeltildi — getTrendyolFinance artik startDate/endDate kabul ediyor, gun parametresi URL'lere eklendi | services/marketplace.logic.ts, app/marketplace/page.tsx | — |
 | 04-03 | Opus 4.6 | ENRICH-1: enrichAnalysesWithRealData() metodu — siparis+iade'den gercek komisyon, iade orani, aylik satis hesaplama | services/marketplace.logic.ts | — |
 | 04-03 | Opus 4.6 | ENRICH-2: /api/marketplace/trendyol/enrich + /hepsiburada/enrich route'lari | app/api/marketplace/*/enrich/route.ts (YENI) | — |
 | 04-03 | Opus 4.6 | ENRICH-3: Finans sayfasina "Gercek Veri" sekmesi — aciklama, guncelle butonu, detay tablosu (eski→yeni deger) | app/finance/page.tsx | — |

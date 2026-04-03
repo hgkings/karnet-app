@@ -190,7 +190,7 @@ export default function MarketplacePage() {
             const endDate = bugun.toISOString().split('T')[0];
 
             const financeUrl = selectedMarketplace === 'trendyol'
-                ? `/api/marketplace/trendyol/finance?startDate=${startDate}&endDate=${endDate}`
+                ? `/api/marketplace/trendyol/finance?gun=${gun}&startDate=${startDate}&endDate=${endDate}`
                 : `/api/marketplace/hepsiburada/finance?gun=${gun}`;
             const response = await fetch(financeUrl);
             const json = await response.json() as Record<string, unknown>;
@@ -262,7 +262,7 @@ export default function MarketplacePage() {
                 const baslangic = new Date();
                 baslangic.setDate(bitis.getDate() - 30);
                 const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                res = await fetch(`/api/marketplace/trendyol/finance?startDate=${fmt(baslangic)}&endDate=${fmt(bitis)}`);
+                res = await fetch(`/api/marketplace/trendyol/finance?gun=30&startDate=${fmt(baslangic)}&endDate=${fmt(bitis)}`);
             } else {
                 res = await fetch(`/api/marketplace/hepsiburada/finance?gun=30`);
             }
