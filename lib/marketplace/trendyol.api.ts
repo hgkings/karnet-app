@@ -72,7 +72,7 @@ const LABEL_BASE_URL = IS_STAGE
 
 const MAX_RETRIES = 3
 const INITIAL_BACKOFF_MS = 1000
-const TIMEOUT_MS = 10000
+const TIMEOUT_MS = 8000 // Vercel serverless 10sn sınırı — 2sn gateway overhead için margin
 
 export const TRENDYOL_TEST_KEY = 'TRENDYOL_TEST'
 

@@ -336,46 +336,34 @@ export default function MarketplacePage() {
             const data = await res.json();
 
             if (res.ok && data.success && data.secrets_saved) {
-                toast.success(`${mpConfig.label} anahtarları kaydedildi. Bağlantı test ediliyor...`);
-                setLastLog('Anahtarlar kaydedildi, test başlatılıyor...');
                 setApiKey('');
                 setApiSecret('');
                 setSellerId('');
                 setStoreName('');
-                setSaving(false);
 
-                // Otomatik bağlantı testi başlat
+                // Otomatik bağlantı testi — ayrı try/catch ile (kaydetmeyi engellemez)
+                toast.success(`${mpConfig.label} anahtarları kaydedildi. Test ediliyor...`);
+                setLastLog('Anahtarlar kaydedildi, test başlatılıyor...');
+                setSaving(false);
                 setTesting(true);
+
                 try {
                     const testRes = await fetch(`${apiBase}/test`, { method: 'POST' });
                     const testData = await testRes.json();
                     if (testData.success) {
-                        toast.success(testData.message || `${mpConfig.label} bağlantısı başarılı!`);
+                        toast.success(testData.message || `${mpConfig.label} bağlantısı başarılı! Artık ürünlerinizi senkronize edebilirsiniz.`);
                         setLastLog(testData.message || 'Bağlantı başarılı');
-
-                        // Otomatik ürün senkronizasyonu
-                        toast.info('Ürünler senkronize ediliyor...');
-                        try {
-                            const syncRes = await fetch(`${apiBase}/sync-products`, { method: 'POST' });
-                            const syncData = await syncRes.json();
-                            if (syncData.success) {
-                                const count = syncData.count ?? '';
-                                toast.success(count ? `${count} ürün senkronize edildi!` : 'Ürünler senkronize edildi!');
-                            }
-                        } catch { /* sync hatası bağlantıyı engellemez */ }
                     } else {
-                        const friendlyMsg = translateConnectionError(testRes.status, testData.message || testData.error);
-                        toast.error(friendlyMsg);
-                        setLastLog(testData.message || testData.error);
+                        toast.warning(testData.error || 'Bağlantı testi başarısız. API bilgilerinizi kontrol edin.');
+                        setLastLog(testData.error || 'Test başarısız');
                     }
                 } catch {
-                    toast.error('Bağlantı testi sırasında hata oluştu.');
+                    toast.warning('Bağlantı testi zaman aşımına uğradı. "Bağlantıyı Test Et" butonu ile tekrar deneyebilirsiniz.');
                 } finally {
                     setTesting(false);
+                    fetchStatus();
                 }
-
-                fetchStatus();
-                return; // finally bloğunda saving=false tekrar çalışmasın
+                return;
             } else if (res.ok && data.success && !data.secrets_saved) {
                 toast.warning('Bağlantı oluşturuldu ancak güvenli anahtar kaydı doğrulanamadı. Tekrar deneyin.');
                 setLastLog('Anahtar doğrulama başarısız.');
