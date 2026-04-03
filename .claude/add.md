@@ -143,6 +143,32 @@ Auth proxy kodu local'de hazir ve test edildi ama production'a DEPLOY EDILMEDI.
 
 ## SON DEGISIKLIKLER (en yeniden eskiye)
 
+### 2026-04-03 (Eklenti 1 — Guvenlik: glob + lodash zafiyet duzeltme)
+
+| Tarih | Ajan | Ozet | Dosyalar | Commit |
+|-------|------|------|----------|--------|
+| 04-03 | Eklenti 1 | SEC-1: glob command injection fix — overrides ile ^10.4.5'e zorlandi | package.json, package-lock.json | a947f6c |
+| 04-03 | Eklenti 1 | SEC-4: paytr/test-callback requireAdmin() eklendi — auth kontrolu olmayan endpoint guvenligi saglandi | app/api/paytr/test-callback/route.ts | — |
+| 04-03 | Eklenti 1 | SEC-2: lodash prototype pollution + code injection fix — guvenli surume guncellendi | package-lock.json | a947f6c |
+| 04-03 | Eklenti 1 | SEC-3: Auth input siyah gorunme hatasi — autofillStyle hardcoded dark (#0c0a09) kaldirildi, bg-card yapildi | app/auth/page.tsx | 08e6fe4 |
+
+**Audit Sonucu:** 5 high → 1 high (sadece Next.js 14.x — major upgrade gerekli, dokunulmadi)
+
+### 2026-04-02 (Eklenti 1 — Config Duzeltmeleri + Vercel Cache Fix)
+
+| Tarih | Ajan | Ozet | Dosyalar | Commit |
+|-------|------|------|----------|--------|
+| 04-02 | Eklenti 1 | CONFIG-1: package.json name nextjs→karnet, @next/swc-wasm-nodejs kaldirildi | package.json | b337bc0 |
+| 04-02 | Eklenti 1 | CONFIG-2: tsconfig.json target es5→es2017 | tsconfig.json | b337bc0 |
+| 04-02 | Eklenti 1 | CONFIG-3: .eslintrc.json next/typescript + rules (any warn, console warn) | .eslintrc.json | b337bc0 |
+| 04-02 | Eklenti 1 | CONFIG-4: tailwind.config.ts pages/ content kaldirildi (App Router kullaniliyor) | tailwind.config.ts | b337bc0 |
+| 04-02 | Eklenti 1 | CONFIG-5: .gitignore duplicate yari temizlendi | .gitignore | b337bc0 |
+| 04-02 | Eklenti 1 | CONFIG-6: SECURITY.md versions tablosu sadeleştirildi (current + Yes) | SECURITY.md | b337bc0 |
+| 04-02 | Eklenti 1 | CONFIG-7: postcss 8.4.30→^8.4.31 guvenlik guncelleme | package.json, package-lock.json | db2229e |
+| 04-02 | Eklenti 1 | CONFIG-8: Cache-Control header eklendi — Vercel 404 DEPLOYMENT_NOT_FOUND fix | next.config.js | e996ef4 |
+| 04-02 | Eklenti 1 | CONFIG-9: @tabler/icons-react optimizePackageImports'tan kaldirildi | next.config.js | e996ef4 |
+| 04-02 | Eklenti 1 | FIX: Starter plan profilde Free gorunme hatasi duzeltildi — isStarterUser + hasPaidPlan + getPlanLabel | app/account/page.tsx | a3270a0 |
+
 ### 2026-04-02 (Eklenti 1 — Performans Optimizasyonu + Temizlik)
 
 | Tarih | Ajan | Ozet | Dosyalar | Commit |
