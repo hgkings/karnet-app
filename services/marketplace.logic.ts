@@ -233,7 +233,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     _userId: string
-  ): Promise<{ productsCount: number }> {
+  ): Promise<{ count: number; message: string }> {
     const { connectionId } = payload as { connectionId: string }
 
     if (!connectionId) {
@@ -280,7 +280,7 @@ export class MarketplaceLogic {
       }
 
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${productsCount} ürün senkronize edildi`)
-      return { productsCount }
+      return { count: productsCount, message: `${productsCount} ürün senkronize edildi` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -295,7 +295,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     _userId: string
-  ): Promise<{ ordersCount: number }> {
+  ): Promise<{ count: number; message: string }> {
     const { connectionId } = payload as { connectionId: string }
 
     if (!connectionId) {
@@ -344,7 +344,7 @@ export class MarketplaceLogic {
 
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${ordersCount} sipariş senkronize edildi`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
-      return { ordersCount }
+      return { count: ordersCount, message: `${ordersCount} sipariş senkronize edildi` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -353,14 +353,44 @@ export class MarketplaceLogic {
   }
 
   /**
-   * Baglanti durumunu dondurur.
+   * Belirli marketplace baglanti durumunu UI formatinda dondurur.
+   * UI ConnectionState bekler: { connected, connection_id, status, store_name, seller_id, last_sync_at, webhook_active }
    */
   async getStatus(
     _traceId: string,
-    _payload: unknown,
+    payload: unknown,
     userId: string
-  ): Promise<unknown[]> {
-    return this.marketplaceRepo.getConnectionsByUserId(userId)
+  ): Promise<{
+    connected: boolean
+    connection_id?: string
+    status: string
+    store_name?: string
+    seller_id?: string
+    last_sync_at?: string
+    webhook_active?: boolean
+  }> {
+    const { marketplace } = (payload ?? {}) as { marketplace?: string }
+    const connections = await this.marketplaceRepo.getConnectionsByUserId(userId)
+
+    // Marketplace filtresi varsa o marketplace'in bağlantısını bul
+    const conn = marketplace
+      ? connections.find(c => c.marketplace === marketplace)
+      : connections[0]
+
+    if (!conn) {
+      return { connected: false, status: 'disconnected' }
+    }
+
+    const status = (conn.status as string) ?? 'disconnected'
+    return {
+      connected: status === 'connected',
+      connection_id: conn.id as string,
+      status,
+      store_name: (conn.store_name as string) ?? undefined,
+      seller_id: (conn.seller_id as string) ?? undefined,
+      last_sync_at: (conn.last_sync_at as string) ?? undefined,
+      webhook_active: (conn.webhook_active as boolean) ?? false,
+    }
   }
 
   // ----------------------------------------------------------------
@@ -371,7 +401,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     userId: string
-  ): Promise<{ productsCount: number }> {
+  ): Promise<{ count: number; message: string }> {
     const { connectionId } = payload as { connectionId: string }
     const creds = await this.resolveCredentials(connectionId, traceId)
 
@@ -383,10 +413,10 @@ export class MarketplaceLogic {
 
     try {
       const page = await trendyolApi.fetchProducts(creds)
-      const productsCount = page.totalElements
-      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${productsCount} ürün çekildi`)
+      const count = page.totalElements
+      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${count} ürün çekildi`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
-      return { productsCount }
+      return { count, message: `${count} ürün senkronize edildi` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -398,7 +428,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     userId: string
-  ): Promise<{ ordersCount: number }> {
+  ): Promise<{ count: number; message: string }> {
     const { connectionId, days } = payload as { connectionId: string; days?: number }
     const creds = await this.resolveCredentials(connectionId, traceId)
 
@@ -412,10 +442,10 @@ export class MarketplaceLogic {
       const end = new Date()
       const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
       const orders = await trendyolApi.fetchAllOrders(creds, start.getTime(), end.getTime())
-      const ordersCount = orders.length
-      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${ordersCount} sipariş çekildi`)
+      const count = orders.length
+      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${count} sipariş çekildi`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
-      return { ordersCount }
+      return { count, message: `${count} sipariş senkronize edildi` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -427,17 +457,23 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     _userId: string
-  ): Promise<{ success: boolean; storeName: string | null }> {
+  ): Promise<{ message: string; storeName: string | null }> {
     const { connectionId } = payload as { connectionId: string }
     const creds = await this.resolveCredentials(connectionId, traceId)
 
     const result = await trendyolApi.testConnection(creds)
     if (result.success) {
       await this.marketplaceRepo.updateConnectionStatus(connectionId, 'connected')
+      return { message: result.message, storeName: result.storeName ?? null }
     } else {
       await this.marketplaceRepo.updateConnectionStatus(connectionId, 'error')
+      // ServiceError fırlat — gateway { success: false, error } döndürecek
+      throw new ServiceError(result.message || 'Bağlantı testi başarısız', {
+        code: 'CONNECTION_TEST_FAILED',
+        statusCode: 400,
+        traceId,
+      })
     }
-    return { success: result.success, storeName: result.storeName ?? null }
   }
 
   async getTrendyolClaims(
@@ -726,7 +762,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     userId: string
-  ): Promise<{ productsCount: number }> {
+  ): Promise<{ count: number; message: string }> {
     const { connectionId } = payload as { connectionId: string }
     const creds = await this.resolveHbCredentials(connectionId, traceId)
 
@@ -740,7 +776,7 @@ export class MarketplaceLogic {
       const result = await hepsiburadaApi.fetchAllProducts(creds)
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${result.totalCount} ürün çekildi`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
-      return { productsCount: result.totalCount }
+      return { count: result.totalCount, message: `${result.totalCount} ürün senkronize edildi` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -752,7 +788,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     userId: string
-  ): Promise<{ ordersCount: number }> {
+  ): Promise<{ count: number; message: string }> {
     const { connectionId, days } = payload as { connectionId: string; days?: number }
     const creds = await this.resolveHbCredentials(connectionId, traceId)
 
@@ -768,7 +804,7 @@ export class MarketplaceLogic {
       const orders = await hepsiburadaApi.fetchAllOrders(creds, start, end)
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${orders.length} sipariş çekildi`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
-      return { ordersCount: orders.length }
+      return { count: orders.length, message: `${orders.length} sipariş senkronize edildi` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -780,24 +816,29 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     _userId: string
-  ): Promise<{ success: boolean; storeName: string | null }> {
+  ): Promise<{ message: string; storeName: string | null }> {
     const { connectionId } = payload as { connectionId: string }
     const creds = await this.resolveHbCredentials(connectionId, traceId)
 
     const result = await hepsiburadaApi.testConnection(creds)
     if (result.success) {
       await this.marketplaceRepo.updateConnectionStatus(connectionId, 'connected')
+      return { message: result.message, storeName: result.storeName ?? null }
     } else {
       await this.marketplaceRepo.updateConnectionStatus(connectionId, 'error')
+      throw new ServiceError(result.message || 'Bağlantı testi başarısız', {
+        code: 'CONNECTION_TEST_FAILED',
+        statusCode: 400,
+        traceId,
+      })
     }
-    return { success: result.success, storeName: result.storeName ?? null }
   }
 
   async testHepsiburadaConnection(
     traceId: string,
     payload: unknown,
     userId: string
-  ): Promise<{ success: boolean; storeName: string | null }> {
+  ): Promise<{ message: string; storeName: string | null }> {
     return this.testHepsiburada(traceId, payload, userId)
   }
 
@@ -1325,8 +1366,8 @@ export class MarketplaceLogic {
     const orders = await this.syncOrders(traceId, { connectionId }, userId)
 
     return {
-      productsCount: products.productsCount,
-      ordersCount: orders.ordersCount,
+      productsCount: (products as Record<string, unknown>).count as number ?? 0,
+      ordersCount: (orders as Record<string, unknown>).count as number ?? 0,
       syncedAt: new Date().toISOString(),
     }
   }
