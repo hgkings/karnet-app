@@ -38,7 +38,7 @@ function createLimiter(
 const authLimiter = createLimiter('auth', 5, '15 m')
 
 // API profili — genel API route'lari (kullanici basina)
-const apiLimiter = createLimiter('api', 100, '1 m')
+const apiLimiter = createLimiter('api', 500, '1 m')
 
 // EMAIL profili — email gonderimi
 const emailLimiter = createLimiter('email', 3, '1 m')
@@ -46,7 +46,7 @@ const emailLimiter = createLimiter('email', 3, '1 m')
 // SYNC profili — marketplace tum islemler (kullanici basina)
 // 200/saat: connect + sync×2 + normalize×2 + getStatus×N + finance×N + claims + enrich + buybox
 // Marketplace sayfasi her yuklemede 5-8 istek yapar, finans sayfasi ek 3-4 istek
-const syncLimiter = createLimiter('sync', 200, '1 h')
+const syncLimiter = createLimiter('sync', 1000, '1 h')
 
 // COMMENT profili — blog yorumlari
 const commentLimiter = createLimiter('comment', 3, '1 m')
@@ -56,7 +56,7 @@ const adminLimiter = createLimiter('admin', 50, '1 m')
 
 // ANALYSIS profili — analiz islemleri
 // 30/dk: dashboard listeleme + detay + CRUD islemleri
-const analysisLimiter = createLimiter('analysis', 30, '1 m')
+const analysisLimiter = createLimiter('analysis', 100, '1 m')
 
 // MFA profili — MFA dogrulama denemeleri
 const mfaLimiter = createLimiter('mfa', 10, '5 m')

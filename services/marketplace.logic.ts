@@ -385,11 +385,91 @@ export class MarketplaceLogic {
     })
 
     try {
-      const page = await trendyolApi.fetchProducts(creds)
-      const count = page.totalElements
-      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${count} ürün çekildi`)
+      // Tüm ürünleri sayfalama ile çek
+      const allProducts: Record<string, unknown>[] = []
+      let page = 0
+      let totalPages = 1
+      while (page < totalPages && page < 500) {
+        const result = await trendyolApi.fetchProducts(creds, page, 200, { approved: true })
+        allProducts.push(...result.content)
+        totalPages = result.totalPages
+        page++
+      }
+
+      // Normalizer ile eşleştir ve analizlere yaz
+      const analyses = await this.analysisRepo.findByUserId(userId)
+      const rawProducts: RawProduct[] = allProducts.map(p => ({
+        external_product_id: String(p.id ?? ''),
+        barcode: (p.barcode as string) ?? undefined,
+        merchant_sku: (p.stockCode as string) ?? undefined,
+        title: (p.title as string) ?? undefined,
+        sale_price: (p.salePrice as number) ?? 0,
+      }))
+
+      const existingAnalyses = analyses.map(a => ({
+        id: a.id,
+        product_name: a.product_name ?? undefined,
+        barcode: a.barcode ?? undefined,
+        merchant_sku: a.merchant_sku ?? undefined,
+        inputs: (a.inputs ?? undefined) as Record<string, unknown> | undefined,
+      }))
+      const normalized = normalizeProducts(rawProducts, existingAnalyses, 'trendyol')
+
+      // Sonuçları DB'ye yaz
+      const mapBatchRows: Array<{
+        user_id: string; marketplace: string; external_product_id: string;
+        merchant_sku?: string; barcode?: string; external_title?: string;
+        internal_product_id?: string; match_confidence: string; connection_id?: string;
+      }> = []
+      for (const r of normalized.results) {
+        if (r.internalId && r.analysisUpdate) {
+          const updateData: Record<string, unknown> = {
+            barcode: r.analysisUpdate.barcode,
+            merchant_sku: r.analysisUpdate.merchant_sku,
+            marketplace_source: r.analysisUpdate.marketplace_source,
+            auto_synced: true,
+          }
+          if (r.analysisUpdate.inputs) updateData.inputs = r.analysisUpdate.inputs
+          await this.analysisRepo.update(r.internalId, updateData)
+        } else if (r.newAnalysis) {
+          const newRow = await this.analysisRepo.create({
+            user_id: userId,
+            marketplace: r.newAnalysis.marketplace,
+            product_name: r.newAnalysis.product_name,
+            barcode: r.newAnalysis.barcode,
+            merchant_sku: r.newAnalysis.merchant_sku,
+            marketplace_source: r.newAnalysis.marketplace_source,
+            auto_synced: true,
+            inputs: r.newAnalysis.inputs,
+            outputs: r.newAnalysis.outputs,
+            risk_score: r.newAnalysis.risk_score,
+            risk_level: r.newAnalysis.risk_level,
+          })
+          r.mapEntry.internal_product_id = newRow.id
+        }
+
+        mapBatchRows.push({
+          user_id: userId,
+          marketplace: r.mapEntry.marketplace,
+          external_product_id: r.mapEntry.external_product_id,
+          merchant_sku: r.mapEntry.merchant_sku ?? undefined,
+          barcode: r.mapEntry.barcode ?? undefined,
+          external_title: r.mapEntry.external_title,
+          internal_product_id: r.mapEntry.internal_product_id ?? undefined,
+          match_confidence: r.mapEntry.match_confidence,
+          connection_id: connectionId,
+        })
+      }
+
+      if (mapBatchRows.length > 0) {
+        await this.productRepo.upsertMapBatch(mapBatchRows)
+      }
+
+      const count = allProducts.length
+      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success',
+        `${count} ürün çekildi, ${normalized.matched} eşleşti, ${normalized.created} yeni oluşturuldu`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
-      return { count, message: `${count} ürün senkronize edildi` }
+      return { count, message: `${count} ürün senkronize edildi (${normalized.matched} eşleşti, ${normalized.created} yeni)` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
@@ -415,8 +495,44 @@ export class MarketplaceLogic {
       const end = new Date()
       const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
       const orders = await trendyolApi.fetchAllOrders(creds, start.getTime(), end.getTime())
+
+      // Sipariş metriklerini hesapla ve kaydet
+      const mapRows = await this.productRepo.getMapByUserId(userId, 'trendyol')
+      const productMappings: ProductMapping[] = mapRows.map(m => ({
+        external_product_id: m.external_product_id,
+        internal_product_id: m.internal_product_id,
+      }))
+
+      const rawOrders: RawOrder[] = orders.map(o => ({
+        order_number: String(o.orderNumber ?? o.id ?? ''),
+        order_date: o.orderDate ? new Date(o.orderDate as number).toISOString() : new Date().toISOString(),
+        status: (o.status ?? o.shipmentPackageStatus ?? 'Unknown') as string,
+        raw_json: o as Record<string, unknown>,
+      }))
+
+      const result = normalizeOrderMetrics(rawOrders, productMappings, 'trendyol')
+
+      // Satış metriklerini kaydet
+      for (const metric of result.metrics) {
+        await this.productRepo.upsertSalesMetrics({
+          user_id: userId,
+          internal_product_id: metric.internal_product_id,
+          marketplace: metric.marketplace,
+          period_month: metric.period_month,
+          sold_qty: metric.sold_qty,
+          returned_qty: metric.returned_qty,
+          gross_revenue: metric.gross_revenue,
+          net_revenue: metric.net_revenue,
+        })
+      }
+
+      // Otomatik satış adedini güncelle
+      for (const update of result.autoSalesUpdates) {
+        await this.analysisRepo.update(update.productId, { auto_sales_qty: update.netQty })
+      }
+
       const count = orders.length
-      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${count} sipariş çekildi`)
+      await this.marketplaceRepo.updateSyncLog(syncLog.id, 'success', `${count} sipariş çekildi, ${result.metricsUpdated} metrik güncellendi`)
       await this.marketplaceRepo.updateLastSyncAt(connectionId)
       return { count, message: `${count} sipariş senkronize edildi` }
     } catch (error) {
@@ -464,10 +580,20 @@ export class MarketplaceLogic {
       endStr = end.toISOString()
     }
 
-    const [settlements, otherFinancials] = await Promise.all([
-      trendyolApi.getSellerSettlements(creds, startStr, endStr),
-      trendyolApi.getOtherFinancials(creds, startStr, endStr),
-    ])
+    // Finans API hata verirse boş dizi dön (Trendyol bazen 400 dönebilir)
+    let settlements: trendyolApi.SellerSettlement[] = []
+    let otherFinancials: trendyolApi.OtherFinancial[] = []
+
+    try {
+      const results = await Promise.allSettled([
+        trendyolApi.getSellerSettlements(creds, startStr, endStr),
+        trendyolApi.getOtherFinancials(creds, startStr, endStr),
+      ])
+      if (results[0].status === 'fulfilled') settlements = results[0].value
+      if (results[1].status === 'fulfilled') otherFinancials = results[1].value
+    } catch {
+      // Finans API hatası — boş veri ile devam et
+    }
 
     return { settlements, otherFinancials }
   }
