@@ -404,6 +404,7 @@ export class MarketplaceLogic {
         merchant_sku: (p.stockCode as string) ?? undefined,
         title: (p.title as string) ?? undefined,
         sale_price: (p.salePrice as number) ?? 0,
+        quantity: (p.quantity as number) ?? 0,
       }))
 
       const existingAnalyses = analyses.map(a => ({

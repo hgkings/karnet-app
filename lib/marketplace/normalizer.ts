@@ -264,6 +264,13 @@ export function normalizeProducts(
                 marketplace_source: marketplace,
                 auto_synced: true,
             };
+            // Stok güncelle (her sync'te)
+            const qty = typeof raw.quantity === 'number' ? raw.quantity : 0;
+            if (qty >= 0) {
+                existingInputs.stock_quantity = qty;
+                analysisUpdate.inputs = { ...existingInputs };
+            }
+
             // Only suggest sale_price update if current one is 0 or absent
             if (salePrice > 0 && (!existingInputs.sale_price || existingInputs.sale_price === 0)) {
                 analysisUpdate.inputs = { ...existingInputs, sale_price: salePrice };
@@ -294,6 +301,7 @@ export function normalizeProducts(
                     vat_pct: 20,
                     other_cost: 0,
                     payout_delay_days: defaults.payout_delay_days,
+                    stock_quantity: typeof raw.quantity === 'number' ? raw.quantity : 0,
                 },
                 outputs: {
                     commission_amount: 0,

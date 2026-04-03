@@ -258,7 +258,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                 </div>
                 <RiskBadge level={a.risk.level} />
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <div>
                   <span className="text-[10px] text-muted-foreground block">Birim Kar</span>
                   <span className={`text-sm font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-400'}`}>
@@ -277,6 +277,23 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                     {formatCurrency(a.result.monthly_net_profit)}
                   </span>
                 </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">Stok</span>
+                  {(() => {
+                    const stok = (a.input as unknown as Record<string, unknown>).stock_quantity as number | undefined;
+                    const hasStock = typeof stok === 'number';
+                    return (
+                      <span className={`text-sm font-bold tabular-nums ${
+                        !hasStock ? 'text-muted-foreground' :
+                        stok <= 0 ? 'text-red-500' :
+                        stok <= 5 ? 'text-amber-600 dark:text-amber-400' :
+                        'text-foreground'
+                      }`}>
+                        {hasStock ? stok : '—'}
+                      </span>
+                    );
+                  })()}
+                </div>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-border/30">
                 <div className="flex flex-wrap gap-1">
@@ -286,6 +303,12 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                   {a.result.monthly_net_profit <= 0 && (
                     <span className="text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">Zarar</span>
                   )}
+                  {(() => {
+                    const stok = (a.input as unknown as Record<string, unknown>).stock_quantity as number | undefined;
+                    if (typeof stok === 'number' && stok <= 0) return <span className="text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">Stok Yok</span>;
+                    if (typeof stok === 'number' && stok <= 5) return <span className="text-[9px] bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">Dusuk Stok</span>;
+                    return null;
+                  })()}
                 </div>
                 <div className="flex items-center gap-1">
                   <Link href={`/analysis/${a.id}`}>
