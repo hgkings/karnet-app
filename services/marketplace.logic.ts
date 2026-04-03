@@ -1306,13 +1306,23 @@ export class MarketplaceLogic {
     const { connectionId } = payload as { connectionId: string }
     const creds = await this.resolveCredentials(connectionId, traceId)
 
-    // Kullanıcının eşleşmiş ürünlerini çek
-    const mapRows = await this.productRepo.getMapByUserId(userId, 'trendyol')
-    const barcodes = mapRows
-      .filter(m => m.barcode && m.internal_product_id)
-      .map(m => m.barcode as string)
-      .slice(0, 50) // max 50 ürün
+    // Trendyol'dan güncel ürün listesini çek (gerçek fiyatlar için)
+    const productPage = await trendyolApi.fetchProducts(creds, 0, 200, { approved: true })
+    const trendyolProducts = productPage.content
 
+    // Barcode → ürün bilgisi haritası (Trendyol'dan gelen güncel fiyatlar)
+    const barcodeToProduct = new Map<string, { name: string; price: number }>()
+    for (const p of trendyolProducts) {
+      const barcode = (p.barcode as string) ?? ''
+      if (barcode) {
+        barcodeToProduct.set(barcode, {
+          name: (p.title as string) ?? barcode,
+          price: (p.salePrice as number) ?? 0,
+        })
+      }
+    }
+
+    const barcodes = Array.from(barcodeToProduct.keys()).slice(0, 50)
     if (barcodes.length === 0) {
       return { results: [] }
     }
@@ -1323,29 +1333,16 @@ export class MarketplaceLogic {
       buyboxPrice: number; buyboxOrder: number; hasCompetitor: boolean
     }> = []
 
-    // Ürün bilgilerini çek (fiyat için)
-    const analyses = await this.analysisRepo.findByUserId(userId)
-    const barcodeToAnalysis = new Map<string, { name: string; price: number }>()
-    for (const a of analyses) {
-      if (a.barcode) {
-        const inputs = (a.inputs ?? {}) as Record<string, unknown>
-        barcodeToAnalysis.set(a.barcode, {
-          name: a.product_name ?? 'Bilinmeyen',
-          price: (inputs.sale_price as number) ?? 0,
-        })
-      }
-    }
-
     for (let i = 0; i < barcodes.length; i += 10) {
       const batch = barcodes.slice(i, i + 10)
       try {
         const buyboxData = await trendyolApi.checkBuybox(creds, batch)
         for (const bb of buyboxData) {
-          const analysis = barcodeToAnalysis.get(bb.barcode)
+          const product = barcodeToProduct.get(bb.barcode)
           allResults.push({
             barcode: bb.barcode,
-            productName: analysis?.name ?? bb.barcode,
-            currentPrice: analysis?.price ?? 0,
+            productName: product?.name ?? bb.barcode,
+            currentPrice: product?.price ?? 0,
             buyboxPrice: bb.buyboxPrice,
             buyboxOrder: bb.buyboxOrder,
             hasCompetitor: bb.hasMultipleSeller,
