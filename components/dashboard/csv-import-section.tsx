@@ -57,7 +57,7 @@ export function CSVImportSection({ onImport }: CSVImportSectionProps) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'kar_kocu_sablon.csv';
+        a.download = 'karnet_sablon.csv';
         a.click();
         URL.revokeObjectURL(url);
         toast.success('Şablon indirildi.');

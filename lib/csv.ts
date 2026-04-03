@@ -1,6 +1,22 @@
 import { ProductInput, Marketplace } from '@/types';
 
-const EXPECTED_COLUMNS = [
+// Yeni Türkçe başlıklar
+const TURKISH_COLUMNS = [
+  'pazaryeri',
+  'urun_adi',
+  'aylik_satis_adedi',
+  'urun_maliyeti',
+  'satis_fiyati',
+  'komisyon_orani',
+  'kargo_ucreti',
+  'paketleme_maliyeti',
+  'reklam_maliyeti',
+  'iade_orani',
+  'kdv_orani',
+];
+
+// Eski İngilizce başlıklar (geriye dönük uyumluluk)
+const ENGLISH_COLUMNS = [
   'marketplace',
   'product_name',
   'monthly_sales_volume',
@@ -14,10 +30,40 @@ const EXPECTED_COLUMNS = [
   'vat_pct',
 ];
 
-export const CSV_TEMPLATE = `marketplace,product_name,monthly_sales_volume,product_cost,sale_price,commission_pct,shipping_cost,packaging_cost,ad_cost,return_rate,vat_pct
-trendyol,Ornek Urun 1,100,120,249,18,25,5,10,8,20
-hepsiburada,Ornek Urun 2,60,200,399,20,30,6,15,10,20
-amazon_tr,Ornek Urun 4,80,180,449,17,28,5,12,6,20`;
+// Eski → Yeni başlık eşlemesi (backward compatibility)
+const HEADER_ALIASES: Record<string, string> = {
+  // İngilizce → Türkçe
+  'marketplace': 'pazaryeri',
+  'product_name': 'urun_adi',
+  'monthly_sales_volume': 'aylik_satis_adedi',
+  'product_cost': 'urun_maliyeti',
+  'sale_price': 'satis_fiyati',
+  'commission_pct': 'komisyon_orani',
+  'shipping_cost': 'kargo_ucreti',
+  'packaging_cost': 'paketleme_maliyeti',
+  'ad_cost': 'reklam_maliyeti',
+  'return_rate': 'iade_orani',
+  'vat_pct': 'kdv_orani',
+  // Türkçe → Türkçe (zaten doğru)
+  'pazaryeri': 'pazaryeri',
+  'urun_adi': 'urun_adi',
+  'aylik_satis_adedi': 'aylik_satis_adedi',
+  'urun_maliyeti': 'urun_maliyeti',
+  'satis_fiyati': 'satis_fiyati',
+  'komisyon_orani': 'komisyon_orani',
+  'kargo_ucreti': 'kargo_ucreti',
+  'paketleme_maliyeti': 'paketleme_maliyeti',
+  'reklam_maliyeti': 'reklam_maliyeti',
+  'iade_orani': 'iade_orani',
+  'kdv_orani': 'kdv_orani',
+};
+
+export const CSV_TEMPLATE = `pazaryeri,urun_adi,aylik_satis_adedi,urun_maliyeti,satis_fiyati,komisyon_orani,kargo_ucreti,paketleme_maliyeti,reklam_maliyeti,iade_orani,kdv_orani
+trendyol,Samsung Galaxy A15 Kilif,150,35,129,18,15,4,8,12,20
+trendyol,Nike Spor Ayakkabi 42 Numara,45,280,599,20,25,8,15,25,20
+hepsiburada,Philips Airfryer Yag Filtresi,80,42,149,20,18,3,10,8,20
+n11,Bluetooth Kulaklik TWS,200,65,199,16,12,5,12,10,20
+amazon_tr,Organik Hindistan Cevizi Yagi 500ml,120,38,119,17,20,6,7,6,20`;
 
 const MARKETPLACE_MAP: Record<string, Marketplace> = {
   'trendyol': 'trendyol',
@@ -41,9 +87,9 @@ export function parseCSV(text: string): { data: ProductInput[]; errors: string[]
     return { data: [], errors: ['CSV dosyası en az bir başlık ve bir veri satırı içermelidir.'], missingColumns: [] };
   }
 
-  // Dosya boyutu ve satir limiti — performans korumasi
+  // Dosya boyutu ve satir limiti
   const MAX_ROWS = 500;
-  const MAX_TEXT_SIZE = 5 * 1024 * 1024; // 5 MB
+  const MAX_TEXT_SIZE = 5 * 1024 * 1024;
   if (text.length > MAX_TEXT_SIZE) {
     return { data: [], errors: ['CSV dosyası çok büyük (maks. 5 MB).'], missingColumns: [] };
   }
@@ -51,11 +97,21 @@ export function parseCSV(text: string): { data: ProductInput[]; errors: string[]
     return { data: [], errors: [`CSV dosyası en fazla ${MAX_ROWS} satır içerebilir (${lines.length - 1} satır bulundu).`], missingColumns: [] };
   }
 
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+  // Başlıkları normalize et — hem TR hem EN kabul eder
+  const rawHeaders = lines[0].split(',').map((h) => h.trim().toLowerCase());
+  const headers = rawHeaders.map(h => HEADER_ALIASES[h] ?? h);
 
-  for (const col of EXPECTED_COLUMNS) {
+  // Türkçe başlıkların varlığını kontrol et
+  for (const col of TURKISH_COLUMNS) {
     if (!headers.includes(col)) {
-      missingColumns.push(col);
+      // Eski İngilizce başlık da kabul et
+      const englishIdx = ENGLISH_COLUMNS.findIndex(
+        eng => HEADER_ALIASES[eng] === col
+      );
+      const englishName = englishIdx >= 0 ? ENGLISH_COLUMNS[englishIdx] : col;
+      if (!rawHeaders.includes(englishName)) {
+        missingColumns.push(col);
+      }
     }
   }
 
@@ -81,26 +137,26 @@ export function parseCSV(text: string): { data: ProductInput[]; errors: string[]
       row[h] = values[idx];
     });
 
-    const rawMp = row.marketplace?.toLowerCase().trim() || '';
+    const rawMp = row.pazaryeri?.toLowerCase().trim() || '';
     const marketplace = MARKETPLACE_MAP[rawMp];
 
     if (!marketplace) {
-      errors.push(`Satır ${i + 1}: Geçersiz pazaryeri "${row.marketplace}". Kabul edilenler: trendyol, hepsiburada, n11, amazon_tr, custom`);
+      errors.push(`Satır ${i + 1}: Geçersiz pazaryeri "${row.pazaryeri}". Kabul edilenler: trendyol, hepsiburada, n11, amazon_tr, custom`);
       continue;
     }
 
     const input: ProductInput = {
       marketplace,
-      product_name: row.product_name || `Ürün ${i}`,
-      monthly_sales_volume: parseFloat(row.monthly_sales_volume) || 0,
-      product_cost: parseFloat(row.product_cost) || 0,
-      sale_price: parseFloat(row.sale_price) || 0,
-      commission_pct: parseFloat(row.commission_pct) || 0,
-      shipping_cost: parseFloat(row.shipping_cost) || 0,
-      packaging_cost: parseFloat(row.packaging_cost) || 0,
-      ad_cost_per_sale: parseFloat(row.ad_cost) || 0,
-      return_rate_pct: parseFloat(row.return_rate) || 0,
-      vat_pct: parseFloat(row.vat_pct) || 20,
+      product_name: row.urun_adi || `Ürün ${i}`,
+      monthly_sales_volume: parseFloat(row.aylik_satis_adedi) || 0,
+      product_cost: parseFloat(row.urun_maliyeti) || 0,
+      sale_price: parseFloat(row.satis_fiyati) || 0,
+      commission_pct: parseFloat(row.komisyon_orani) || 0,
+      shipping_cost: parseFloat(row.kargo_ucreti) || 0,
+      packaging_cost: parseFloat(row.paketleme_maliyeti) || 0,
+      ad_cost_per_sale: parseFloat(row.reklam_maliyeti) || 0,
+      return_rate_pct: parseFloat(row.iade_orani) || 0,
+      vat_pct: parseFloat(row.kdv_orani) || 20,
       other_cost: 0,
       payout_delay_days: 14,
     };
@@ -141,7 +197,6 @@ function num(v: unknown): number {
 // Turk Excel formatinda sayi: 1.234,56
 function fmtNum(v: number, decimals = 2): string {
   const parts = v.toFixed(decimals).split('.');
-  // Binlik ayrac (nokta)
   const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   if (decimals === 0) return intPart;
   return `${intPart},${parts[1]}`;
@@ -161,46 +216,15 @@ const RISK_TR: Record<string, string> = {
 
 export function analysesToCSV(analyses: AnalysisForExport[]): string {
   const headers = [
-    // Temel Bilgiler
-    'Urun Adi',
-    'Pazaryeri',
-    'Tarih',
-    // Fiyat & Satis
-    'Satis Fiyati (TL)',
-    'Satis Fiyati KDV Haric (TL)',
-    'Aylik Satis Adedi',
-    // Maliyetler
-    'Urun Maliyeti (TL)',
-    'Kargo (TL)',
-    'Paketleme (TL)',
-    'Reklam Birim (TL)',
-    'Diger Gider (TL)',
-    // Oranlar
-    'Komisyon %',
-    'KDV %',
-    'Iade %',
-    // Hesaplanan Kesintiler
-    'Komisyon Tutari (TL)',
-    'KDV Tutari (TL)',
-    'Iade Kaybi (TL)',
-    'Servis Bedeli (TL)',
-    // Toplam Maliyet
-    'Degisken Maliyet (TL)',
-    'Toplam Birim Maliyet (TL)',
-    // Kar Metrikleri
-    'Birim Net Kar (TL)',
-    'Kar Marji %',
-    'Basabas Fiyati (TL)',
-    // Aylik Projeksiyon
-    'Aylik Ciro (TL)',
-    'Aylik Toplam Maliyet (TL)',
-    'Aylik Net Kar (TL)',
-    'Yillik Tahmini Kar (TL)',
-    // Risk
-    'Risk Skoru',
-    'Risk Seviyesi',
-    // Durum
-    'Durum',
+    'Urun Adi', 'Pazaryeri', 'Tarih',
+    'Satis Fiyati (TL)', 'Satis Fiyati KDV Haric (TL)', 'Aylik Satis Adedi',
+    'Urun Maliyeti (TL)', 'Kargo (TL)', 'Paketleme (TL)', 'Reklam Birim (TL)', 'Diger Gider (TL)',
+    'Komisyon %', 'KDV %', 'Iade %',
+    'Komisyon Tutari (TL)', 'KDV Tutari (TL)', 'Iade Kaybi (TL)', 'Servis Bedeli (TL)',
+    'Degisken Maliyet (TL)', 'Toplam Birim Maliyet (TL)',
+    'Birim Net Kar (TL)', 'Kar Marji %', 'Basabas Fiyati (TL)',
+    'Aylik Ciro (TL)', 'Aylik Toplam Maliyet (TL)', 'Aylik Net Kar (TL)', 'Yillik Tahmini Kar (TL)',
+    'Risk Skoru', 'Risk Seviyesi', 'Durum',
   ];
 
   const rows = analyses.map((a) => {
@@ -243,7 +267,6 @@ export function analysesToCSV(analyses: AnalysisForExport[]): string {
     ];
   });
 
-  // BOM ekle — Excel Turkce karakterleri dogru gostersin
   const bom = '\uFEFF';
   return bom + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
 }
