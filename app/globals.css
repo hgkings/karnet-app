@@ -155,6 +155,15 @@
     background-attachment: fixed;
   }
 
+  /* Auth input autofill — tema uyumlu */
+  .auth-input:-webkit-autofill,
+  .auth-input:-webkit-autofill:hover,
+  .auth-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 30px hsl(var(--card)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    caret-color: hsl(var(--foreground));
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'DM Sans', var(--font-geist-sans, 'Inter', system-ui, sans-serif);
     font-feature-settings: "ss01", "ss02";

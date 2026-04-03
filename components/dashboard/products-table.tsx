@@ -421,7 +421,7 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       {/* Desktop Actions */}
-                      <div className="hidden sm:flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="hidden sm:flex items-center justify-end gap-1">
                         <Link href={`/analysis/${a.id}`}>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors" title="Görüntüle">
                             <Eye className="h-4 w-4" />
