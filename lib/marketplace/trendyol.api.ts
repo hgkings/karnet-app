@@ -1420,7 +1420,7 @@ async function fetchSettlementsChunk(
     headers: Record<string, string>,
     startDate: string,
     endDate: string,
-    transactionTypes: string[] = ['Sale', 'Return', 'Commission']
+    transactionTypes: string[] = ['Sale', 'Return', 'CommissionPositive', 'CommissionNegative']
 ): Promise<SellerSettlement[]> {
     const params = new URLSearchParams()
     params.set('startDate', startDate)

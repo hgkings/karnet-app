@@ -571,31 +571,41 @@ export class MarketplaceLogic {
     let endStr: string
 
     if (startDate && endDate) {
-      startStr = startDate
-      endStr = endDate
+      // YYYY-MM-DD formatında olmalı (Trendyol beklentisi)
+      startStr = startDate.split('T')[0]
+      endStr = endDate.split('T')[0]
     } else {
       const end = new Date()
       const start = new Date(end.getTime() - (days ?? 30) * 24 * 60 * 60 * 1000)
-      startStr = start.toISOString()
-      endStr = end.toISOString()
+      startStr = start.toISOString().split('T')[0]
+      endStr = end.toISOString().split('T')[0]
     }
 
-    // Finans API hata verirse boş dizi dön (Trendyol bazen 400 dönebilir)
+    // Finans API — hata olursa boş dizi dön ama mesajı ilet
     let settlements: trendyolApi.SellerSettlement[] = []
     let otherFinancials: trendyolApi.OtherFinancial[] = []
+    let financeError: string | undefined
 
-    try {
-      const results = await Promise.allSettled([
-        trendyolApi.getSellerSettlements(creds, startStr, endStr),
-        trendyolApi.getOtherFinancials(creds, startStr, endStr),
-      ])
-      if (results[0].status === 'fulfilled') settlements = results[0].value
-      if (results[1].status === 'fulfilled') otherFinancials = results[1].value
-    } catch {
-      // Finans API hatası — boş veri ile devam et
+    const results = await Promise.allSettled([
+      trendyolApi.getSellerSettlements(creds, startStr, endStr),
+      trendyolApi.getOtherFinancials(creds, startStr, endStr),
+    ])
+
+    if (results[0].status === 'fulfilled') {
+      settlements = results[0].value
+    } else {
+      financeError = results[0].reason instanceof Error ? results[0].reason.message : 'Hakediş verisi alınamadı'
     }
 
-    return { settlements, otherFinancials }
+    if (results[1].status === 'fulfilled') {
+      otherFinancials = results[1].value
+    }
+
+    return {
+      settlements,
+      otherFinancials,
+      ...(financeError ? { warning: financeError } : {}),
+    }
   }
 
   async normalizeTrendyol(
