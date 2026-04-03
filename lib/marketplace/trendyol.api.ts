@@ -8,7 +8,6 @@
  * User-Agent: "{sellerId} - SelfIntegration" (zorunlu, 403 döner yoksa)
  *
  * Rate limit: Genel 50 req/10s + endpoint bazlı limitler
- * Mock mode: apiKey === "TRENDYOL_TEST" — gerçek API çağrısı yapılmaz.
  *
  * NEVER log credentials, auth headers, or tokens.
  */
@@ -73,8 +72,6 @@ const LABEL_BASE_URL = IS_STAGE
 const MAX_RETRIES = 3
 const INITIAL_BACKOFF_MS = 1000
 const TIMEOUT_MS = 8000 // Vercel serverless 10sn sınırı — 2sn gateway overhead için margin
-
-export const TRENDYOL_TEST_KEY = 'TRENDYOL_TEST'
 
 // ─── Sipariş Durumları (Resmi) ──────────────────────────────────
 
@@ -312,24 +309,6 @@ export interface ClaimIssueReason {
     name: string
 }
 
-// ─── Mock Data ───────────────────────────────────────────────────
-
-const MOCK_PRODUCTS = [
-    { id: '1001', barcode: 'TY-001', title: 'Samsung Galaxy S21 128GB', salePrice: 15999, listPrice: 17999, stockCount: 45, categoryName: 'Elektronik > Cep Telefonu', stockCode: 'SGS21-BLK', quantity: 45, vatRate: 20, brandId: 100, categoryId: 1001 },
-    { id: '1002', barcode: 'TY-002', title: "Levi's 501 Original Jeans", salePrice: 899, listPrice: 1199, stockCount: 120, categoryName: 'Giyim > Erkek > Pantolon', stockCode: 'LV501-32', quantity: 120, vatRate: 20, brandId: 200, categoryId: 2001 },
-    { id: '1003', barcode: 'TY-003', title: 'Philips XXL Air Fryer 7L', salePrice: 2499, listPrice: 2999, stockCount: 23, categoryName: 'Ev & Yaşam > Mutfak Aletleri', stockCode: 'PH-AF7L', quantity: 23, vatRate: 20, brandId: 300, categoryId: 3001 },
-    { id: '1004', barcode: 'TY-004', title: 'Nike Air Max 270 React', salePrice: 1299, listPrice: 1799, stockCount: 67, categoryName: 'Ayakkabı > Erkek > Spor', stockCode: 'NK-AM270-42', quantity: 67, vatRate: 20, brandId: 400, categoryId: 4001 },
-    { id: '1005', barcode: 'TY-005', title: 'Apple Watch Series 9 41mm', salePrice: 13999, listPrice: 14999, stockCount: 12, categoryName: 'Elektronik > Akıllı Saat', stockCode: 'AW-S9-41', quantity: 12, vatRate: 20, brandId: 500, categoryId: 1002 },
-]
-
-const MOCK_ORDERS = [
-    { shipmentPackageId: 1001, orderNumber: 'ORD-001', orderDate: Date.now() - 5 * 86400000, shipmentPackageStatus: 'Delivered', grossAmount: 15999, totalDiscount: 0, lines: [{ lineItemId: 1, barcode: 'TY-001', merchantSku: 'SGS21-BLK', productName: 'Samsung Galaxy S21', quantity: 1, amount: 15999, commission: 1280, vatRate: 20 }] },
-    { shipmentPackageId: 1002, orderNumber: 'ORD-002', orderDate: Date.now() - 4 * 86400000, shipmentPackageStatus: 'Delivered', grossAmount: 899, totalDiscount: 0, lines: [{ lineItemId: 2, barcode: 'TY-002', merchantSku: 'LV501-32', productName: "Levi's 501", quantity: 1, amount: 899, commission: 108, vatRate: 20 }] },
-    { shipmentPackageId: 1003, orderNumber: 'ORD-003', orderDate: Date.now() - 3 * 86400000, shipmentPackageStatus: 'Shipped', grossAmount: 2499, totalDiscount: 0, lines: [{ lineItemId: 3, barcode: 'TY-003', merchantSku: 'PH-AF7L', productName: 'Philips Air Fryer', quantity: 1, amount: 2499, commission: 250, vatRate: 20 }] },
-    { shipmentPackageId: 1004, orderNumber: 'ORD-004', orderDate: Date.now() - 2 * 86400000, shipmentPackageStatus: 'Created', grossAmount: 1299, totalDiscount: 0, lines: [{ lineItemId: 4, barcode: 'TY-004', merchantSku: 'NK-AM270-42', productName: 'Nike Air Max', quantity: 1, amount: 1299, commission: 130, vatRate: 20 }] },
-    { shipmentPackageId: 1005, orderNumber: 'ORD-005', orderDate: Date.now() - 86400000, shipmentPackageStatus: 'Cancelled', grossAmount: 13999, totalDiscount: 0, lines: [{ lineItemId: 5, barcode: 'TY-005', merchantSku: 'AW-S9-41', productName: 'Apple Watch', quantity: 1, amount: 13999, commission: 0, vatRate: 20 }] },
-]
-
 // ─── Rate Limiter ────────────────────────────────────────────────
 
 const rateLimiter = {
@@ -369,10 +348,6 @@ async function checkOrderRateLimit(): Promise<void> {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
-
-function isMockMode(creds: TrendyolCredentials): boolean {
-    return creds.apiKey === TRENDYOL_TEST_KEY
-}
 
 function buildHeaders(creds: TrendyolCredentials): Record<string, string> {
     const token = Buffer.from(`${creds.apiKey}:${creds.apiSecret}`).toString('base64')
@@ -538,14 +513,6 @@ export async function testConnection(
         }
     }
 
-    if (isMockMode(creds)) {
-        return {
-            success: true,
-            message: 'Bağlantı başarılı. Toplam 5 ürün bulundu. (Test Modu)',
-            storeName: 'Trendyol Test Mağazası',
-        }
-    }
-
     try {
         const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products?approved=true&page=0&size=1`
         const headers = buildHeaders(creds)
@@ -581,20 +548,6 @@ export async function testConnection(
 export async function getCategories(
     creds: TrendyolCredentials
 ): Promise<CategoryNode[]> {
-    if (isMockMode(creds)) {
-        return [
-            { id: 1001, name: 'Elektronik', parentId: null, subCategories: [
-                { id: 1002, name: 'Cep Telefonu', parentId: 1001, subCategories: [] },
-                { id: 1003, name: 'Akıllı Saat', parentId: 1001, subCategories: [] },
-            ]},
-            { id: 2001, name: 'Giyim', parentId: null, subCategories: [
-                { id: 2002, name: 'Erkek Pantolon', parentId: 2001, subCategories: [] },
-            ]},
-            { id: 3001, name: 'Ev & Yaşam', parentId: null, subCategories: [] },
-            { id: 4001, name: 'Ayakkabı', parentId: null, subCategories: [] },
-        ]
-    }
-
     const url = `${PRODUCT_REF_URL}/product-categories`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -614,13 +567,6 @@ export async function getCategoryAttributes(
     creds: TrendyolCredentials,
     categoryId: number
 ): Promise<CategoryAttribute[]> {
-    if (isMockMode(creds)) {
-        return [
-            { attribute: { id: 1, name: 'Renk' }, required: true, allowCustom: false, varianter: true, slicer: false, attributeValues: [{ id: 1, name: 'Siyah' }, { id: 2, name: 'Beyaz' }] },
-            { attribute: { id: 2, name: 'Beden' }, required: true, allowCustom: false, varianter: true, slicer: true, attributeValues: [{ id: 10, name: 'S' }, { id: 11, name: 'M' }, { id: 12, name: 'L' }] },
-        ]
-    }
-
     const url = `${PRODUCT_REF_URL}/product-categories/${categoryId}/attributes`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -642,17 +588,6 @@ export async function getBrands(
     page = 0,
     size = 1000
 ): Promise<{ brands: Brand[]; totalPages: number }> {
-    if (isMockMode(creds)) {
-        return {
-            brands: [
-                { id: 100, name: 'Samsung' }, { id: 200, name: "Levi's" },
-                { id: 300, name: 'Philips' }, { id: 400, name: 'Nike' },
-                { id: 500, name: 'Apple' },
-            ],
-            totalPages: 1,
-        }
-    }
-
     const url = `${PRODUCT_REF_URL}/brands?page=${page}&size=${size}`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -672,10 +607,6 @@ export async function searchBrandByName(
     creds: TrendyolCredentials,
     name: string
 ): Promise<Brand[]> {
-    if (isMockMode(creds)) {
-        return [{ id: 100, name }]
-    }
-
     const url = `${PRODUCT_REF_URL}/brands/by-name?name=${encodeURIComponent(name)}`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -726,16 +657,6 @@ export async function fetchProducts(
         throw new Error('Satıcı ID eksik. Lütfen pazaryeri ayarlarından Satıcı ID bilgisini güncelleyin.')
     }
 
-    if (isMockMode(creds)) {
-        return {
-            content: MOCK_PRODUCTS,
-            totalElements: MOCK_PRODUCTS.length,
-            totalPages: 1,
-            page: 0,
-            size,
-        }
-    }
-
     const params = new URLSearchParams()
     params.set('page', String(page))
     params.set('size', String(Math.min(size, 200)))
@@ -776,10 +697,6 @@ export async function getProductByBarcode(
     creds: TrendyolCredentials,
     barcode: string
 ): Promise<Record<string, unknown> | null> {
-    if (isMockMode(creds)) {
-        return MOCK_PRODUCTS.find(p => p.barcode === barcode) ?? null
-    }
-
     const result = await fetchProducts(creds, 0, 1, { barcode, approved: true })
     return result.content[0] ?? null
 }
@@ -814,10 +731,6 @@ export async function createProducts(
         returningAddressId?: number
     }>
 ): Promise<{ batchRequestId: string }> {
-    if (isMockMode(creds)) {
-        return { batchRequestId: 'mock-batch-create-001' }
-    }
-
     const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products`
     const headers = buildHeaders(creds)
 
@@ -858,10 +771,6 @@ export async function updateProducts(
         attributes?: Array<{ attributeId: number; attributeValueId?: number; customAttributeValue?: string }>
     }>
 ): Promise<{ batchRequestId: string }> {
-    if (isMockMode(creds)) {
-        return { batchRequestId: 'mock-batch-update-001' }
-    }
-
     const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products`
     const headers = buildHeaders(creds)
 
@@ -891,10 +800,6 @@ export async function updateStockAndPrice(
         listPrice?: number
     }>
 ): Promise<{ batchRequestId: string }> {
-    if (isMockMode(creds)) {
-        return { batchRequestId: 'mock-batch-inventory-001' }
-    }
-
     const url = `${INVENTORY_BASE_URL}/${creds.sellerId}/products/price-and-inventory`
     const headers = buildHeaders(creds)
 
@@ -918,10 +823,6 @@ export async function deleteProducts(
     creds: TrendyolCredentials,
     barcodes: string[]
 ): Promise<{ batchRequestId: string }> {
-    if (isMockMode(creds)) {
-        return { batchRequestId: 'mock-batch-delete-001' }
-    }
-
     const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products`
     const headers = buildHeaders(creds)
     const body = { items: barcodes.map(barcode => ({ barcode })) }
@@ -946,10 +847,6 @@ export async function archiveProducts(
     creds: TrendyolCredentials,
     items: Array<{ barcode: string; archived: boolean }>
 ): Promise<{ batchRequestId: string }> {
-    if (isMockMode(creds)) {
-        return { batchRequestId: 'mock-batch-archive-001' }
-    }
-
     const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products/archive-state`
     const headers = buildHeaders(creds)
 
@@ -969,10 +866,6 @@ export async function unlockProducts(
     creds: TrendyolCredentials,
     barcodes: string[]
 ): Promise<{ batchRequestId: string }> {
-    if (isMockMode(creds)) {
-        return { batchRequestId: 'mock-batch-unlock-001' }
-    }
-
     const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products/unlock`
     const headers = buildHeaders(creds)
     const body = { items: barcodes.map(barcode => ({ barcode })) }
@@ -994,15 +887,6 @@ export async function checkBuybox(
     creds: TrendyolCredentials,
     barcodes: string[]
 ): Promise<BuyboxInfo[]> {
-    if (isMockMode(creds)) {
-        return barcodes.map(barcode => ({
-            barcode,
-            buyboxOrder: 1,
-            buyboxPrice: 0,
-            hasMultipleSeller: false,
-        }))
-    }
-
     if (barcodes.length > 10) {
         throw new Error('Buybox sorgusu maksimum 10 barkod ile yapılabilir.')
     }
@@ -1029,10 +913,6 @@ export async function checkBatchStatus(
     batchId: string,
     maxDeneme = 5
 ): Promise<BatchStatus> {
-    if (isMockMode(creds)) {
-        return { basarili: 0, basarisiz: 0, bekleyen: 0, hatalar: [] }
-    }
-
     const url = `${PRODUCT_BASE_URL}/${creds.sellerId}/products/batch-requests/${batchId}`
     const headers = buildHeaders(creds)
 
@@ -1096,16 +976,6 @@ export async function fetchOrders(
         throw new Error('Satıcı ID eksik.')
     }
 
-    if (isMockMode(creds)) {
-        return {
-            content: MOCK_ORDERS,
-            totalElements: MOCK_ORDERS.length,
-            totalPages: 1,
-            page: 0,
-            size,
-        }
-    }
-
     const params = new URLSearchParams()
     params.set('startDate', String(startDate))
     params.set('endDate', String(endDate))
@@ -1153,8 +1023,6 @@ export async function fetchAllOrders(
     endDate: number,
     size = 200
 ): Promise<Record<string, unknown>[]> {
-    if (isMockMode(creds)) return MOCK_ORDERS
-
     const all: Record<string, unknown>[] = []
     const WINDOW_MS = 13 * 24 * 60 * 60 * 1000
     const MAX_PAGES = 20
@@ -1192,8 +1060,6 @@ export async function fetchAllOrders(
 export async function fetchAskidakiSiparisler(
     creds: TrendyolCredentials
 ): Promise<Record<string, unknown>[]> {
-    if (isMockMode(creds)) return []
-
     const headers = buildHeaders(creds)
     const tumSiparisler: Record<string, unknown>[] = []
     let page = 0
@@ -1236,8 +1102,6 @@ export async function updatePackageStatus(
     lines: Array<{ lineId: number; quantity: number }>,
     invoiceNumber?: string
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/shipment-packages/${packageId}`
     const headers = buildHeaders(creds)
 
@@ -1265,8 +1129,6 @@ export async function markUnsupplied(
     lines: Array<{ lineId: number; quantity: number }>,
     reasonId: number
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/shipment-packages/${packageId}/items/unsupplied`
     const headers = buildHeaders(creds)
 
@@ -1287,8 +1149,6 @@ export async function splitPackage(
     packageId: number,
     splitGroups: Array<{ orderLineId: number; quantity: number }>
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/shipment-packages/${packageId}/split-packages`
     const headers = buildHeaders(creds)
 
@@ -1311,8 +1171,6 @@ export async function updateBoxInfo(
     boxQuantity: number,
     deci: number
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/shipment-packages/${packageId}/box-info`
     const headers = buildHeaders(creds)
 
@@ -1331,8 +1189,6 @@ export async function changeCargoProvider(
     packageId: number,
     cargoProviderCode: string
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/shipment-packages/${packageId}/cargo-providers`
     const headers = buildHeaders(creds)
 
@@ -1348,10 +1204,6 @@ export async function getOrderDetail(
     creds: TrendyolCredentials,
     orderNumber: string
 ): Promise<Record<string, unknown> | null> {
-    if (isMockMode(creds)) {
-        return MOCK_ORDERS.find(o => o.orderNumber === orderNumber) ?? null
-    }
-
     const now = Date.now()
     const monthAgo = now - 30 * 24 * 60 * 60 * 1000
     const result = await fetchOrders(creds, monthAgo, now, 0, 1, { orderNumber })
@@ -1373,8 +1225,6 @@ export async function fetchAllClaims(
     endDate: Date,
     statusFilter?: string
 ): Promise<TrendyolClaim[]> {
-    if (isMockMode(creds)) return []
-
     const headers = buildHeaders(creds)
     const results: TrendyolClaim[] = []
     const WINDOW_DAYS = 13
@@ -1453,8 +1303,6 @@ export async function approveClaim(
     claimId: string,
     claimLineItemIdList: string[]
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/claims/${claimId}/items/approve`
     const headers = buildHeaders(creds)
 
@@ -1481,8 +1329,6 @@ export async function rejectClaim(
     claimItemIdList: string[],
     description: string
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/claims/${claimId}/issue`
     const headers = buildHeaders(creds)
 
@@ -1505,14 +1351,6 @@ export async function rejectClaim(
 export async function getClaimIssueReasons(
     creds: TrendyolCredentials
 ): Promise<ClaimIssueReason[]> {
-    if (isMockMode(creds)) {
-        return [
-            { id: 500, name: 'Stok tükendi' },
-            { id: 501, name: 'Ürün kusurlu' },
-            { id: 502, name: 'Fiyat hatası' },
-        ]
-    }
-
     const url = `${CLAIM_REF_URL}/claim-issue-reasons`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -1539,10 +1377,6 @@ export async function createClaim(
         excludeListing?: boolean
     }
 ): Promise<{ claimId: string; cargoTrackingNumber: string; claimItemIds: string[] }> {
-    if (isMockMode(creds)) {
-        return { claimId: 'mock-claim-001', cargoTrackingNumber: 'MOCK123', claimItemIds: ['mock-item-001'] }
-    }
-
     const url = `${ORDER_BASE_URL}/${creds.sellerId}/claims/create`
     const headers = buildHeaders(creds)
 
@@ -1629,8 +1463,6 @@ export async function getSellerSettlements(
     endDate: string,
     transactionTypes?: string[]
 ): Promise<SellerSettlement[]> {
-    if (isMockMode(creds)) return []
-
     const headers = buildHeaders(creds)
     const results: SellerSettlement[] = []
     const types = transactionTypes ?? ['Sale', 'Return', 'CommissionPositive', 'CommissionNegative']
@@ -1668,8 +1500,6 @@ export async function getOtherFinancials(
     endDate: string,
     transactionTypes?: string[]
 ): Promise<OtherFinancial[]> {
-    if (isMockMode(creds)) return []
-
     const headers = buildHeaders(creds)
     const results: OtherFinancial[] = []
     const types = transactionTypes ?? [
@@ -1727,8 +1557,6 @@ export async function getCargoInvoiceDetails(
     creds: TrendyolCredentials,
     invoiceSerialNumber: string
 ): Promise<Array<{ shipmentPackageType: string; parcelUniqueId: string; orderNumber: string; amount: number; desi: number }>> {
-    if (isMockMode(creds)) return []
-
     const url = `${FINANCE_BASE_URL}/${creds.sellerId}/cargo-invoice/${invoiceSerialNumber}/items`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -1763,10 +1591,6 @@ export async function registerWebhook(
     webhookUrl: string,
     subscribedStatuses: string[] = []
 ): Promise<WebhookRegistration> {
-    if (isMockMode(creds)) {
-        return { webhookId: 'mock-webhook-id', url: webhookUrl, subscribedStatuses }
-    }
-
     await checkRateLimit()
     const headers = buildHeaders(creds)
     const url = `${WEBHOOK_BASE_URL}/${creds.sellerId}/webhooks`
@@ -1809,8 +1633,6 @@ export async function registerWebhook(
 export async function listWebhooks(
     creds: TrendyolCredentials
 ): Promise<WebhookInfo[]> {
-    if (isMockMode(creds)) return []
-
     const url = `${WEBHOOK_BASE_URL}/${creds.sellerId}/webhooks`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -1836,8 +1658,6 @@ export async function updateWebhook(
         apiKey?: string
     }
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${WEBHOOK_BASE_URL}/${creds.sellerId}/webhooks/${webhookId}`
     const headers = buildHeaders(creds)
 
@@ -1854,8 +1674,6 @@ export async function deleteWebhook(
     creds: TrendyolCredentials,
     webhookId: string
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${WEBHOOK_BASE_URL}/${creds.sellerId}/webhooks/${webhookId}`
     const headers = buildHeaders(creds)
 
@@ -1872,8 +1690,6 @@ export async function activateWebhook(
     creds: TrendyolCredentials,
     webhookId: string
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${WEBHOOK_BASE_URL}/${creds.sellerId}/webhooks/${webhookId}/activate`
     const headers = buildHeaders(creds)
 
@@ -1890,8 +1706,6 @@ export async function deactivateWebhook(
     creds: TrendyolCredentials,
     webhookId: string
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${WEBHOOK_BASE_URL}/${creds.sellerId}/webhooks/${webhookId}/deactivate`
     const headers = buildHeaders(creds)
 
@@ -1917,8 +1731,6 @@ export async function sendInvoiceLink(
     invoiceNumber: string,
     invoiceDateTime: number
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${INVOICE_BASE_URL}/${creds.sellerId}/seller-invoice-links`
     const headers = buildHeaders(creds)
 
@@ -1945,8 +1757,6 @@ export async function deleteInvoiceLink(
     creds: TrendyolCredentials,
     shipmentPackageId: number
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${INVOICE_BASE_URL}/${creds.sellerId}/seller-invoice-links`
     const headers = buildHeaders(creds)
 
@@ -1977,10 +1787,6 @@ export async function getQuestions(
         orderByDirection?: 'ASC' | 'DESC'
     } = {}
 ): Promise<{ content: QuestionItem[]; totalElements: number; totalPages: number }> {
-    if (isMockMode(creds)) {
-        return { content: [], totalElements: 0, totalPages: 0 }
-    }
-
     const qp = new URLSearchParams()
     if (params.startDate) qp.set('startDate', String(params.startDate))
     if (params.endDate) qp.set('endDate', String(params.endDate))
@@ -2013,8 +1819,6 @@ export async function getQuestionById(
     creds: TrendyolCredentials,
     questionId: number
 ): Promise<QuestionItem | null> {
-    if (isMockMode(creds)) return null
-
     const url = `${QNA_BASE_URL}/${creds.sellerId}/questions/${questionId}`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -2034,10 +1838,6 @@ export async function answerQuestion(
     questionId: number,
     text: string
 ): Promise<{ answerId: number }> {
-    if (isMockMode(creds)) {
-        return { answerId: 0 }
-    }
-
     if (text.length < 10 || text.length > 2000) {
         throw new Error('Yanıt 10-2000 karakter arasında olmalıdır.')
     }
@@ -2071,8 +1871,6 @@ export async function createLabel(
     boxQuantity = 1,
     volumetricHeight?: number
 ): Promise<void> {
-    if (isMockMode(creds)) return
-
     const url = `${LABEL_BASE_URL}/${creds.sellerId}/common-label/${cargoTrackingNumber}`
     const headers = buildHeaders(creds)
     const body: Record<string, unknown> = { format, boxQuantity }
@@ -2091,8 +1889,6 @@ export async function getLabel(
     creds: TrendyolCredentials,
     cargoTrackingNumber: string
 ): Promise<Array<{ label: string; format: string }>> {
-    if (isMockMode(creds)) return []
-
     const url = `${LABEL_BASE_URL}/${creds.sellerId}/common-label/${cargoTrackingNumber}`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -2115,17 +1911,6 @@ export async function getLabel(
 export async function getSellerAddresses(
     creds: TrendyolCredentials
 ): Promise<SellerAddress[]> {
-    if (isMockMode(creds)) {
-        return [{
-            id: 1,
-            addressType: 'Shipment',
-            city: 'İstanbul',
-            district: 'Kadıköy',
-            fullAddress: 'Test Adres Mah. Test Sok. No:1',
-            isDefault: true,
-        }]
-    }
-
     const url = `${INVOICE_BASE_URL}/${creds.sellerId}/addresses`
     const headers = buildHeaders(creds)
     const res = await fetchWithRetry(url, headers)
@@ -2194,15 +1979,6 @@ export async function getCommissionRates(
     creds: TrendyolCredentials,
     _categoryId?: number
 ): Promise<CommissionRate[]> {
-    if (isMockMode(creds)) {
-        return [
-            { categoryId: 1, categoryName: 'Elektronik', commissionRate: 8 },
-            { categoryId: 2, categoryName: 'Giyim', commissionRate: 12 },
-            { categoryId: 3, categoryName: 'Ev & Yaşam', commissionRate: 10 },
-            { categoryId: 4, categoryName: 'Ayakkabı', commissionRate: 15 },
-        ]
-    }
-
     // Gerçek komisyon verileri sipariş satırlarından veya
     // finans settlement API'den alınmalıdır.
     // Bu fonksiyon mock veri ile geriye uyumluluğu korur.

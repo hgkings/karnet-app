@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireCronSecret } from '@/lib/api/helpers'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { decryptCredentials } from '@/lib/marketplace/crypto'
+import { decrypt } from '@/lib/db/db.helper'
 import { fetchProducts, fetchOrders, fetchAllOrders } from '@/lib/marketplace/trendyol.api'
 import { normalizeProducts, normalizeOrderMetrics, type RawProduct, type RawOrder, type ProductMapping } from '@/lib/marketplace/normalizer'
 
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
         const encryptedBlob = secrets?.[0]?.encrypted_blob
         if (!encryptedBlob) continue
 
-        const creds = decryptCredentials(encryptedBlob)
+        const creds = JSON.parse(decrypt(encryptedBlob)) as { apiKey: string; apiSecret: string; sellerId: string }
         const sellerId = creds.sellerId || conn.seller_id || ''
         if (!sellerId) continue
 

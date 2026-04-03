@@ -48,6 +48,8 @@ export async function POST(req: Request) {
       secrets_saved: true,
       connectionId: gatewayData.connectionId,
       status: gatewayData.status,
+      message: gatewayData.message,
+      storeName: gatewayData.storeName,
     })
   } catch (err: unknown) {
     return errorResponse(err)

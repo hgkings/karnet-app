@@ -49,7 +49,6 @@ const MARKETPLACE_CONFIG: Record<MarketplaceKey, {
     helpText: string;
     sellerIdErrorText: string;
     description: string;
-    testCredentials: { apiKey: string; apiSecret: string; sellerId: string };
 }> = {
     trendyol: {
         label: 'Trendyol',
@@ -64,7 +63,6 @@ const MARKETPLACE_CONFIG: Record<MarketplaceKey, {
         helpText: 'Trendyol Satıcı Paneli → Entegrasyon → API Bilgileri sayfasından API Key, API Secret ve Satıcı ID bilgilerinizi alabilirsiniz.',
         sellerIdErrorText: 'Satıcı ID zorunludur. Trendyol Satıcı Paneli → Hesabım → Mağaza Bilgileri\'nden bulabilirsiniz.',
         description: "Türkiye'nin en büyük pazaryeri",
-        testCredentials: { apiKey: 'TRENDYOL_TEST', apiSecret: 'TRENDYOL_SECRET', sellerId: '123456' },
     },
     hepsiburada: {
         label: 'Hepsiburada',
@@ -79,7 +77,6 @@ const MARKETPLACE_CONFIG: Record<MarketplaceKey, {
         helpText: 'Hepsiburada Satıcı Paneli → Hesap Bilgileri → Entegrasyon Bilgileri sayfasından kullanıcı adı, şifre ve Merchant ID bilgilerinizi alabilirsiniz.',
         sellerIdErrorText: 'Merchant ID zorunludur. Hepsiburada Satıcı Paneli → Hesap Bilgileri → Entegrasyon Bilgileri\'nden bulabilirsiniz.',
         description: "Yüksek hacimli satıcı pazaryeri",
-        testCredentials: { apiKey: 'HB_TEST', apiSecret: 'HB_PASSWORD', sellerId: 'HB_MOCK_123' },
     },
 };
 
@@ -103,7 +100,7 @@ export default function MarketplacePage() {
     const [connection, setConnection] = useState<ConnectionState | null>(null);
 
     // Sync states
-    const [testing, setTesting] = useState(false);
+    // testing state kaldırıldı — connect() otomatik doğrulama yapıyor
     const [syncingProducts, setSyncingProducts] = useState(false);
     const [syncingOrders, setSyncingOrders] = useState(false);
     const [lastLog, setLastLog] = useState<string | null>(null);
@@ -335,36 +332,26 @@ export default function MarketplacePage() {
 
             const data = await res.json();
 
-            if (res.ok && data.success && data.secrets_saved) {
+            if (res.ok && data.success) {
                 setApiKey('');
                 setApiSecret('');
                 setSellerId('');
                 setStoreName('');
 
-                // Otomatik bağlantı testi — ayrı try/catch ile (kaydetmeyi engellemez)
-                toast.success(`${mpConfig.label} anahtarları kaydedildi. Test ediliyor...`);
-                setLastLog('Anahtarlar kaydedildi, test başlatılıyor...');
-                setSaving(false);
-                setTesting(true);
-
-                try {
-                    const testRes = await fetch(`${apiBase}/test`, { method: 'POST' });
-                    const testData = await testRes.json();
-                    if (testData.success) {
-                        toast.success(testData.message || `${mpConfig.label} bağlantısı başarılı! Artık ürünlerinizi senkronize edebilirsiniz.`);
-                        setLastLog(testData.message || 'Bağlantı başarılı');
-                    } else {
-                        toast.warning(testData.error || 'Bağlantı testi başarısız. API bilgilerinizi kontrol edin.');
-                        setLastLog(testData.error || 'Test başarısız');
-                    }
-                } catch {
-                    toast.warning('Bağlantı testi zaman aşımına uğradı. "Bağlantıyı Test Et" butonu ile tekrar deneyebilirsiniz.');
-                } finally {
-                    setTesting(false);
-                    fetchStatus();
+                // connect() artık doğrudan API doğrulaması yapıyor
+                const status = data.status || 'pending_test';
+                if (status === 'connected') {
+                    toast.success(data.message || `${mpConfig.label} bağlantısı başarılı! Artık ürünlerinizi senkronize edebilirsiniz.`);
+                    setLastLog(data.message || 'Bağlantı başarılı');
+                } else if (status === 'error') {
+                    toast.error(data.message || 'API bilgileri doğrulanamadı. Lütfen kontrol edip tekrar deneyin.');
+                    setLastLog(data.message || 'Doğrulama başarısız');
+                } else {
+                    toast.warning(data.message || 'Bağlantı kaydedildi ancak doğrulama tamamlanamadı.');
+                    setLastLog(data.message || 'Doğrulama bekliyor');
                 }
-                return;
-            } else if (res.ok && data.success && !data.secrets_saved) {
+                fetchStatus();
+            } else if (res.ok && !data.success) {
                 toast.warning('Bağlantı oluşturuldu ancak güvenli anahtar kaydı doğrulanamadı. Tekrar deneyin.');
                 setLastLog('Anahtar doğrulama başarısız.');
                 fetchStatus();
@@ -409,31 +396,7 @@ export default function MarketplacePage() {
         }
     };
 
-    const handleTestConnection = async () => {
-        setTesting(true);
-        setLastLog(null);
-        try {
-            const res = await fetch(`${apiBase}/test`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                toast.success(data.message || 'Bağlantı başarılı!');
-                setLastLog(data.message);
-            } else {
-                const friendlyMsg = translateConnectionError(res.status, data.message || data.error);
-                toast.error(friendlyMsg);
-                setLastLog(data.message || data.error);
-            }
-            fetchStatus();
-        } catch (err: unknown) {
-            const errMsg = err instanceof Error ? err.message : ''
-            const msg = errMsg.toLowerCase().includes('timeout')
-                ? 'Bağlantı zaman aşımına uğradı, tekrar deneyin.'
-                : 'Bağlantı testi sırasında hata oluştu.';
-            toast.error(msg);
-        } finally {
-            setTesting(false);
-        }
-    };
+    // Test fonksiyonu kaldırıldı — connect() otomatik doğrulama yapıyor
 
     const handleSyncProducts = async () => {
         setSyncingProducts(true);
@@ -505,7 +468,7 @@ export default function MarketplacePage() {
     const isMissingInfo = isConnected && !connection?.seller_id?.trim();
     const displayStatus: DisplayStatus = isMissingInfo ? 'missing_info' : (connection?.status || 'disconnected');
     const [normalizing, setNormalizing] = useState(false);
-    const isSyncing = syncingProducts || syncingOrders || testing || normalizing || normalizingOrders;
+    const isSyncing = syncingProducts || syncingOrders || normalizing || normalizingOrders;
 
     const handleNormalizeOrders = async () => {
         setNormalizingOrders(true);
@@ -743,10 +706,6 @@ export default function MarketplacePage() {
 
                                 {/* Sync Actions */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <Button variant="outline" onClick={handleTestConnection} disabled={isSyncing} className="gap-2 h-12">
-                                        {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
-                                        Bağlantıyı Test Et
-                                    </Button>
                                     <Button variant="outline" onClick={handleSyncProducts} disabled={isSyncing} className="gap-2 h-12">
                                         {syncingProducts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
                                         Ürünleri Senkronla
@@ -1146,22 +1105,6 @@ export default function MarketplacePage() {
                                             {mpConfig.helpText}
                                         </p>
                                     </div>
-                                </div>
-
-                                {/* Test Credentials Button */}
-                                <div className="flex justify-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const tc = mpConfig.testCredentials;
-                                            setApiKey(tc.apiKey);
-                                            setApiSecret(tc.apiSecret);
-                                            setSellerId(tc.sellerId);
-                                        }}
-                                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
-                                    >
-                                        Test kimlik bilgilerini kullan
-                                    </button>
                                 </div>
 
                                 {/* Form */}

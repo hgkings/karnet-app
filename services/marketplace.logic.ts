@@ -71,7 +71,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     userId: string
-  ): Promise<{ connectionId: string; status: ConnectionStatus }> {
+  ): Promise<{ connectionId: string; status: ConnectionStatus; message?: string; storeName?: string | null }> {
     const input = payload as ConnectPayload
 
     if (!input.apiKey || !input.apiSecret || !input.sellerId) {
@@ -146,7 +146,43 @@ export class MarketplaceLogic {
       await this.marketplaceRepo.storeSecrets(connectionId, encryptedBlob)
     }
 
-    return { connectionId, status: 'pending_test' as ConnectionStatus }
+    // Otomatik doğrulama — API'ye test isteği at, sonuca göre durumu güncelle
+    try {
+      const creds = { apiKey: input.apiKey, apiSecret: input.apiSecret, sellerId: input.sellerId }
+
+      let testResult: { success: boolean; message: string; storeName?: string }
+
+      if (input.marketplace === 'trendyol') {
+        testResult = await trendyolApi.testConnection(creds)
+      } else {
+        const hbCreds = { apiKey: creds.apiKey, apiSecret: creds.apiSecret, merchantId: creds.sellerId }
+        testResult = await hepsiburadaApi.testConnection(hbCreds)
+      }
+
+      if (testResult.success) {
+        await this.marketplaceRepo.updateConnectionStatus(connectionId, 'connected')
+        return {
+          connectionId,
+          status: 'connected' as ConnectionStatus,
+          message: testResult.message,
+          storeName: testResult.storeName ?? null,
+        }
+      } else {
+        await this.marketplaceRepo.updateConnectionStatus(connectionId, 'error')
+        return {
+          connectionId,
+          status: 'error' as ConnectionStatus,
+          message: testResult.message || 'API bilgileri doğrulanamadı',
+        }
+      }
+    } catch (_verifyError) {
+      // Doğrulama başarısız olsa bile bağlantı kaydedildi
+      return {
+        connectionId,
+        status: 'pending_test' as ConnectionStatus,
+        message: 'Bağlantı kaydedildi ancak doğrulama zaman aşımına uğradı. Daha sonra tekrar deneyin.',
+      }
+    }
   }
 
   /**
@@ -161,78 +197,6 @@ export class MarketplaceLogic {
     const { connectionId } = payload as { connectionId: string }
     await this.marketplaceRepo.deleteConnection(connectionId, userId)
     return { success: true }
-  }
-
-  /**
-   * Baglanti testi yapar.
-   * API'ye basit bir istek atarak credentials'in gecerli oldugunu dogrular.
-   */
-  async testConnection(
-    traceId: string,
-    payload: unknown,
-    userId: string
-  ): Promise<{ success: boolean; storeName: string | null }> {
-    const { connectionId } = payload as {
-      marketplace: MarketplaceType
-      connectionId: string
-    }
-
-    if (!connectionId) {
-      throw new ServiceError('Bağlantı ID\'si zorunludur', {
-        code: 'MISSING_CONNECTION_ID',
-        statusCode: 400,
-        traceId,
-      })
-    }
-
-    // Ownership kontrolu
-    const connection = await this.marketplaceRepo.getConnectionByIdAndUserId(connectionId, userId)
-    if (!connection) {
-      throw new ServiceError('Bağlantı bulunamadı', {
-        code: 'CONNECTION_NOT_FOUND',
-        statusCode: 404,
-        traceId,
-      })
-    }
-
-    // Credentials coz
-    const secretRow = await this.marketplaceRepo.getSecrets(connectionId)
-    if (!secretRow) {
-      throw new ServiceError('Bağlantı bilgileri bulunamadı', {
-        code: 'SECRETS_NOT_FOUND',
-        statusCode: 404,
-        traceId,
-      })
-    }
-
-    const credentials = JSON.parse(decrypt(secretRow.encrypted_blob)) as {
-      apiKey: string
-      apiSecret: string
-      sellerId: string
-    }
-
-    let result: { success: boolean; message: string; storeName?: string }
-
-    if (connection.marketplace === 'trendyol') {
-      result = await trendyolApi.testConnection(credentials)
-    } else if (connection.marketplace === 'hepsiburada') {
-      const hbCreds = { apiKey: credentials.apiKey, apiSecret: credentials.apiSecret, merchantId: credentials.sellerId }
-      result = await hepsiburadaApi.testConnection(hbCreds)
-    } else {
-      throw new ServiceError('Desteklenmeyen pazaryeri', {
-        code: 'UNSUPPORTED_MARKETPLACE',
-        statusCode: 400,
-        traceId,
-      })
-    }
-
-    if (result.success) {
-      await this.marketplaceRepo.updateConnectionStatus(connectionId, 'connected')
-    } else {
-      await this.marketplaceRepo.updateConnectionStatus(connectionId, 'error')
-    }
-
-    return { success: result.success, storeName: result.storeName ?? null }
   }
 
   /**
@@ -459,29 +423,6 @@ export class MarketplaceLogic {
       const msg = error instanceof Error ? error.message : 'Bilinmeyen hata'
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
       throw error
-    }
-  }
-
-  async testTrendyol(
-    traceId: string,
-    payload: unknown,
-    _userId: string
-  ): Promise<{ message: string; storeName: string | null }> {
-    const { connectionId } = payload as { connectionId: string }
-    const creds = await this.resolveCredentials(connectionId, traceId)
-
-    const result = await trendyolApi.testConnection(creds)
-    if (result.success) {
-      await this.marketplaceRepo.updateConnectionStatus(connectionId, 'connected')
-      return { message: result.message, storeName: result.storeName ?? null }
-    } else {
-      await this.marketplaceRepo.updateConnectionStatus(connectionId, 'error')
-      // ServiceError fırlat — gateway { success: false, error } döndürecek
-      throw new ServiceError(result.message || 'Bağlantı testi başarısız', {
-        code: 'CONNECTION_TEST_FAILED',
-        statusCode: 400,
-        traceId,
-      })
     }
   }
 
@@ -830,36 +771,6 @@ export class MarketplaceLogic {
       await this.marketplaceRepo.updateSyncLog(syncLog.id, 'failed', msg)
       throw error
     }
-  }
-
-  async testHepsiburada(
-    traceId: string,
-    payload: unknown,
-    _userId: string
-  ): Promise<{ message: string; storeName: string | null }> {
-    const { connectionId } = payload as { connectionId: string }
-    const creds = await this.resolveHbCredentials(connectionId, traceId)
-
-    const result = await hepsiburadaApi.testConnection(creds)
-    if (result.success) {
-      await this.marketplaceRepo.updateConnectionStatus(connectionId, 'connected')
-      return { message: result.message, storeName: result.storeName ?? null }
-    } else {
-      await this.marketplaceRepo.updateConnectionStatus(connectionId, 'error')
-      throw new ServiceError(result.message || 'Bağlantı testi başarısız', {
-        code: 'CONNECTION_TEST_FAILED',
-        statusCode: 400,
-        traceId,
-      })
-    }
-  }
-
-  async testHepsiburadaConnection(
-    traceId: string,
-    payload: unknown,
-    userId: string
-  ): Promise<{ message: string; storeName: string | null }> {
-    return this.testHepsiburada(traceId, payload, userId)
   }
 
   async getHepsiburadaClaims(

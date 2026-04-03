@@ -14,8 +14,6 @@
  * Rate limit: 10.000 req / 10s
  *   429 → X-RateLimit-Reset header'ından saniye oku, bekle, max 3 retry
  *
- * Mock mode: apiKey === "HB_TEST" — gerçek API çağrısı yapılmaz.
- *
  * NEVER log credentials, auth headers, or tokens.
  */
 
@@ -39,8 +37,6 @@ const HB_LIST =
 const MAX_RETRIES = 3;
 const TIMEOUT_MS = 10000;
 
-export const HB_TEST_KEY = 'HB_TEST';
-
 /**
  * HepsiburadaCredentials
  * apiKey    = Hepsiburada merchant username (HEPSIBURADA_USERNAME)
@@ -60,36 +56,7 @@ export const HB_STATUS_MAP: Record<string, string> = {
     Cancelled: 'iptal',
 };
 
-// ─── Mock Data ───────────────────────────────────────────────
-
-const MOCK_PRODUCTS = [
-    { merchantSku: 'SONY-WH1000XM5', hepsiburadaSku: 'HB-SKU-001', urunAdi: 'Sony WH-1000XM5 Kablosuz Kulaklık', fiyat: 8499, stok: 34 },
-    { merchantSku: 'ADIDAS-UB22-42', hepsiburadaSku: 'HB-SKU-002', urunAdi: 'Adidas Ultraboost 22 Spor Ayakkabı', fiyat: 2199, stok: 56 },
-    { merchantSku: 'TEFAL-CP6000', hepsiburadaSku: 'HB-SKU-003', urunAdi: 'Tefal Comfort Pressure Cooker 6L', fiyat: 1299, stok: 18 },
-    { merchantSku: 'MAVI-101-32', hepsiburadaSku: 'HB-SKU-004', urunAdi: 'Mavi Jeans 101 Slim Fit Pantolon', fiyat: 699, stok: 89 },
-    { merchantSku: 'DYSON-V11', hepsiburadaSku: 'HB-SKU-005', urunAdi: 'Dyson V11 Kablosuz Süpürge', fiyat: 14999, stok: 7 },
-];
-
-const MOCK_ORDERS = [
-    { siparisNo: 'HB-ORD-001', siparisTarihi: '2026-03-01T10:00:00Z', musteriAdi: 'Test Müşteri', hepsiburadaSku: 'HB-SKU-001', birimFiyat: 8499, adet: 1, toplamFiyat: 8499 },
-    { siparisNo: 'HB-ORD-002', siparisTarihi: '2026-03-02T14:30:00Z', musteriAdi: 'Test Müşteri 2', hepsiburadaSku: 'HB-SKU-002', birimFiyat: 2199, adet: 1, toplamFiyat: 2199 },
-    { siparisNo: 'HB-ORD-003', siparisTarihi: '2026-03-04T09:15:00Z', musteriAdi: 'Test Müşteri 3', hepsiburadaSku: 'HB-SKU-003', birimFiyat: 1299, adet: 2, toplamFiyat: 2598 },
-];
-
-const MOCK_FINANCE_RECORDS = [
-    { hepsiburadaSku: 'HB-SKU-001', paketNo: 'PKG-001', siparisNo: 'HB-ORD-001', toplamTutar: 8499, vergiTutari: 1529.82, netTutar: 6969.18, aciklama: 'Payment', gelirMi: true, faturaMi: true },
-    { hepsiburadaSku: 'HB-SKU-001', paketNo: 'PKG-001', siparisNo: 'HB-ORD-001', toplamTutar: 765, vergiTutari: 137.7, netTutar: 627.3, aciklama: 'Komisyon', gelirMi: false, faturaMi: true },
-];
-
-const MOCK_CLAIMS = [
-    { talepId: 'CLM-001', siparisNo: 'HB-ORD-001', hepsiburadaSku: 'HB-SKU-001', talepTipi: 'Return', talepDurumu: 'Approved', talepNedeni: 'Ürün hasarlı', adet: 1, talepTarihi: '2026-03-10T10:00:00Z', birimFiyat: 8499 },
-];
-
 // ─── Helpers ─────────────────────────────────────────────────
-
-function isMockMode(creds: HepsiburadaCredentials): boolean {
-    return creds.apiKey === HB_TEST_KEY;
-}
 
 /**
  * HTTP Basic Auth header üretir.
@@ -205,14 +172,6 @@ function getHbErrorMessage(status: number): string {
 export async function testConnection(
     creds: HepsiburadaCredentials
 ): Promise<{ success: boolean; message: string; storeName?: string }> {
-    if (isMockMode(creds)) {
-        return {
-            success: true,
-            message: 'Bağlantı başarılı. (Test Modu)',
-            storeName: 'Hepsiburada Test Mağazası',
-        };
-    }
-
     try {
         const url = `${HB_OMS}/orders/merchantid/${creds.merchantId}?offset=0&limit=1`;
         const headers = buildHeaders(creds);
@@ -251,16 +210,6 @@ export async function fetchProducts(
     page = 0,
     size = 100
 ): Promise<HepsiburadaProductPage> {
-    if (isMockMode(creds)) {
-        return {
-            content: MOCK_PRODUCTS,
-            totalElements: MOCK_PRODUCTS.length,
-            totalPages: 1,
-            page: 0,
-            size,
-        };
-    }
-
     const offset = page * size;
     const url = `${HB_LIST}/listings/merchantid/${creds.merchantId}?offset=${offset}&limit=${size}`;
     const headers = buildHeaders(creds);
@@ -287,10 +236,6 @@ export async function fetchProducts(
 export async function fetchAllProducts(
     creds: HepsiburadaCredentials
 ): Promise<{ items: Record<string, unknown>[]; totalCount: number }> {
-    if (isMockMode(creds)) {
-        return { items: MOCK_PRODUCTS, totalCount: MOCK_PRODUCTS.length };
-    }
-
     const headers = buildHeaders(creds);
     const allItems: Record<string, unknown>[] = [];
     const PAGE_SIZE = 100;
@@ -344,16 +289,6 @@ export async function fetchOrders(
     page = 0,
     size = 100
 ): Promise<HepsiburadaOrderPage> {
-    if (isMockMode(creds)) {
-        return {
-            content: MOCK_ORDERS,
-            totalElements: MOCK_ORDERS.length,
-            totalPages: 1,
-            page: 0,
-            size,
-        };
-    }
-
     const offset = page * size;
     const start = formatHbDate(new Date(startDate));
     const end = formatHbDate(new Date(endDate));
@@ -385,8 +320,6 @@ export async function fetchAllOrders(
     endDate: Date,
     status?: string
 ): Promise<Record<string, unknown>[]> {
-    if (isMockMode(creds)) return MOCK_ORDERS;
-
     const headers = buildHeaders(creds);
     const allOrders: Record<string, unknown>[] = [];
     const WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 gün
@@ -472,13 +405,6 @@ export async function getFinanceRecords(
     endDate: Date,
     types = 'Payment,Commission,Return'
 ): Promise<HepsiburadaFinanceSummary> {
-    if (isMockMode(creds)) {
-        return {
-            records: MOCK_FINANCE_RECORDS,
-            toplamlar: { toplamGelir: 6969.18, toplamGider: 627.3, toplamKomisyon: 627.3, toplamIade: 0 },
-        };
-    }
-
     const headers = buildHeaders(creds);
     const allRecords: Record<string, unknown>[] = [];
     const WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
@@ -578,17 +504,6 @@ export async function getClaims(
     startDate: Date,
     endDate: Date
 ): Promise<HepsiburadaClaimSummary> {
-    if (isMockMode(creds)) {
-        return {
-            iadeListesi: MOCK_CLAIMS,
-            ozet: {
-                toplamTalep: 1,
-                toplamIadeTutari: 8499,
-                tipDagilimi: { Return: 1 },
-            },
-        };
-    }
-
     const headers = buildHeaders(creds);
     const allClaims: Record<string, unknown>[] = [];
     const PAGE_SIZE = 100;
@@ -660,15 +575,6 @@ export async function getCommissionRates(
     creds: HepsiburadaCredentials,
     _categoryId?: number
 ): Promise<HBCommissionRate[]> {
-    if (isMockMode(creds)) {
-        return [
-            { categoryId: 1, categoryName: 'Elektronik', commissionRate: 9 },
-            { categoryId: 2, categoryName: 'Spor', commissionRate: 11 },
-            { categoryId: 3, categoryName: 'Ev & Yaşam', commissionRate: 13 },
-            { categoryId: 4, categoryName: 'Giyim', commissionRate: 16 },
-        ];
-    }
-
     return [];
 }
 
@@ -676,10 +582,6 @@ export async function getProductBySku(
     creds: HepsiburadaCredentials,
     sku: string
 ): Promise<Record<string, unknown> | null> {
-    if (isMockMode(creds)) {
-        return MOCK_PRODUCTS.find(p => p.merchantSku === sku) ?? null;
-    }
-
     const url = `${HB_LIST}/listings/merchantid/${creds.merchantId}?offset=0&limit=1&merchantSku=${encodeURIComponent(sku)}`;
     const headers = buildHeaders(creds);
     const res = await hbFetch(url, { headers });
@@ -695,10 +597,6 @@ export async function getOrderDetail(
     creds: HepsiburadaCredentials,
     orderId: string
 ): Promise<Record<string, unknown> | null> {
-    if (isMockMode(creds)) {
-        return MOCK_ORDERS.find(o => o.siparisNo === orderId) ?? null;
-    }
-
     const url = `${HB_OMS}/orders/merchantid/${creds.merchantId}?offset=0&limit=1&orderNumber=${encodeURIComponent(orderId)}`;
     const headers = buildHeaders(creds);
     const res = await hbFetch(url, { headers });

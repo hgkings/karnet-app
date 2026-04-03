@@ -258,6 +258,12 @@ Auth proxy kodu local'de hazir ve test edildi ama production'a DEPLOY EDILMEDI.
 | 04-03 | Opus 4.6 | ULTRA-8: any tipi temizlendi — 3 yer catch(err:any)→catch(err:unknown), data as any[]→explicit type | app/marketplace/page.tsx | — |
 | 04-03 | Opus 4.6 | ULTRA-9: Unsupplied orders response parse — data.orders eklendi (gateway formatiyla uyumlu) | app/marketplace/page.tsx | — |
 | 04-03 | Opus 4.6 | VERIFY-1: Finans tarih filtresi duzeltildi — getTrendyolFinance artik startDate/endDate kabul ediyor, gun parametresi URL'lere eklendi | services/marketplace.logic.ts, app/marketplace/page.tsx | — |
+| 04-03 | Opus 4.6 | MOCK-1: Tum test/mock kodu kaldirildi — TRENDYOL_TEST_KEY, HB_TEST_KEY, isMockMode, MOCK_PRODUCTS/ORDERS, 60+ mock check blogu | lib/marketplace/trendyol.api.ts, lib/marketplace/hepsiburada.api.ts | — |
+| 04-03 | Opus 4.6 | MOCK-2: Test route'lari silindi — trendyol/test, hepsiburada/test, hepsiburada/test-connection | 3 dizin silindi | — |
+| 04-03 | Opus 4.6 | MOCK-3: testConnection/testTrendyol/testHepsiburada metotlari silindi — dogrulama connect() icine entegre edildi | services/marketplace.logic.ts | — |
+| 04-03 | Opus 4.6 | MOCK-4: UI'dan test butonu, test credentials butonu, handleTestConnection silindi | app/marketplace/page.tsx | — |
+| 04-03 | Opus 4.6 | MOCK-5: connect() artik otomatik dogrulama yapiyor — API key gir → kaydet → Trendyol'a istek → baglanti durumu | services/marketplace.logic.ts | — |
+| 04-03 | Opus 4.6 | MOCK-6: Cron route decryptCredentials (hex) → decrypt (base64) duzeltildi — sifreleme format uyumu | app/api/marketplace/cron/route.ts | — |
 | 04-03 | Opus 4.6 | ENRICH-1: enrichAnalysesWithRealData() metodu — siparis+iade'den gercek komisyon, iade orani, aylik satis hesaplama | services/marketplace.logic.ts | — |
 | 04-03 | Opus 4.6 | ENRICH-2: /api/marketplace/trendyol/enrich + /hepsiburada/enrich route'lari | app/api/marketplace/*/enrich/route.ts (YENI) | — |
 | 04-03 | Opus 4.6 | ENRICH-3: Finans sayfasina "Gercek Veri" sekmesi — aciklama, guncelle butonu, detay tablosu (eski→yeni deger) | app/finance/page.tsx | — |
