@@ -1,4 +1,4 @@
-import { requireAuth, callGatewayV1Format, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
+import { requireAuth, callGatewayWithSuccess, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const startDate = searchParams.get('startDate') ?? undefined
     const endDate = searchParams.get('endDate') ?? undefined
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'getTrendyolFinance', {
+    return callGatewayWithSuccess('marketplace' as ServiceName, 'getTrendyolFinance', {
       connectionId, days, startDate, endDate,
     }, user.id)
   } catch (err: unknown) {

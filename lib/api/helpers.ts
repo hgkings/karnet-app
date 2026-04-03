@@ -120,6 +120,40 @@ export async function resolveConnectionId(
   return data.id as string
 }
 
+/**
+ * Gateway uzerinden servis cagirip UI-uyumlu { success, ...data } formatinda dondurur.
+ * callGatewayV1Format data'yi duz dondurur, bu wrapper UI'in beklediği
+ * success/error alanlarini ekler.
+ */
+export async function callGatewayWithSuccess(
+  serviceName: import('@/lib/gateway/types').ServiceName,
+  method: string,
+  payload: unknown,
+  userId: string
+): Promise<Response> {
+  await ensureGateway2()
+  const { gateway } = await import('@/lib/gateway/gateway.adapter')
+  const result = await gateway.handle(serviceName, method, payload, userId)
+
+  if (!result.success) {
+    return Response.json(
+      { success: false, error: result.error ?? 'İşlem başarısız' },
+      { status: 400 }
+    )
+  }
+
+  // Data'yı success ile birlikte döndür
+  const data = (result.data && typeof result.data === 'object') ? result.data : {}
+  return Response.json({ success: true, ...(data as Record<string, unknown>) })
+}
+
+async function ensureGateway2() {
+  if (_gatewayReady) return
+  const { initializeServices } = await import('@/services/registry')
+  initializeServices()
+  _gatewayReady = true
+}
+
 // Gateway singleton — ilk cagride import edilir, sonra cache'lenir
 let _gatewayReady = false
 async function ensureGateway() {

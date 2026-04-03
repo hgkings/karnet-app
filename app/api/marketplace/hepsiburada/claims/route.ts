@@ -1,4 +1,4 @@
-import { requireAuth, callGatewayV1Format, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
+import { requireAuth, callGatewayWithSuccess, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
 
 export const dynamic = 'force-dynamic'
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('gun') ?? '90')
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'getHepsiburadaClaims', { connectionId, days }, user.id)
+    return callGatewayWithSuccess('marketplace' as ServiceName, 'getHepsiburadaClaims', { connectionId, days }, user.id)
   } catch (err: unknown) {
     return errorResponse(err)
   }

@@ -1,4 +1,4 @@
-import { requireAuth, callGatewayV1Format, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
+import { requireAuth, callGatewayV1Format, callGatewayWithSuccess, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
 import { ConnectMarketplaceSchema } from '@/lib/validators/schemas/marketplace.schema'
 
@@ -10,7 +10,7 @@ export async function GET() {
     const user = await requireAuth()
     if (user instanceof Response) return user
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'getStatus', { marketplace: 'trendyol' }, user.id)
+    return callGatewayWithSuccess('marketplace' as ServiceName, 'getStatus', { marketplace: 'trendyol' }, user.id)
   } catch (err: unknown) {
     return errorResponse(err)
   }
@@ -32,7 +32,24 @@ export async function POST(req: Request) {
       )
     }
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'connect', parsed.data, user.id)
+    // Gateway'den gelen { connectionId, status } formatını UI'ın beklediği formata dönüştür
+    const gatewayRes = await callGatewayV1Format('marketplace' as ServiceName, 'connect', parsed.data, user.id)
+    const gatewayData = await gatewayRes.json() as Record<string, unknown>
+
+    if (gatewayData.error) {
+      return Response.json({
+        success: false,
+        error: (gatewayData.error as string) || 'Bağlantı oluşturulamadı',
+        error_code: 'connection_upsert_failed',
+      }, { status: 400 })
+    }
+
+    return Response.json({
+      success: true,
+      secrets_saved: true,
+      connectionId: gatewayData.connectionId,
+      status: gatewayData.status,
+    })
   } catch (err: unknown) {
     return errorResponse(err)
   }
@@ -50,7 +67,7 @@ export async function DELETE() {
       return Response.json({ success: true })
     }
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'disconnect', { connectionId }, user.id)
+    return callGatewayWithSuccess('marketplace' as ServiceName, 'disconnect', { connectionId }, user.id)
   } catch (err: unknown) {
     return errorResponse(err)
   }

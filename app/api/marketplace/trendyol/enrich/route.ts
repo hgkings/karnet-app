@@ -1,4 +1,4 @@
-import { requireAuth, callGatewayV1Format, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
+import { requireAuth, callGatewayWithSuccess, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
 
 export const dynamic = 'force-dynamic'
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       // empty body — days defaults to 90
     }
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'enrichAnalysesWithRealData', {
+    return callGatewayWithSuccess('marketplace' as ServiceName, 'enrichAnalysesWithRealData', {
       connectionId,
       marketplace: 'trendyol',
       days: body.days ?? 90,

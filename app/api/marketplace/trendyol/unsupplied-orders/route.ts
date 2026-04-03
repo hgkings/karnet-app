@@ -1,4 +1,4 @@
-import { requireAuth, callGatewayV1Format, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
+import { requireAuth, callGatewayWithSuccess, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
 import type { ServiceName } from '@/lib/gateway/types'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export async function GET() {
     const connectionId = await resolveConnectionId(user.id, 'trendyol')
     if (connectionId instanceof Response) return connectionId
 
-    return callGatewayV1Format('marketplace' as ServiceName, 'getTrendyolUnsuppliedOrders', { connectionId }, user.id)
+    return callGatewayWithSuccess('marketplace' as ServiceName, 'getTrendyolUnsuppliedOrders', { connectionId }, user.id)
   } catch (err: unknown) {
     return errorResponse(err)
   }
