@@ -24,7 +24,8 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal
+  MoreHorizontal,
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -243,17 +244,34 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
           paginatedData.map((a) => (
             <div key={a.id} className="rounded-xl border border-border/40 bg-card p-3.5 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <Link href={`/analysis/${a.id}`} className="hover:underline">
-                    <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
-                  </Link>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded text-muted-foreground">
-                      {getMarketplaceLabel(a.input.marketplace)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {new Date(a.createdAt).toLocaleDateString('tr-TR')}
-                    </span>
+                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                  {(() => {
+                    const imgUrl = (a.input as unknown as Record<string, unknown>).image_url as string | undefined;
+                    return imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt=""
+                        className="w-10 h-10 rounded-lg object-cover border border-border/30 shrink-0 bg-muted/20"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg border border-border/30 shrink-0 bg-muted/20 flex items-center justify-center">
+                        <Package className="h-4 w-4 text-muted-foreground/40" />
+                      </div>
+                    );
+                  })()}
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/analysis/${a.id}`} className="hover:underline">
+                      <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
+                    </Link>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded text-muted-foreground">
+                        {getMarketplaceLabel(a.input.marketplace)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(a.createdAt).toLocaleDateString('tr-TR')}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <RiskBadge level={a.risk.level} />
