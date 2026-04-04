@@ -454,24 +454,6 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                         </span>
                       </div>
 
-                      {/* Health Tags */}
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {a.result.margin_pct >= 20 && (a.risk.level === 'safe' || a.risk.level === 'moderate') && (
-                          <span className="inline-flex items-center rounded-sm bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">
-                            ⭐ Yıldız
-                          </span>
-                        )}
-                        {a.result.monthly_net_profit > 0 && (a.result.margin_pct < 10 || a.risk.level === 'risky' || a.risk.level === 'dangerous') && (
-                          <span className="inline-flex items-center rounded-sm bg-orange-500/10 px-1.5 py-0.5 text-[10px] font-medium text-orange-400">
-                            ⚠️ İnce Çizgi
-                          </span>
-                        )}
-                        {a.result.monthly_net_profit <= 0 && (
-                          <span className="inline-flex items-center rounded-sm bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-400">
-                            Zarar
-                          </span>
-                        )}
-                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="inline-flex items-center rounded-full bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/40 whitespace-nowrap">
