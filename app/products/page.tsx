@@ -197,7 +197,13 @@ export default function ProductsPage() {
               const item = { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl };
               if (p.barcode) map.set(p.barcode, item);
               if (p.stockCode && p.stockCode !== p.barcode) map.set(p.stockCode, item);
-              if (p.title) map.set(p.title.toLowerCase(), item);
+              if (p.title) {
+                map.set(p.title.toLowerCase(), item);
+                // Normalize: boşluk/tire temizle, sadece alfanümerik
+                const norm = p.title.toLowerCase().replace(/[\s\-_./]+/g, '');
+                if (norm) map.set(norm, item);
+              }
+              if (p.id) map.set(p.id, item);
             }
             return map;
           })() : undefined}
