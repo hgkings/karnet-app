@@ -535,10 +535,20 @@ export class MarketplaceLogic {
     const { connectionId, days } = payload as { connectionId: string; days?: number }
     const creds = await this.resolveCredentials(connectionId, traceId)
 
-    const end = Date.now()
-    const start = end - (days ?? 30) * 24 * 60 * 60 * 1000
-    const result = await trendyolApi.fetchOrders(creds, start, end, 0, 1)
-    return { totalOrders: result.totalElements }
+    const endTs = Date.now()
+    const startTs = endTs - (days ?? 30) * 24 * 60 * 60 * 1000
+    const WINDOW_MS = 13 * 24 * 60 * 60 * 1000 // Trendyol max 2 hafta — 13 gün güvenli
+
+    let totalOrders = 0
+    let windowStart = startTs
+    while (windowStart < endTs) {
+      const windowEnd = Math.min(windowStart + WINDOW_MS, endTs)
+      const result = await trendyolApi.fetchOrders(creds, windowStart, windowEnd, 0, 1)
+      totalOrders += result.totalElements
+      windowStart = windowEnd
+    }
+
+    return { totalOrders }
   }
 
   async getTrendyolClaims(
