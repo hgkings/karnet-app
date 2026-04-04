@@ -25,7 +25,8 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
-  Package
+  Package,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -291,6 +292,11 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                         Stok: {stok}
                       </span>
                     )}
+                    {stock?.salePrice != null && stock.salePrice > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-primary/10 text-primary">
+                        {formatCurrency(stock.salePrice)}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <RiskBadge level={a.risk.level} />
@@ -469,6 +475,20 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                             Stok: {stok}
                           </span>
                         )}
+                        {stock?.salePrice != null && stock.salePrice > 0 && (() => {
+                          const analysisSalePrice = Number((inputs.sale_price as number) ?? 0);
+                          const priceDiff = Math.abs(stock.salePrice - analysisSalePrice);
+                          return (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                              {formatCurrency(stock.salePrice)}
+                              {priceDiff > 1 && (
+                                <span className="text-amber-500" aria-label="Trendyol fiyatı analiz fiyatından farklı">
+                                  <AlertTriangle className="h-3 w-3" />
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </td>
                     <td className={`px-4 py-3.5 text-right font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-400'}`}>
