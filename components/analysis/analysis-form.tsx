@@ -585,42 +585,9 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
               {customRateMap.size > 0 && <span className="text-emerald-700 dark:text-emerald-400"> ✓ işaretliler kişisel oranlarınızı kullanıyor.</span>}
             </p>
 
-            {/* Commission rate disclaimer */}
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs space-y-1.5">
-              <p className="font-semibold text-amber-700 dark:text-amber-400">
-                ⚠️ Bu oranlar genel tahmindir. Gerçek komisyon oranınız için:
-              </p>
-              <ul className="space-y-1 text-amber-700 dark:text-amber-400">
-                <li>
-                  <span className="font-medium">Trendyol →</span>{' '}
-                  <a href="https://akademi.trendyol.com/satici-bilgi-merkezi/detay/trendyol-komisyonlari" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                    akademi.trendyol.com/satici-bilgi-merkezi/detay/trendyol-komisyonlari
-                  </a>
-                </li>
-                <li>
-                  <span className="font-medium">Hepsiburada →</span>{' '}
-                  <a href="https://merchant.hepsiburada.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                    merchant.hepsiburada.com
-                  </a>
-                  {' '}→ Yardım → Komisyon Oranları
-                </li>
-                <li>
-                  <span className="font-medium">n11 →</span>{' '}
-                  <a href="https://magazadestek.n11.com/s/komisyon-oranlari" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                    magazadestek.n11.com/s/komisyon-oranlari
-                  </a>
-                </li>
-                <li>
-                  <span className="font-medium">Amazon TR →</span>{' '}
-                  <a href="https://sellercentral.amazon.com.tr" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                    sellercentral.amazon.com.tr
-                  </a>
-                </li>
-              </ul>
-              <p className="text-amber-500">
-                Komisyon oranını yukarıdaki alandan manuel düzeltebilirsiniz.
-              </p>
-            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Komisyon oranları tahmini değerlerdir. Kesin oranınızı satıcı panelinizden kontrol edip yukarıdan güncelleyebilirsiniz.
+            </p>
 
           </div>
         )}
