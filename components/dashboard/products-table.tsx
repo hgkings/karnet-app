@@ -356,6 +356,8 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                   Ürün Detayı
                 </th>
                 <th className="hidden px-4 py-3.5 text-left font-semibold sm:table-cell">Pazaryeri</th>
+                <th className="hidden px-4 py-3.5 text-center font-semibold sm:table-cell">Stok</th>
+                <th className="hidden px-4 py-3.5 text-right font-semibold sm:table-cell">Ürün Fiyatı</th>
 
                 <th
                   className="px-4 py-3.5 text-right font-semibold cursor-pointer select-none group"
@@ -398,7 +400,7 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
             <tbody className="divide-y relative">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="h-32 text-center text-muted-foreground">
+                  <td colSpan={9} className="h-32 text-center text-muted-foreground">
                     Sonuç bulunamadı.
                     <Button variant="link" onClick={() => {
                       setSearchTerm('');
@@ -469,37 +471,43 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                       </div>
                     </td>
                     <td className="hidden px-4 py-3.5 sm:table-cell">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="inline-flex items-center rounded-full bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/40">
-                          {getMarketplaceLabel(a.input.marketplace)}
+                      <span className="inline-flex items-center rounded-full bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/40">
+                        {getMarketplaceLabel(a.input.marketplace)}
+                      </span>
+                    </td>
+                    <td className="hidden px-4 py-3.5 text-center sm:table-cell">
+                      {typeof stok === 'number' ? (
+                        <span className={cn(
+                          'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
+                          stok <= 0
+                            ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                            : stok <= 10
+                              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                              : 'bg-muted/30 text-muted-foreground'
+                        )}>
+                          {stok}
                         </span>
-                        {typeof stok === 'number' && (
-                          <span className={cn(
-                            'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
-                            stok <= 0
-                              ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                              : stok <= 10
-                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
-                                : 'bg-muted/30 text-muted-foreground'
-                          )}>
-                            Stok: {stok}
+                      ) : (
+                        <span className="text-xs text-muted-foreground/40">—</span>
+                      )}
+                    </td>
+                    <td className="hidden px-4 py-3.5 text-right sm:table-cell">
+                      {stock?.salePrice != null && stock.salePrice > 0 ? (() => {
+                        const analysisSalePrice = Number((inputs.sale_price as number) ?? 0);
+                        const priceDiff = Math.abs(stock.salePrice - analysisSalePrice);
+                        return (
+                          <span className="inline-flex items-center gap-1 text-sm font-bold tabular-nums text-foreground">
+                            {formatCurrency(stock.salePrice)}
+                            {priceDiff > 1 && (
+                              <span className="text-amber-500" aria-label="Trendyol fiyatı analiz fiyatından farklı">
+                                <AlertTriangle className="h-3 w-3" />
+                              </span>
+                            )}
                           </span>
-                        )}
-                        {stock?.salePrice != null && stock.salePrice > 0 && (() => {
-                          const analysisSalePrice = Number((inputs.sale_price as number) ?? 0);
-                          const priceDiff = Math.abs(stock.salePrice - analysisSalePrice);
-                          return (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                              {formatCurrency(stock.salePrice)}
-                              {priceDiff > 1 && (
-                                <span className="text-amber-500" aria-label="Trendyol fiyatı analiz fiyatından farklı">
-                                  <AlertTriangle className="h-3 w-3" />
-                                </span>
-                              )}
-                            </span>
-                          );
-                        })()}
-                      </div>
+                        );
+                      })() : (
+                        <span className="text-xs text-muted-foreground/40">—</span>
+                      )}
                     </td>
                     <td className={`px-4 py-3.5 text-right font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-400'}`}>
                       {formatCurrency(a.result.unit_net_profit)}
