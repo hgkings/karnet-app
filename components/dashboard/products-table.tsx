@@ -35,15 +35,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+export interface StockItem {
+  barcode: string;
+  quantity: number;
+  salePrice: number;
+  imageUrl: string | null;
+}
+
 interface ProductsTableProps {
   analyses: Analysis[];
   onDelete?: (id: string) => void;
+  stockMap?: Map<string, StockItem>;
 }
 
 type SortField = 'monthly_net_profit' | 'margin_pct' | 'risk_score' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 
-export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
+export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTableProps) {
   // --- States ---
   const [searchTerm, setSearchTerm] = useState('');
   const [marketplaceFilter, setMarketplaceFilter] = useState<string>('all');
@@ -243,40 +251,49 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
         ) : (
           paginatedData.map((a) => (
             <div key={a.id} className="rounded-xl border border-border/40 bg-card p-3.5 space-y-2.5">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                  {(() => {
-                    const imgUrl = (a.input as unknown as Record<string, unknown>).image_url as string | undefined;
-                    return imgUrl ? (
-                      <img
-                        src={imgUrl}
-                        alt=""
-                        className="w-10 h-10 rounded-lg object-cover border border-border/30 shrink-0 bg-muted/20"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg border border-border/30 shrink-0 bg-muted/20 flex items-center justify-center">
-                        <Package className="h-4 w-4 text-muted-foreground/40" />
+              {(() => {
+                // stockMap'ten veya inputs'tan veri al
+                const barcode = (a.input as unknown as Record<string, unknown>).barcode as string | undefined;
+                const sku = (a.input as unknown as Record<string, unknown>).merchant_sku as string | undefined;
+                const stock = stockMap?.get(barcode ?? '') ?? stockMap?.get(sku ?? '');
+                const imgUrl = stock?.imageUrl ?? (a.input as unknown as Record<string, unknown>).image_url as string | undefined;
+                const stok = stock?.quantity ?? (a.input as unknown as Record<string, unknown>).stock_quantity as number | undefined;
+
+                return (
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                      {imgUrl ? (
+                        <img src={imgUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-border/30 shrink-0 bg-muted/20" loading="lazy" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg border border-border/30 shrink-0 bg-muted/20 flex items-center justify-center">
+                          <Package className="h-4 w-4 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <Link href={`/analysis/${a.id}`} className="hover:underline">
+                          <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
+                        </Link>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded text-muted-foreground">
+                            {getMarketplaceLabel(a.input.marketplace)}
+                          </span>
+                          {typeof stok === 'number' && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                              stok <= 0 ? 'bg-red-500/10 text-red-500' :
+                              stok <= 5 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' :
+                              'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                            }`}>
+                              Stok: {stok}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    );
-                  })()}
-                  <div className="min-w-0 flex-1">
-                    <Link href={`/analysis/${a.id}`} className="hover:underline">
-                      <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
-                    </Link>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded text-muted-foreground">
-                        {getMarketplaceLabel(a.input.marketplace)}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(a.createdAt).toLocaleDateString('tr-TR')}
-                      </span>
                     </div>
+                    <RiskBadge level={a.risk.level} />
                   </div>
-                </div>
-                <RiskBadge level={a.risk.level} />
-              </div>
-              <div className="grid grid-cols-4 gap-2">
+                );
+              })()}
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <span className="text-[10px] text-muted-foreground block">Birim Kar</span>
                   <span className={`text-sm font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-400'}`}>
@@ -295,23 +312,6 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                     {formatCurrency(a.result.monthly_net_profit)}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground block">Stok</span>
-                  {(() => {
-                    const stok = (a.input as unknown as Record<string, unknown>).stock_quantity as number | undefined;
-                    const hasStock = typeof stok === 'number';
-                    return (
-                      <span className={`text-sm font-bold tabular-nums ${
-                        !hasStock ? 'text-muted-foreground' :
-                        stok <= 0 ? 'text-red-500' :
-                        stok <= 5 ? 'text-amber-600 dark:text-amber-400' :
-                        'text-foreground'
-                      }`}>
-                        {hasStock ? stok : '—'}
-                      </span>
-                    );
-                  })()}
-                </div>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-border/30">
                 <div className="flex flex-wrap gap-1">
@@ -321,12 +321,6 @@ export function ProductsTable({ analyses, onDelete }: ProductsTableProps) {
                   {a.result.monthly_net_profit <= 0 && (
                     <span className="text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">Zarar</span>
                   )}
-                  {(() => {
-                    const stok = (a.input as unknown as Record<string, unknown>).stock_quantity as number | undefined;
-                    if (typeof stok === 'number' && stok <= 0) return <span className="text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">Stok Yok</span>;
-                    if (typeof stok === 'number' && stok <= 5) return <span className="text-[9px] bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">Dusuk Stok</span>;
-                    return null;
-                  })()}
                 </div>
                 <div className="flex items-center gap-1">
                   <Link href={`/analysis/${a.id}`}>
