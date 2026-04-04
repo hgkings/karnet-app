@@ -390,14 +390,31 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                   </td>
                 </tr>
               ) : (
-                paginatedData.map((a) => (
+                paginatedData.map((a) => {
+                  const inputs = a.input as unknown as Record<string, unknown>;
+                  const barcode = (inputs.barcode as string) ?? '';
+                  const sku = (inputs.merchant_sku as string) ?? '';
+                  const stock = stockMap?.get(barcode) ?? stockMap?.get(sku);
+                  const imgUrl = stock?.imageUrl ?? (inputs.image_url as string | undefined);
+                  const stok = stock?.quantity ?? (inputs.stock_quantity as number | undefined);
+
+                  return (
                   <tr key={a.id} className="transition-colors hover:bg-muted/10 group">
                     <td className="px-4 py-3.5">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs">{a.input.product_name}</span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">
-                          {new Date(a.createdAt).toLocaleDateString('tr-TR')}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        {imgUrl ? (
+                          <img src={imgUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-border/30 shrink-0 bg-muted/20" loading="lazy" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg border border-border/30 shrink-0 bg-muted/20 flex items-center justify-center">
+                            <Package className="h-4 w-4 text-muted-foreground/30" />
+                          </div>
+                        )}
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs">{a.input.product_name}</span>
+                          <span className="text-[10px] text-muted-foreground mt-0.5">
+                            {new Date(a.createdAt).toLocaleDateString('tr-TR')}
+                          </span>
+                        </div>
                       </div>
                       <div className="mt-1 sm:hidden">
                         <span className="inline-flex items-center rounded-md bg-muted/30 px-2 py-1 text-[10px] font-medium text-muted-foreground">
@@ -425,9 +442,23 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                       </div>
                     </td>
                     <td className="hidden px-4 py-3.5 sm:table-cell">
-                      <span className="inline-flex items-center rounded-full bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/40">
-                        {getMarketplaceLabel(a.input.marketplace)}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center rounded-full bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/40">
+                          {getMarketplaceLabel(a.input.marketplace)}
+                        </span>
+                        {typeof stok === 'number' && (
+                          <span className={cn(
+                            'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
+                            stok <= 0
+                              ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                              : stok <= 10
+                                ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+                                : 'bg-muted/30 text-muted-foreground'
+                          )}>
+                            Stok: {stok}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className={`px-4 py-3.5 text-right font-bold tabular-nums ${a.result.unit_net_profit >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-400'}`}>
                       {formatCurrency(a.result.unit_net_profit)}
@@ -491,7 +522,7 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                       </div>
                     </td>
                   </tr>
-                ))
+                )})
               )}
             </tbody>
           </table>
