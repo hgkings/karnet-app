@@ -250,12 +250,14 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
       ]);
       const claimJson = await claimRes.json();
       const finJson = await finRes.json();
-      const iadeSayisi: number = claimJson?.ozet?.toplamIadeSayisi ?? 0;
-      const siparisAdedi: number = (finJson?.data ?? []).length;
+      const iadeSayisi: number = (claimJson?.claims as unknown[] | undefined)?.length ?? 0;
+      const siparisAdedi: number = (finJson?.settlements as unknown[] | undefined)?.length ?? 0;
       if (siparisAdedi > 0) {
         const oran = Math.round((iadeSayisi / siparisAdedi) * 1000) / 10;
         handleFieldChange('return_rate_pct', oran);
         toast.success(`İade oranı Trendyol'dan çekildi: %${oran}`);
+      } else if (iadeSayisi > 0) {
+        toast.info(`${iadeSayisi} iade bulundu ama hakediş verisi yok. İade oranı hesaplanamadı.`);
       } else {
         toast.error('Yeterli sipariş verisi bulunamadı.');
       }
