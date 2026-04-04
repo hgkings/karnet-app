@@ -40,6 +40,7 @@ export interface StockItem {
   quantity: number;
   salePrice: number;
   imageUrl: string | null;
+  productUrl: string | null;
 }
 
 interface ProductsTableProps {
@@ -268,9 +269,15 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <Link href={`/analysis/${a.id}`} className="hover:underline">
-                    <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
-                  </Link>
+                  {stock?.productUrl ? (
+                    <a href={stock.productUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
+                    </a>
+                  ) : (
+                    <Link href={`/analysis/${a.id}`} className="hover:underline">
+                      <span className="font-semibold text-sm block truncate">{a.input.product_name}</span>
+                    </Link>
+                  )}
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[10px] bg-muted/30 px-1.5 py-0.5 rounded text-muted-foreground">
                       {getMarketplaceLabel(a.input.marketplace)}
@@ -410,7 +417,11 @@ export function ProductsTable({ analyses, onDelete, stockMap }: ProductsTablePro
                           </div>
                         )}
                         <div className="flex flex-col min-w-0">
-                          <Link href={`/analysis/${a.id}`} className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs hover:text-primary hover:underline transition-colors">{a.input.product_name}</Link>
+                          {stock?.productUrl ? (
+                            <a href={stock.productUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs hover:text-primary hover:underline transition-colors">{a.input.product_name}</a>
+                          ) : (
+                            <Link href={`/analysis/${a.id}`} className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs hover:text-primary hover:underline transition-colors">{a.input.product_name}</Link>
+                          )}
                           <span className="text-[10px] text-muted-foreground mt-0.5">
                             {new Date(a.createdAt).toLocaleDateString('tr-TR')}
                           </span>

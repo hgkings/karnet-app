@@ -33,6 +33,7 @@ export default function ProductsPage() {
       id: string; title: string; barcode: string; stockCode: string;
       salePrice: number; listPrice: number; quantity: number;
       imageUrl: string | null; categoryName: string; brand: string;
+      productUrl: string | null;
     }>;
   } | null>(null);
 
@@ -190,7 +191,7 @@ export default function ProductsPage() {
         <ProductsTable
           analyses={analyses}
           onDelete={handleDelete}
-          stockMap={stockData ? new Map(stockData.products.map(p => [p.barcode, { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl }])) : undefined}
+          stockMap={stockData ? new Map(stockData.products.map(p => [p.barcode, { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl }])) : undefined}
         />
 
       </div>
