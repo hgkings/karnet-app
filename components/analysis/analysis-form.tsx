@@ -413,15 +413,6 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                 <Badge className="bg-primary hover:bg-primary text-xs px-2.5 py-1">PRO AYARLAR</Badge>
                 <span className="text-xs text-muted-foreground">İleri düzey KDV ve iade yönetimi</span>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-xs text-primary font-semibold gap-1.5 self-start sm:self-auto"
-                onClick={() => setShowProAdvanced(!showProAdvanced)}
-              >
-                {showProAdvanced ? <><ChevronUp className="h-4 w-4" /> Basitleştir</> : <><ChevronDown className="h-4 w-4" /> Detaylar</>}
-              </Button>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -471,63 +462,6 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
               </div>
             </div>
 
-            {showProAdvanced && (
-              <div className="pt-2 animate-in fade-in duration-300">
-                <Separator className="mb-6" />
-                <h4 className="text-sm font-bold mb-4">Gider Bazlı KDV Ayarları</h4>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {[
-                    { id: 'shipping', label: 'Kargo', inc: 'shipping_includes_vat', pct: 'shipping_vat_pct' },
-                    { id: 'packaging', label: 'Paketleme', inc: 'packaging_includes_vat', pct: 'packaging_vat_pct' },
-                    { id: 'ad', label: 'Reklam', inc: 'ad_includes_vat', pct: 'ad_vat_pct' },
-                    { id: 'other', label: 'Diğer', inc: 'other_cost_includes_vat', pct: 'other_cost_vat_pct' },
-                  ].map((item) => (
-                    <div key={item.id} className="rounded-xl border border-border/40 bg-card p-4 space-y-3">
-                      <div className="flex items-center justify-between border-b pb-2.5">
-                        <span className="text-sm font-semibold">{item.label}</span>
-                        <Switch
-                          checked={input[item.inc as keyof ProductInput] !== false}
-                          onCheckedChange={(v) => handleFieldChange(item.inc as keyof ProductInput, v)}
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground flex-1">KDV Dahil</span>
-                        <div className="relative w-20">
-                          <Input
-                            className="h-9 px-2 text-sm pr-5"
-                            type="number"
-                            value={(input[item.pct as keyof ProductInput] as number) ?? 20}
-                            onChange={(e) => handleFieldChange(item.pct as keyof ProductInput, parseFloat(e.target.value))}
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 rounded-xl border bg-amber-500/10 p-5">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <Info className="h-4 w-4 text-amber-600" />
-                    <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Ek İade Maliyeti</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <p className="text-xs text-amber-700 dark:text-amber-400/80 flex-1 leading-relaxed">
-                      Müşteri iade ettiğinde cebinizden çıkan ekstra kargo veya operasyon bedeli (birim başına).
-                    </p>
-                    <div className="relative w-28 shrink-0">
-                      <Input
-                        type="number"
-                        value={input.return_extra_cost ?? 0}
-                        onChange={(e) => handleFieldChange('return_extra_cost', parseFloat(e.target.value))}
-                        className="h-10 border-amber-500/20 pr-6"
-                      />
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-amber-600">₺</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
