@@ -552,65 +552,6 @@ export default function AnalysisResultPage() {
               </div>
             </div>
 
-            {/* Rakip Analizi — Pro özellik */}
-            <ProLockedSection feature="competitorTracking" title="Rakip Analizi" description="Rakip fiyat takibi ve otomatik buybox verisi ile kârlılık optimizasyonu">
-            <div className="rounded-xl border border-border/40 bg-card p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User2 className="h-4 w-4 text-primary" />
-                  <h3 className="text-sm font-semibold text-foreground">Rakip analizi</h3>
-                </div>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSaveCompetitor} disabled={saving}>
-                  <Save className="h-3 w-3" />
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Rakip Adı</Label>
-                  <Input className="h-8 text-xs" placeholder="Örn: MegaSatıcı" value={compName} onChange={e => setCompName(e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Rakip Fiyatı</Label>
-                  <Input className="h-8 text-xs tabular-nums" type="number" min={0} value={compPrice || ''} onChange={e => { const v = parseFloat(e.target.value); setCompPrice(isNaN(v) || v < 0 ? 0 : v); }} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Konum</Label>
-                  <Select value={targetPos} onValueChange={(v: string) => setTargetPos(v as 'cheaper' | 'same' | 'premium')}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cheaper">Daha Ucuz</SelectItem>
-                      <SelectItem value="same">Aynı Fiyat</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {compPrice > 0 && (
-                  <div className="pt-2 border-t mt-2">
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="text-muted-foreground">Fark:</span>
-                      <span className={input.sale_price > compPrice ? 'text-red-400' : 'text-emerald-700 dark:text-emerald-400'}>
-                        {formatCurrency(input.sale_price - compPrice)}
-                      </span>
-                    </div>
-                    {(() => {
-                      let suggested = compPrice;
-                      if (targetPos === 'cheaper') suggested = compPrice * 0.97;
-                      if (targetPos === 'premium') suggested = compPrice * 1.05;
-                      return (
-                        <Button size="sm" variant="secondary" className="w-full text-xs h-7" onClick={() => handleApplySuggestedPrice(suggested)} disabled={saving}>
-                          <Rocket className="mr-1.5 h-3 w-3" /> {formatCurrency(suggested)} Uygula
-                        </Button>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-            </div>
-            </ProLockedSection>
 
           </div>
         </div>
