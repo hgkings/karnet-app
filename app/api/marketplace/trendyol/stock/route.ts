@@ -58,12 +58,9 @@ export async function GET() {
           imageUrl: images[0]?.url ?? null,
           categoryName: (p.categoryName as string) ?? '',
           brand: (p.brand as string) ?? '',
-          productUrl: (() => {
-            const variants = (p.variants as Array<Record<string, unknown>>) ?? []
-            if (variants[0]?.productUrl) return String(variants[0].productUrl)
-            const cid = p.contentId ?? p.id
-            return cid ? `https://www.trendyol.com/-p-${cid}` : null
-          })(),
+          productUrl: p.productUrl
+            ? String(p.productUrl)
+            : (p.productContentId ? `https://www.trendyol.com/-p-${p.productContentId}` : null),
         })
       }
       totalPages = result.totalPages
