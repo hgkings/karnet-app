@@ -511,9 +511,19 @@ export class MarketplaceLogic {
         })
       }
 
-      // Otomatik satış adedini güncelle
+      // Otomatik satış adedini güncelle + monthly_sales_volume'a yaz
       for (const update of result.autoSalesUpdates) {
-        await this.analysisRepo.update(update.productId, { auto_sales_qty: update.netQty })
+        const analysis = await this.analysisRepo.findByIdAndUserId(update.productId, userId)
+        if (analysis && update.netQty > 0) {
+          const inputs = (analysis.inputs ?? {}) as Record<string, unknown>
+          inputs.monthly_sales_volume = update.netQty
+          await this.analysisRepo.update(update.productId, {
+            auto_sales_qty: update.netQty,
+            inputs,
+          })
+        } else {
+          await this.analysisRepo.update(update.productId, { auto_sales_qty: update.netQty })
+        }
       }
 
       const count = orders.length

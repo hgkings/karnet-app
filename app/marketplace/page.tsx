@@ -409,6 +409,20 @@ export default function MarketplacePage() {
                 const msg = data.message || (count ? `${count} ürün senkronize edildi!` : 'Ürünler senkronize edildi!');
                 toast.success(msg);
                 setLastLog(msg);
+
+                // Otomatik sipariş verisi çek (satış adetleri için)
+                try {
+                    toast.info('Satış verileri çekiliyor...');
+                    const orderRes = await fetch(`${apiBase}/sync-orders`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({}),
+                    });
+                    const orderData = await orderRes.json();
+                    if (orderData.success) {
+                        toast.success(orderData.message || 'Satış verileri güncellendi!');
+                    }
+                } catch { /* sipariş sync opsiyonel — hata olursa sessiz devam */ }
             } else {
                 toast.error(data.error || 'Ürün senkronizasyonu başarısız.');
                 setLastLog(data.error);

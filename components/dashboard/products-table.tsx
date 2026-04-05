@@ -443,6 +443,7 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                 <th className="min-w-[100px] px-4 py-3.5 text-left font-semibold">Pazaryeri</th>
                 <th className="min-w-[70px] px-4 py-3.5 text-center font-semibold">Stok</th>
                 <th className="min-w-[110px] px-4 py-3.5 text-right font-semibold">Ürün Fiyatı</th>
+                <th className="min-w-[90px] px-4 py-3.5 text-center font-semibold">Aylık Satış</th>
 
                 <th
                   className="min-w-[100px] px-4 py-3.5 text-right font-semibold cursor-pointer select-none group"
@@ -488,7 +489,7 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
             <tbody className="divide-y relative">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="h-32 text-center text-muted-foreground">
+                  <td colSpan={11} className="h-32 text-center text-muted-foreground">
                     Sonuç bulunamadı.
                     <Button variant="link" onClick={() => {
                       setSearchTerm('');
@@ -581,6 +582,16 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                           </span>
                         );
                       })() : (
+                        <span className="text-xs text-muted-foreground/40">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      {a.input.monthly_sales_volume > 0 ? (
+                        <span className="text-sm font-bold tabular-nums text-foreground">
+                          {a.input.monthly_sales_volume}
+                          <span className="text-[10px] text-muted-foreground ml-0.5">/ ay</span>
+                        </span>
+                      ) : (
                         <span className="text-xs text-muted-foreground/40">—</span>
                       )}
                     </td>
