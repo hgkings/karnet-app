@@ -309,11 +309,7 @@ export default function ProductsPage() {
                 {stockLoading ? 'Çekiliyor...' : 'Stok Güncelle'}
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleExportJSON} disabled={analyses.length === 0} className="whitespace-nowrap">
-              <Download className="mr-1.5 h-4 w-4" />
-              JSON
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExportXLSX} disabled={analyses.length === 0} className="whitespace-nowrap">
+<Button variant="outline" size="sm" onClick={handleExportXLSX} disabled={analyses.length === 0} className="whitespace-nowrap">
               <Download className="mr-1.5 h-4 w-4" />
               {isPro ? 'Excel' : 'Excel (Pro)'}
             </Button>
