@@ -737,16 +737,16 @@ export class MarketplaceLogic {
     const now = Date.now()
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
     const yesterdayStart = new Date(todayStart); yesterdayStart.setDate(yesterdayStart.getDate() - 1)
-    const twoDaysAgo = new Date(todayStart); twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000
     const WINDOW_MS = 13 * 24 * 60 * 60 * 1000
 
-    // Son 3 günün siparişlerini çek (bugün + dün + önceki gün)
+    // Son 30 günün siparişlerini çek (13 günlük pencerelerle)
     const allOrders: Array<Record<string, unknown>> = []
-    let wStart = twoDaysAgo.getTime()
+    let wStart = thirtyDaysAgo
     while (wStart < now) {
       const wEnd = Math.min(wStart + WINDOW_MS, now)
       let pg = 0; let tp = 1
-      while (pg < tp && pg < 5) {
+      while (pg < tp && pg < 10) {
         const result = await trendyolApi.fetchOrders(creds, wStart, wEnd, pg, 200)
         allOrders.push(...result.content)
         tp = result.totalPages; pg++
@@ -754,7 +754,6 @@ export class MarketplaceLogic {
       wStart = wEnd
     }
 
-    // Bugünkü ve dünkü siparişleri ayır
     let todayCount = 0; let yesterdayCount = 0
     let shipped = 0; let pending = 0; let cancelled = 0; let pendingOver24h = 0
 
@@ -767,9 +766,12 @@ export class MarketplaceLogic {
       if (orderDate >= todayStart.getTime()) todayCount++
       else if (orderDate >= yesterdayStart.getTime()) yesterdayCount++
 
-      if (status === 'Shipped' || status === 'Delivered') shipped++
-      else if (status === 'Cancelled') cancelled++
-      else if (status === 'Created' || status === 'Picking') {
+      // Kargolanan + teslim edilen
+      if (status === 'Shipped' || status === 'Delivered' || status === 'AtCollectionPoint') shipped++
+      // İptal
+      else if (status === 'Cancelled' || status === 'Returned' || status === 'ReturnAccepted' || status === 'ReturnedAndRefunded' || status === 'UnSupplied') cancelled++
+      // Bekleyen (tüm aktif statüler)
+      else if (status === 'Created' || status === 'Picking' || status === 'Awaiting' || status === 'Invoiced' || status === 'UnPacked') {
         pending++
         if (orderDate > 0 && orderDate < h24Ago) pendingOver24h++
       }
