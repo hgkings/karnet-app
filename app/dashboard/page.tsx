@@ -17,7 +17,7 @@ import {
   Calendar, CheckCircle, FileText, Download, Plus,
   Star, AlertTriangle, TrendingDown, ArrowRight,
   Store, ExternalLink, Loader2,
-  ShoppingBag, Truck, Clock, XCircle, Zap
+  ShoppingBag, Truck, Clock, XCircle, Zap, Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -43,7 +43,7 @@ function getNameFromEmail(email?: string): string {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { analyses, loading, refresh } = useAlerts();
   const [trendyolConn, setTrendyolConn] = useState<ConnStatus>({ status: 'disconnected' });
   const [stockMap, setStockMap] = useState<Map<string, StockItem> | undefined>();
@@ -56,6 +56,8 @@ export default function DashboardPage() {
     totalRevenue: number; revenueChange: number; revenueGoal: number; goalPercent: number;
   } | null>(null);
   const isPro = isProUser(user);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -99,12 +101,24 @@ export default function DashboardPage() {
       .then(data => { if (data?.success) setOrderSummary(data); })
       .catch(() => {});
 
-    // Günlük kâr verisini çek
+    // Günlük kar verisini cek
     fetch('/api/marketplace/trendyol/daily-profit')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.success) setDailyProfit(data); })
       .catch(() => {});
   }, [isPro]);
+
+  const handleSaveGoal = async () => {
+    const val = parseFloat(goalInput);
+    if (isNaN(val) || val < 0) { toast.error('Gecerli bir hedef girin.'); return; }
+    const res = await updateProfile({ revenue_goal: val });
+    if (res.success) {
+      toast.success('Ciro hedefi kaydedildi.');
+      setEditingGoal(false);
+    } else {
+      toast.error('Hedef kaydedilemedi.');
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Bu analizi silmek istediginize emin misiniz?')) return;
@@ -304,11 +318,40 @@ export default function DashboardPage() {
                 )}
               </div>
               <div className="text-right">
-                <div className="text-[11px] text-muted-foreground">Hedef: {formatCurrency(dailyProfit?.revenueGoal ?? 60000)}</div>
-                <div className="w-24 h-1.5 bg-muted/30 rounded-full mt-1.5 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${dailyProfit?.goalPercent ?? 0}%` }} />
-                </div>
-                <div className="text-[10px] text-emerald-600 mt-0.5">%{dailyProfit?.goalPercent ?? 0} tamamlandi</div>
+                {editingGoal ? (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      className="w-24 h-7 text-xs text-foreground bg-muted/20 border border-border/40 rounded px-2"
+                      value={goalInput}
+                      onChange={e => setGoalInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSaveGoal(); if (e.key === 'Escape') setEditingGoal(false); }}
+                      autoFocus
+                      placeholder="60000"
+                    />
+                    <button onClick={handleSaveGoal} className="text-[10px] text-emerald-600 font-medium">Kaydet</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setGoalInput(String(user?.revenue_goal ?? 60000)); setEditingGoal(true); }}
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Hedef: {formatCurrency(user?.revenue_goal ?? 60000)}
+                    <Pencil size={10} />
+                  </button>
+                )}
+                {(() => {
+                  const goal = user?.revenue_goal ?? 60000;
+                  const pct = goal > 0 ? Math.min(100, Math.round(((dailyProfit?.totalRevenue ?? 0) / goal) * 100)) : 0;
+                  return (
+                    <>
+                      <div className="w-24 h-1.5 bg-muted/30 rounded-full mt-1.5 overflow-hidden ml-auto">
+                        <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="text-[10px] text-emerald-600 mt-0.5">%{pct} tamamlandi</div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 

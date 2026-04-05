@@ -67,6 +67,7 @@ export interface ProfileRow {
   monthly_profit_target: number | null
   default_return_rate: number | null
   default_ads_cost: number | null
+  revenue_goal: number | null
 }
 
 export interface AnalysisRow {

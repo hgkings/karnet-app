@@ -28,6 +28,7 @@ export interface User {
   default_ads_cost?: number;
   fixed_cost_monthly?: number;
   target_profit_monthly?: number;
+  revenue_goal?: number;
 }
 
 export interface CashPlanRow {

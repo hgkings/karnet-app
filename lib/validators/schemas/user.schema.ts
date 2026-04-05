@@ -18,6 +18,7 @@ export const UpdateProfileSchema = z.object({
   fixed_cost_monthly: z.number().min(0).finite().max(10_000_000).optional(),
   target_profit_monthly: z.number().min(0).finite().max(10_000_000).optional(),
   monthly_profit_target: z.number().min(0).finite().max(10_000_000).optional(),
+  revenue_goal: z.number().min(0).finite().max(100_000_000).optional(),
   plan: z.enum(['free', 'starter', 'pro', 'admin']).optional(),
 }).strict()
 
