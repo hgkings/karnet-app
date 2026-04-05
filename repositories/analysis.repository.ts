@@ -49,6 +49,20 @@ export class AnalysisRepository extends BaseRepository<AnalysisRow> {
     }
   }
 
+  async bulkDeleteByUserIdAndIds(ids: string[], userId: string): Promise<number> {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .delete()
+      .in('id', ids)
+      .eq('user_id', userId)
+      .select('id')
+
+    if (error) {
+      throw new Error(`Toplu silme başarısız: ${error.message}`)
+    }
+    return data?.length ?? 0
+  }
+
   async upsertRow(data: Partial<AnalysisRow> & { id: string; user_id: string }): Promise<AnalysisRow> {
     const { data: result, error } = await this.supabase
       .from(this.tableName)

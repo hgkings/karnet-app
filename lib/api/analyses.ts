@@ -99,6 +99,15 @@ export async function deleteAnalysis(id: string): Promise<{ success: boolean; er
   return res.json()
 }
 
+export async function bulkDeleteAnalyses(ids: string[]): Promise<{ success: boolean; deleted?: number; error?: string }> {
+  const res = await fetch('/api/analyses/bulk-delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids }),
+  })
+  return res.json()
+}
+
 export async function getUserAnalysisCount(): Promise<number> {
   const res = await fetch('/api/analyses/count')
   if (!res.ok) return 0

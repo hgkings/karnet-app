@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useAlerts } from '@/contexts/alert-context';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProductsTable } from '@/components/dashboard/products-table';
-import { deleteAnalysis, saveAnalysis, generateId } from '@/lib/api/analyses';
+import { deleteAnalysis, bulkDeleteAnalyses, saveAnalysis, generateId } from '@/lib/api/analyses';
 import { parseCSV, analysesToXLSX, analysesToJSON, exportCostTemplate, parseCostTemplate, exportBlankTemplate } from '@/lib/csv';
 import { ProductInput } from '@/types';
 import { calculateProfit } from '@/utils/calculations';
@@ -74,12 +74,12 @@ export default function ProductsPage() {
 
   const handleBulkDelete = async (ids: string[]) => {
     if (!confirm(`${ids.length} ürün analizini silmek istediğinize emin misiniz?`)) return;
-    let success = 0;
-    for (const id of ids) {
-      const result = await deleteAnalysis(id);
-      if (result.success) success++;
+    const result = await bulkDeleteAnalyses(ids);
+    if (result.success) {
+      toast.success(`${result.deleted ?? ids.length} analiz silindi.`);
+    } else {
+      toast.error(result.error || 'Toplu silme başarısız.');
     }
-    toast.success(`${success} analiz silindi.`);
     await refresh();
   };
 

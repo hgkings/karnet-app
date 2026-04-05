@@ -591,6 +591,17 @@ export class AnalysisLogic {
     return { success: true }
   }
 
+  async bulkDelete(
+    _traceId: string,
+    payload: unknown,
+    userId: string
+  ): Promise<{ deleted: number }> {
+    const { ids } = payload as { ids: string[] }
+    if (!ids || ids.length === 0) return { deleted: 0 }
+    const deleted = await this.analysisRepo.bulkDeleteByUserIdAndIds(ids, userId)
+    return { deleted }
+  }
+
   /**
    * Tam hesaplanmis analiz objesini DB'ye upsert eder.
    * V1 UI client-side hesaplama yapar ve tum veriyi gonderir.
