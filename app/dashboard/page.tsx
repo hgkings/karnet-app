@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const { analyses, loading, refresh } = useAlerts();
   const [trendyolConn, setTrendyolConn] = useState<ConnStatus>({ status: 'disconnected' });
   const [stockMap, setStockMap] = useState<Map<string, StockItem> | undefined>();
+  const [totalMonthlySales, setTotalMonthlySales] = useState<number>(0);
   const [orderSummary, setOrderSummary] = useState<{
     today: number; todayChange: number; shipped: number;
     pending: number; cancelled: number; pendingOver24h: number; activeClaims: number;
@@ -82,6 +83,11 @@ export default function DashboardPage() {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data?.success) return;
+        // Toplam aylık satış (tekrarsız, products dizisinden)
+        const totalSales = (data.products as Array<{ monthlySales?: number }>).reduce(
+          (s: number, p: { monthlySales?: number }) => s + (p.monthlySales ?? 0), 0
+        );
+        setTotalMonthlySales(totalSales);
         const map = new Map<string, StockItem>();
         for (const p of data.products) {
           const item: StockItem = { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl, monthlySales: p.monthlySales ?? 0 };
@@ -153,11 +159,8 @@ export default function DashboardPage() {
   };
 
   // KPI calculations
-  const totalUnitsSold = useMemo(() => {
-    // orderSummary varsa shipped+delivered kullan, yoksa analizlerden monthly_sales_volume topla
-    if (orderSummary) return orderSummary.today + orderSummary.shipped;
-    return analyses.reduce((sum, a) => sum + (a.input.monthly_sales_volume ?? 0), 0);
-  }, [analyses, orderSummary]);
+  // Stock API'den gelen gerçek aylık satış toplamı (son 30 gün)
+  const totalUnitsSold = totalMonthlySales;
   const totalProfit = analyses.reduce((sum, a) => sum + a.result.monthly_net_profit, 0);
   const avgMargin = analyses.length > 0
     ? analyses.reduce((sum, a) => sum + a.result.margin_pct, 0) / analyses.length
