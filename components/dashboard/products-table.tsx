@@ -613,11 +613,6 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                           {stock!.monthlySales}
                           <span className="text-[10px] text-muted-foreground ml-0.5">/ ay</span>
                         </span>
-                      ) : a.input.monthly_sales_volume > 0 ? (
-                        <span className="text-sm font-bold tabular-nums text-muted-foreground">
-                          {a.input.monthly_sales_volume}
-                          <span className="text-[10px] text-muted-foreground/40 ml-0.5">/ ay</span>
-                        </span>
                       ) : (
                         <span className="text-xs text-muted-foreground/40">—</span>
                       )}
