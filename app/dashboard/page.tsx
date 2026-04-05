@@ -264,12 +264,6 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-foreground">
             {greeting}{name ? `, ${name}` : ''}
           </h1>
-          <div className="mt-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-              <CheckCircle size={12} />
-              {riskyCount > 0 ? `${riskyCount} urun riskli — aksiyon gerekiyor` : 'Finansal durum dengeli'}
-            </span>
-          </div>
         </div>
 
         {/* ═══ BÖLÜM 2 — 4 Metrik Kart ═══ */}
