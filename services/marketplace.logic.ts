@@ -400,17 +400,27 @@ export class MarketplaceLogic {
       for (const r of normalized.results) {
         try {
           if (r.internalId && r.analysisUpdate) {
+            // barcode/sku'yu inputs JSONB'ye de yaz (frontend stockMap eşleşmesi için)
+            const existingA = analyses.find(a => a.id === r.internalId)
+            const mergedInputs = { ...(existingA?.inputs ?? {}), ...(r.analysisUpdate.inputs ?? {}) } as Record<string, unknown>
+            if (r.analysisUpdate.barcode) mergedInputs.barcode = r.analysisUpdate.barcode
+            if (r.analysisUpdate.merchant_sku) mergedInputs.merchant_sku = r.analysisUpdate.merchant_sku
+
             const updateData: Record<string, unknown> = {
               barcode: r.analysisUpdate.barcode,
               merchant_sku: r.analysisUpdate.merchant_sku,
               marketplace_source: r.analysisUpdate.marketplace_source,
               auto_synced: true,
+              inputs: mergedInputs,
             }
-            if (r.analysisUpdate.inputs) updateData.inputs = r.analysisUpdate.inputs
             if (r.analysisUpdate.outputs) updateData.outputs = r.analysisUpdate.outputs
             await this.analysisRepo.update(r.internalId, updateData)
             dbWritten++
           } else if (r.newAnalysis) {
+            // Yeni analiz — barcode/sku'yu inputs'a da yaz
+            const newInputs = { ...(r.newAnalysis.inputs ?? {}) } as Record<string, unknown>
+            if (r.newAnalysis.barcode) newInputs.barcode = r.newAnalysis.barcode
+            if (r.newAnalysis.merchant_sku) newInputs.merchant_sku = r.newAnalysis.merchant_sku
             const newRow = await this.analysisRepo.create({
               user_id: userId,
               marketplace: r.newAnalysis.marketplace,
@@ -419,7 +429,7 @@ export class MarketplaceLogic {
               merchant_sku: r.newAnalysis.merchant_sku,
               marketplace_source: r.newAnalysis.marketplace_source,
               auto_synced: true,
-              inputs: r.newAnalysis.inputs,
+              inputs: newInputs,
               outputs: r.newAnalysis.outputs,
               risk_score: r.newAnalysis.risk_score,
               risk_level: r.newAnalysis.risk_level,

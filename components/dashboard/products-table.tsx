@@ -521,13 +521,13 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                     ?? stockMap?.get(nameKey)
                     ?? stockMap?.get(normKey);
                   // Fuzzy eşleşme: analiz adının kelimeleri Trendyol başlığında geçiyor mu
-                  if (!stock && stockMap && nameKey.length > 3) {
-                    const words = nameKey.split(/\s+/).filter(w => w.length > 2);
-                    if (words.length >= 2) {
+                  if (!stock && stockMap && nameKey.length > 2) {
+                    const words = nameKey.split(/\s+/).filter(w => w.length > 1);
+                    if (words.length >= 1) {
                       for (const [key, val] of stockMap) {
-                        if (key.length < 10) continue; // kısa key'ler barcode/id olabilir
+                        if (key.length < 10) continue;
                         const matches = words.filter(w => key.includes(w)).length;
-                        if (matches >= Math.ceil(words.length * 0.6)) { stock = val; break; }
+                        if (matches >= Math.max(1, Math.ceil(words.length * 0.5))) { stock = val; break; }
                       }
                     }
                   }
