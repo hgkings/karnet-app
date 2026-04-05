@@ -655,11 +655,11 @@ export default function DashboardPage() {
                         {orderSummary.pendingOver24h} siparis 24 saati geciyor — Kargoya verilmedi
                       </span>
                     </div>
-                    <Link href="/marketplace">
+                    <a href="https://partner.trendyol.com/orders" target="_blank" rel="noopener noreferrer">
                       <button className="flex items-center gap-1 text-xs font-medium text-orange-600 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 rounded-lg hover:bg-orange-500/20 transition-colors">
                         <Truck size={12} /> Kargola
                       </button>
-                    </Link>
+                    </a>
                   </div>
                 )}
                 {orderSummary.activeClaims > 0 && (
