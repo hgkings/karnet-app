@@ -16,7 +16,8 @@ import {
   TrendingUp, Percent, ShieldAlert, Package,
   Calendar, CheckCircle, FileText, Download, Plus,
   Star, AlertTriangle, TrendingDown, ArrowRight,
-  Store, ExternalLink, List, ChevronRight, Loader2, Eye
+  Store, ExternalLink, Loader2,
+  ShoppingBag, Truck, Clock, XCircle, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -46,6 +47,10 @@ export default function DashboardPage() {
   const { analyses, loading, refresh } = useAlerts();
   const [trendyolConn, setTrendyolConn] = useState<ConnStatus>({ status: 'disconnected' });
   const [stockMap, setStockMap] = useState<Map<string, StockItem> | undefined>();
+  const [orderSummary, setOrderSummary] = useState<{
+    today: number; todayChange: number; shipped: number;
+    pending: number; cancelled: number; pendingOver24h: number; activeClaims: number;
+  } | null>(null);
   const isPro = isProUser(user);
 
   useEffect(() => {
@@ -82,6 +87,12 @@ export default function DashboardPage() {
         }
         setStockMap(map);
       })
+      .catch(() => {});
+
+    // Sipariş özetini çek
+    fetch('/api/marketplace/trendyol/order-summary')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.success) setOrderSummary(data); })
       .catch(() => {});
   }, [isPro]);
 
@@ -330,19 +341,97 @@ export default function DashboardPage() {
           ]}
         />
 
-        {/* ═══ BÖLÜM 6 — Son Analizler ═══ */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <List size={16} className="text-muted-foreground" />
-              <span className="font-semibold text-foreground text-sm">Son Analizler</span>
+        {/* ═══ BÖLÜM 6 — Siparişler ═══ */}
+        {orderSummary && (
+          <div className="rounded-xl border border-border/40 bg-card overflow-hidden">
+            {/* Başlık */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
+              <div className="flex items-center gap-2">
+                <ShoppingBag size={16} className="text-primary" />
+                <span className="font-semibold text-foreground text-sm">Siparisler</span>
+              </div>
+              <Link href="/marketplace" className="text-xs text-orange-500 font-medium hover:underline">
+                Tumunu Gor
+              </Link>
             </div>
-            <Link href="/products" className="text-xs text-orange-500 font-medium hover:underline">
-              Tumunu Gor
-            </Link>
+
+            {/* 4 Metrik */}
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border/40">
+              <div className="px-5 py-4 text-center">
+                <div className="text-xs text-muted-foreground mb-1">Bugunku Siparis</div>
+                <div className="text-2xl font-bold text-foreground">{orderSummary.today}</div>
+                {orderSummary.todayChange !== 0 && (
+                  <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${orderSummary.todayChange > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                    <TrendingUp size={12} className={orderSummary.todayChange < 0 ? 'rotate-180' : ''} />
+                    %{Math.abs(orderSummary.todayChange)} {orderSummary.todayChange > 0 ? 'dunden fazla' : 'dunden az'}
+                  </div>
+                )}
+              </div>
+              <div className="px-5 py-4 text-center">
+                <div className="text-xs text-muted-foreground mb-1">Kargolanan</div>
+                <div className="text-2xl font-bold text-emerald-600">{orderSummary.shipped}</div>
+                <div className="text-xs text-muted-foreground mt-1">teslim edildi</div>
+              </div>
+              <div className="px-5 py-4 text-center">
+                <div className="text-xs text-muted-foreground mb-1">Bekleyen</div>
+                <div className="text-2xl font-bold text-orange-500">{orderSummary.pending}</div>
+                <div className="text-xs text-muted-foreground mt-1">islem bekliyor</div>
+              </div>
+              <div className="px-5 py-4 text-center">
+                <div className="text-xs text-muted-foreground mb-1">Iptal / Iade</div>
+                <div className="text-2xl font-bold text-red-500">{orderSummary.cancelled + orderSummary.activeClaims}</div>
+                <div className="text-xs text-muted-foreground mt-1">inceleme gerekiyor</div>
+              </div>
+            </div>
+
+            {/* Aksiyon Bölümü */}
+            <div className="border-t border-border/40">
+              <div className="px-5 py-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                  <Zap size={10} /> Aksiyon Gerekiyor
+                </span>
+              </div>
+              <div className="divide-y divide-border/20">
+                {orderSummary.pendingOver24h > 0 && (
+                  <div className="flex items-center justify-between px-5 py-3 bg-orange-500/5">
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} className="text-orange-500" />
+                      <span className="text-xs text-orange-700 dark:text-orange-400">
+                        {orderSummary.pendingOver24h} siparis 24 saati geciyor — Kargoya verilmedi
+                      </span>
+                    </div>
+                    <Link href="/marketplace">
+                      <button className="flex items-center gap-1 text-xs font-medium text-orange-600 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 rounded-lg hover:bg-orange-500/20 transition-colors">
+                        <Truck size={12} /> Kargola
+                      </button>
+                    </Link>
+                  </div>
+                )}
+                {orderSummary.activeClaims > 0 && (
+                  <div className="flex items-center justify-between px-5 py-3 bg-red-500/5">
+                    <div className="flex items-center gap-2">
+                      <XCircle size={14} className="text-red-500" />
+                      <span className="text-xs text-red-700 dark:text-red-400">
+                        {orderSummary.activeClaims} iade talebi bekliyor — Musteri yaniti bekleniyor
+                      </span>
+                    </div>
+                    <Link href="/finance">
+                      <button className="flex items-center gap-1 text-xs font-medium text-red-600 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition-colors">
+                        <ArrowRight size={12} /> Incele
+                      </button>
+                    </Link>
+                  </div>
+                )}
+                {orderSummary.pendingOver24h === 0 && orderSummary.activeClaims === 0 && (
+                  <div className="flex items-center gap-2 px-5 py-3 bg-emerald-500/5">
+                    <CheckCircle size={14} className="text-emerald-500" />
+                    <span className="text-xs text-emerald-700 dark:text-emerald-400">Tum siparisler guncel</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          <ProductsTable analyses={analyses.slice(0, 10)} onDelete={handleDelete} stockMap={stockMap} />
-        </div>
+        )}
 
       </div>
     </DashboardLayout>

@@ -624,6 +624,72 @@ export class MarketplaceLogic {
     return { totalOrders }
   }
 
+  async getOrderSummary(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{
+    today: number; todayChange: number; shipped: number;
+    pending: number; cancelled: number; pendingOver24h: number; activeClaims: number
+  }> {
+    const { connectionId } = payload as { connectionId: string }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+
+    const now = Date.now()
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+    const yesterdayStart = new Date(todayStart); yesterdayStart.setDate(yesterdayStart.getDate() - 1)
+    const twoDaysAgo = new Date(todayStart); twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+    const WINDOW_MS = 13 * 24 * 60 * 60 * 1000
+
+    // Son 3 günün siparişlerini çek (bugün + dün + önceki gün)
+    const allOrders: Array<Record<string, unknown>> = []
+    let wStart = twoDaysAgo.getTime()
+    while (wStart < now) {
+      const wEnd = Math.min(wStart + WINDOW_MS, now)
+      let pg = 0; let tp = 1
+      while (pg < tp && pg < 5) {
+        const result = await trendyolApi.fetchOrders(creds, wStart, wEnd, pg, 200)
+        allOrders.push(...result.content)
+        tp = result.totalPages; pg++
+      }
+      wStart = wEnd
+    }
+
+    // Bugünkü ve dünkü siparişleri ayır
+    let todayCount = 0; let yesterdayCount = 0
+    let shipped = 0; let pending = 0; let cancelled = 0; let pendingOver24h = 0
+
+    const h24Ago = now - 24 * 60 * 60 * 1000
+
+    for (const o of allOrders) {
+      const status = String(o.shipmentPackageStatus ?? o.status ?? '')
+      const orderDate = Number(o.orderDate ?? 0)
+
+      if (orderDate >= todayStart.getTime()) todayCount++
+      else if (orderDate >= yesterdayStart.getTime()) yesterdayCount++
+
+      if (status === 'Shipped' || status === 'Delivered') shipped++
+      else if (status === 'Cancelled') cancelled++
+      else if (status === 'Created' || status === 'Picking') {
+        pending++
+        if (orderDate > 0 && orderDate < h24Ago) pendingOver24h++
+      }
+    }
+
+    const todayChange = yesterdayCount > 0 ? Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100) : 0
+
+    // Açık iade talepleri
+    let activeClaims = 0
+    try {
+      const end = new Date()
+      const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000)
+      const claims = await trendyolApi.fetchAllClaims(creds, start, end)
+      activeClaims = claims.length
+    } catch { /* claims opsiyonel */ }
+
+    return { today: todayCount, todayChange, shipped, pending, cancelled, pendingOver24h, activeClaims }
+  }
+
   async getTrendyolClaims(
     traceId: string,
     payload: unknown,
