@@ -70,6 +70,7 @@ export async function GET() {
     }
 
     // Son 30 günün sipariş verisi — barcode bazlı satış adedi
+    let orderStats: { totalOrders: number; matchedProducts: number; allBarcodes: string[] } = { totalOrders: 0, matchedProducts: 0, allBarcodes: [] }
     try {
       const SOLD_STATUSES = ['Created', 'Picking', 'Invoiced', 'Shipped', 'Delivered', 'AtCollectionPoint']
       const salesByBarcode = new Map<string, number>()
@@ -92,8 +93,10 @@ export async function GET() {
               const lineStatus = String(line.orderLineItemStatusName ?? status)
               if (lineStatus === 'Cancelled' || lineStatus === 'Returned') continue
               const barcode = String(line.barcode ?? '').trim()
+              const stockCode = String(line.stockCode ?? '').trim()
               const qty = Number(line.quantity ?? 1)
               if (barcode) salesByBarcode.set(barcode, (salesByBarcode.get(barcode) ?? 0) + qty)
+              if (stockCode && stockCode !== barcode) salesByBarcode.set(stockCode, (salesByBarcode.get(stockCode) ?? 0) + qty)
             }
           }
           orderTotalPages = orderResult.totalPages
@@ -102,11 +105,22 @@ export async function GET() {
         windowStart = windowEnd
       }
 
-      // Satış adedini ürünlere yaz
+      // Satış adedini ürünlere yaz — barcode + stockCode ile eşleştir
+      let matchedProducts = 0
       for (const p of products) {
-        if (p.barcode && salesByBarcode.has(p.barcode)) {
-          p.monthlySales = salesByBarcode.get(p.barcode)!
+        const byBarcode = p.barcode ? salesByBarcode.get(p.barcode) : undefined
+        const byStockCode = p.stockCode ? salesByBarcode.get(p.stockCode) : undefined
+        const sales = byBarcode ?? byStockCode ?? 0
+        if (sales > 0) {
+          p.monthlySales = sales
+          matchedProducts++
         }
+      }
+
+      orderStats = {
+        totalOrders: salesByBarcode.size,
+        matchedProducts,
+        allBarcodes: Array.from(salesByBarcode.keys()).slice(0, 10),
       }
     } catch {
       // Sipariş verisi opsiyonel — hata olursa satış 0 kalır
@@ -124,6 +138,7 @@ export async function GET() {
       outOfStock,
       lowStock,
       products,
+      orderStats,
     })
   } catch (err: unknown) {
     return errorResponse(err)

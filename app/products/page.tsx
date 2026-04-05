@@ -47,7 +47,9 @@ export default function ProductsPage() {
       toast.dismiss(t);
       if (data.success) {
         setStockData(data);
-        toast.success(`${data.totalProducts} ürünün stok ve satış verisi güncellendi.`);
+        const os = data.orderStats;
+        const orderInfo = os ? ` | Siparis: ${os.totalOrders} barkod, ${os.matchedProducts} eslesme` : '';
+        toast.success(`${data.totalProducts} urun guncellendi${orderInfo}`);
       }
     } catch {
       toast.dismiss(t);
