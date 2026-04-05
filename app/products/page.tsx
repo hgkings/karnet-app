@@ -127,7 +127,18 @@ export default function ProductsPage() {
     e.target.value = '';
 
     try {
-      const buffer = await file.arrayBuffer();
+      let buffer: ArrayBuffer;
+      // CSV dosyası gelirse XLSX kütüphanesi ile uyumlu hale getir
+      if (file.name.endsWith('.csv')) {
+        const text = await file.text();
+        const encoder = new TextEncoder();
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const XLSX = require('xlsx');
+        const wb = XLSX.read(text, { type: 'string', FS: ';' });
+        buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      } else {
+        buffer = await file.arrayBuffer();
+      }
       const updates = parseCostTemplate(buffer);
       if (updates.length === 0) {
         toast.error('Dosyada güncellenecek veri bulunamadı.');
@@ -318,7 +329,7 @@ export default function ProductsPage() {
               <FileUp className="mr-1.5 h-4 w-4" />
               Maliyetleri Yukle
             </Button>
-            <input ref={costFileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleUploadCostTemplate} />
+            <input ref={costFileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleUploadCostTemplate} />
             <Button variant="outline" size="sm" onClick={handleDownloadBlankTemplate} className="whitespace-nowrap">
               <FilePlus2 className="mr-1.5 h-4 w-4" />
               Bos Sablon
