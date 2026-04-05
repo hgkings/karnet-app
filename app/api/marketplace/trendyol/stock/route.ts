@@ -72,7 +72,8 @@ export async function GET() {
     // Son 30 günün sipariş verisi — barcode bazlı satış adedi
     let orderStats: { totalOrders: number; matchedProducts: number; allBarcodes: string[] } = { totalOrders: 0, matchedProducts: 0, allBarcodes: [] }
     try {
-      const SOLD_STATUSES = ['Created', 'Picking', 'Invoiced', 'Shipped', 'Delivered', 'AtCollectionPoint']
+      // Tüm aktif siparişler sayılır — sadece iptal/iade hariç
+      const EXCLUDED_STATUSES = ['Cancelled', 'Returned', 'ReturnAccepted', 'ReturnedAndRefunded', 'UnSupplied']
       const salesByBarcode = new Map<string, number>()
       const endTs = Date.now()
       const startTs = endTs - 30 * 24 * 60 * 60 * 1000
@@ -87,11 +88,11 @@ export async function GET() {
           const orderResult = await fetchOrders(creds, windowStart, windowEnd, orderPage, 200)
           for (const order of orderResult.content) {
             const status = String(order.status ?? order.shipmentPackageStatus ?? '')
-            if (!SOLD_STATUSES.includes(status)) continue
+            if (EXCLUDED_STATUSES.includes(status)) continue
             const lines = (order.lines ?? order.orderItems ?? []) as Array<Record<string, unknown>>
             for (const line of lines) {
               const lineStatus = String(line.orderLineItemStatusName ?? status)
-              if (lineStatus === 'Cancelled' || lineStatus === 'Returned') continue
+              if (EXCLUDED_STATUSES.includes(lineStatus)) continue
               const barcode = String(line.barcode ?? '').trim()
               const stockCode = String(line.stockCode ?? '').trim()
               const qty = Number(line.quantity ?? 1)
