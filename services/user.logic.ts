@@ -121,6 +121,17 @@ export interface UserProfile {
   emailRiskAlert: boolean
   emailMarginAlert: boolean
   emailProExpiry: boolean
+  targetMargin?: number
+  marginAlert?: boolean
+  defaultMarketplace?: string
+  defaultCommission?: number
+  defaultVat?: number
+  monthlyProfitTarget?: number
+  defaultReturnRate?: number
+  defaultAdsCost?: number
+  fixedCostMonthly?: number
+  targetProfitMonthly?: number
+  revenue_goal?: number
 }
 
 // ----------------------------------------------------------------
@@ -154,6 +165,17 @@ export class UserLogic {
       emailRiskAlert: row.email_risk_alert ?? true,
       emailMarginAlert: row.email_margin_alert ?? true,
       emailProExpiry: row.email_pro_expiry ?? true,
+      targetMargin: row.target_margin ?? undefined,
+      marginAlert: row.margin_alert ?? undefined,
+      defaultMarketplace: row.default_marketplace ?? undefined,
+      defaultCommission: row.default_commission ?? undefined,
+      defaultVat: row.default_vat ?? undefined,
+      monthlyProfitTarget: row.monthly_profit_target ?? undefined,
+      defaultReturnRate: row.default_return_rate ?? undefined,
+      defaultAdsCost: row.default_ads_cost ?? undefined,
+      fixedCostMonthly: row.fixed_cost_monthly ?? undefined,
+      targetProfitMonthly: row.target_profit_monthly ?? undefined,
+      revenue_goal: row.revenue_goal ?? undefined,
     }
   }
 
