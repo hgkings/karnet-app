@@ -21,6 +21,7 @@ Koordine eder, raporlar, kalite kapısı olur.
 Hilmi onaylamadan push yapılmaz.
 Güvenlik agent'ı her commit öncesi otomatik çalışır — şef çağırmaz.
 Agent'lara görevi ver ve erken çekil — onlar yapsın.
+**Agent'ları paralel çalıştır — araştırma için Explore, kod için General.**
 
 ## Görev Başı Kontrol Sırası
 1. agents/shared-memory.md oku
@@ -30,22 +31,50 @@ Agent'lara görevi ver ve erken çekil — onlar yapsın.
 5. Bu dosyanın TL;DR bölümünü oku
 6. Göreve başla
 
+## Agent Kullanım Stratejisi (2026-04-06 Güncelleme)
+
+### Ne Zaman Agent Kullan:
+- Geniş codebase araması → Explore agent
+- Trendyol API sorunları → WebFetch ile docs doğrulama
+- Büyük görevlerde → Mimar + Geliştirici paralel
+- Bug debug → veri akışı izleme
+
+### Ne Zaman Agent Kullanma:
+- Tek dosya düzenleme (direkt yap)
+- Basit CSS değişikliği (direkt yap)
+- Bilinen pattern'i uygulama (direkt yap)
+
+### Paralel Agent Stratejisi:
+```
+Yeni özellik:
+  Agent 1 (Explore/Mimar): yapı analizi + dosya tespiti
+  Agent 2 (Explore/Geliştirici): API/service analizi
+  → İkisi paralel → sonuçlar birleştir → kod yaz
+
+Bug fix:
+  Agent 1 (Explore): veri akışı izle
+  Agent 2 (WebFetch): docs doğrula (Trendyol API ise)
+  → Kök neden bul → düzelt
+```
+
 ## Öğrendiklerim
 
-*(Kural: "Bu bilgi 6 ay sonra da işime yarar mı?" → Evet → yaz)*
-
-- Güvenlik agent'ı proaktiftir — her commit öncesi otomatik çalışır, şef çağırmasa da
-- Mimar "yapılamaz" demez — alternatif üretir, Hilmi seçer
-- Commit mesajı formatı: [agent-adı] ne yaptı — skill güncellendi
+- Güvenlik agent'ı proaktiftir — her commit öncesi otomatik çalışır
+- Mimar "yapılamaz" demez — alternatif üretir
+- Commit mesajı: ne yapıldı + neden + Co-Authored-By
 - Migration yazılabilir ama çalıştırılamaz — sadece Hilmi çalıştırır
-- Paralel agent çalıştırırken aynı dosyaya dokunan görevler sıralı yapılmalı (git conflict riski)
+- **Agent'ları paralel çalıştırmak 2-3x hızlı** — araştırma görevlerinde
+- **Trendyol API sorunlarında HER ZAMAN docs'u WebFetch ile doğrula**
+- **Yeni alan eklerken 6 katman kontrol listesi** — biri unutulursa sessiz hata
+- **Loading toast pattern tüm uzun işlemlerde zorunlu** — kullanıcı ne olduğunu bilmeli
+- **Dashboard'da veri kaynağı tutarlı olmalı** — stockAPI > orderSummary > analyses fallback
 
 ## Asla Yapma
-
-*(Yapılan hatalar — bir daha tekrarlanmayacak)*
 
 - Hilmi onayı olmadan push yapmak
 - Güvenlik taraması tamamlanmadan commit'i Hilmi'ye sunmak
 - Agent'ın çıktısını kontrol etmeden körce iletmek
 - Build veya typecheck hatası varken commit atmak
-- Migration çalıştırmak (sadece Hilmi çalıştırır)
+- Migration çalıştırmak
+- **Trendyol API alan adlarını tahmin etmek — docs'tan doğrula**
+- **Profil alanı ekleyip getProfile + mapProfileRow güncellemeyi unutmak**

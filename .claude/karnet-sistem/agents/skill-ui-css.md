@@ -22,12 +22,8 @@ CSS ve UI dosyalarında:
 → DB sorgusu — KESİNLİKLE YASAK
 → API çağrısı — KESİNLİKLE YASAK
 → Business logic — KESİNLİKLE YASAK
-→ DB'ye dokunan herhangi bir import — KESİNLİKLE YASAK
 → Repositories import — KESİNLİKLE YASAK
 → Supabase sorgusu — KESİNLİKLE YASAK
-
-CSS'te sadece CSS'e ait şeyler olur.
-UI'da sadece görsel, stil ve layout olur.
 ```
 
 ## TL;DR — Her Görev Başında Önce Bunu Oku
@@ -36,6 +32,7 @@ UI/CSS agent sadece görseldir. DB, API, logic görmezden gelir.
 cn() her zaman kullanılır — Tailwind class çakışması olmasın.
 Dark mode her zaman test edilir.
 Framer Motion = 'use client' şart.
+**Emoji yok — sadece Lucide React SVG ikonlar (dashboard tasarım kuralı).**
 
 ## Görev Başı Kontrol Sırası
 1. agents/shared-memory.md oku
@@ -58,89 +55,68 @@ cn()          → lib/utils.ts (clsx + tailwind-merge)
 
 ## Kârnet Tasarım Sistemi
 
-### Renkler (CSS Variables — Daima Bunları Kullan)
+### Dashboard Tasarım Kuralları (2026-04 Yeniden Tasarım)
 ```
-bg-background / text-foreground    → ana zemin/metin
-bg-card / border-border            → kart ve kenarlar
-text-muted-foreground              → ikincil metin
-bg-primary / text-primary-foreground → marka rengi (mavi: #2563EB)
-bg-destructive                     → hata kırmızı
+- Emoji YOK — sadece Lucide React SVG ikonlar
+- Renk paleti: turuncu (brand), yeşil (pozitif), kırmızı (negatif), mavi (bilgi), gri (nötr)
+- Tüm kartlar: rounded-xl, border border-border/40, bg-card
+- Font: başlık text-sm font-semibold, alt metin text-xs text-muted-foreground
+- Dark/light mode: text-foreground, bg-card, border-border (CSS variables)
+- Hardcode renk KULLANMA — text-foreground, text-muted-foreground kullan
+```
+
+### Input Component — KRİTİK
+```
+components/ui/input.tsx → text-foreground EKLENDİ
+Bu olmadan dark mode'da input değerleri görünmez (beyaz üstüne beyaz)
+Tüm custom input class'larında text-foreground gereksiz — component'te var
 ```
 
 ### Kârnet Marka Renkleri
 ```
-Amber/turuncu → logo rengi (#D97706 / #92400E)
-Gradient      → linear-gradient(135deg, #D97706, #92400E)
+Turuncu → brand rengi (bg-orange-500, text-orange-500)
+Gradient → eski (artık kullanılmıyor, dashboard'da düz renkler)
 ```
 
-### Zorunlu Pattern'ler
-```tsx
-// Class birleştirme — HER ZAMAN cn() kullan
-className={cn('base-class', condition && 'conditional-class', className)}
-
-// Kart yapısı
-<div className="rounded-2xl border border-border/30 bg-card hover:border-border/60 transition-colors">
-
-// Dashboard layout
-// pt-16 (navbar) + md:pl-60 (sidebar) — unutulursa layout kayar
-
-// Dark mode — HER ZAMAN dark: prefix ekle
-className="text-gray-800 dark:text-gray-200"
-// VEYA CSS variable kullan (tercih edilen)
-className="text-foreground"
+### Dashboard Layout
+```
+Container: max-w-full (eski max-w-6xl kaldırıldı — tablo sığmıyordu)
+Sidebar: fixed w-60, md:pl-60
+Navbar: fixed h-16, pt-16
 ```
 
-## Denetim Kontrol Listesi
+### Tablo Kuralları (Products Table)
+```
+- min-w-[900px] ile yatay scroll
+- Her kolona min-w belirlendi
+- İşlem kolonu sticky right-0
+- Checkbox kolonu w-10 px-3
+- colSpan güncel tutulmalı (kolon ekleyince artır!)
+```
 
-### CSS/UI İzolasyonu (EN KRİTİK)
-- [ ] Bu dosyada DB sorgusu var mı? → BLOK
-- [ ] Bu dosyada API çağrısı var mı? → BLOK
-- [ ] Bu dosyada business logic var mı? → BLOK
-- [ ] repositories/ import var mı? → BLOK
-- [ ] Supabase doğrudan import var mı? → BLOK
-
-### Genel
-- [ ] cn() kullanılıyor mu?
-- [ ] dark: prefix veya CSS variable var mı?
-- [ ] 'use client' gerekiyor mu? (hook veya event handler varsa evet)
-- [ ] Framer Motion varsa 'use client' var mı?
-
-### Responsive
-- [ ] sm: (640px), md: (768px), lg: (1024px) test edildi mi?
-- [ ] Dashboard'da md:pl-60 hesaba katıldı mı?
-- [ ] Mobile'da overflow var mı?
-
-### Bileşen Kullanımı
-- [ ] shadcn bileşeni varken custom HTML yazılmış mı?
-- [ ] asChild prop gerekiyor mu? (Link içinde Button)
-- [ ] Disabled butonlar disabled prop ile mi?
-
-### Erişilebilirlik
-- [ ] İkon tek başına kullanılıyorsa aria-label var mı?
-- [ ] Form alanı Label ile eşleştirilmiş mi?
-
-## Sık Karşılaşılan Hatalar
-
-**Dark mode'da görünmez metin:**
-`text-gray-800` yerine `text-foreground` kullan
-
-**Layout kayması:**
-Dashboard'da pt-16 (navbar yüksekliği) + md:pl-60 (sidebar) unutulmuş
-
-**Tailwind class çakışması:**
-cn() kullanılmıyor
-
-**Framer Motion Server Component'te:**
-'use client' direktifi eksik
+### AccordionSection Component
+```
+components/shared/accordion-section.tsx
+- Animasyonlu grid-rows geçişi
+- Icon (emoji) + başlık + ChevronDown
+- defaultOpen={false}
+```
 
 ## Öğrendiklerim
 
 *(Kural: "Bu bilgi 6 ay sonra da işime yarar mı?" → Evet → yaz)*
 
 - Dashboard layout: fixed navbar (h-16, pt-16) + fixed sidebar (w-60, md:pl-60) + scrollable main
-- Kârnet logo gradient: linear-gradient(135deg, #D97706, #92400E)
 - shadcn components.json: baseColor neutral, cssVariables true, rsc true
 - cn() = clsx + tailwind-merge — birini çıkarırsan çalışmaz
+- **Input component'e text-foreground eklendi** — dark mode'da TÜM input değerleri artık görünür
+- **Dashboard max-w-6xl → max-w-full** — 9 kolonlu tablo sığmıyordu
+- **Tablo kolon ekleyince colSpan güncelle** — "Sonuç bulunamadı" satırı yanlış genişlikte kalır
+- **Sticky kolon: th ve td'ye aynı class** — bg-card + group-hover:bg-muted/10
+- **SVG grafik: viewBox + preserveAspectRatio="none"** — responsive grafik için
+- **Loading toast pattern: toast.loading → iş bitti → toast.dismiss → toast.success**
+- **Checkbox seçim: selectedIds Set + toggleOne/toggleAll + bulk action bar**
+- **Fuzzy eşleşme: kısa isimler (2+ harf, 1+ kelime, %50 eşik)** — "moon s" gibi ürünler
 
 ## Asla Yapma
 
@@ -148,6 +124,10 @@ cn() kullanılmıyor
 
 - CSS/UI dosyasına DB, API veya business logic yazmak — BLOK
 - cn() olmadan Tailwind class'larını birleştirmek
-- dark: prefix'i unutmak (dark mode kırılır)
+- dark: prefix'i unutmak — text-foreground/bg-card kullan
 - Framer Motion'ı 'use client' olmadan kullanmak
-- CSS variable yerine hardcode renk kullanmak (theme değişince bozulur)
+- Hardcode renk kullanmak (gray-800 yerine text-foreground)
+- Dashboard'da emoji kullanmak — sadece Lucide ikon
+- Tablo genişliğini test etmeden bırakmak — 9+ kolon varsa min-w şart
+- Input'a text-foreground eklemek (artık component'te var, gereksiz)
+- colSpan'ı kolon ekleyince güncellemeyi unutmak

@@ -21,6 +21,7 @@ Geliştirici yeni özellik yazar. Mevcut kodu silmez.
 Her zaman Kârnet'in mevcut pattern'ini takip eder, kendi stilini dayatmaz.
 Büyük özelliği küçük parçalara böler, tek commit'te devasa değişiklik yapmaz.
 Emin olmadığı yerde araştırır — resmi docs önce.
+**Yeni alan eklerken TÜM katmanları kontrol et — DB, type, validator, service, API, frontend.**
 
 ## Görev Başı Kontrol Sırası
 1. agents/shared-memory.md oku
@@ -43,24 +44,9 @@ SEÇİM   : Hangisi en az yan etki yaratır?
 RİSK    : Bu seçimin zararı olabilir mi?
 ```
 
-## Araştırma Adımı
-
-Emin olmadığın her şeyde araştır. Soru sormak yasak — araştır, öğren, uygula.
-
-```
-1. Ne bilmiyorum? (net tanımla)
-2. Araştırma önceliği:
-   → Resmi docs (Next.js, Supabase, Tailwind, Radix)
-   → GitHub issues / discussions
-   → Diğer kaynaklar
-3. Ne öğrendim? (özetle)
-4. Projeye nasıl uyguluyorum?
-5. Öğrendimi skill dosyasına yaz
-```
-
 ## Kârnet Pattern Rehberi
 
-### Versiyon Bilgisi (Araştırırken Dikkat Et)
+### Versiyon Bilgisi
 ```
 Next.js    : 14 (App Router)
 TypeScript : 5.2.2 (strict mode)
@@ -88,45 +74,25 @@ export async function GET() {
 }
 ```
 
-### Yeni Component Yazarken
-```typescript
-'use client' // hook veya event handler varsa zorunlu
-import { cn } from '@/lib/utils' // class birleştirme için
-// Tailwind class'larını cn() ile birleştir
-// dark: prefix'i her zaman ekle
-// Radix primitive varsa shadcn wrapper'ını kullan
+### Yeni Profil Alanı Eklerken (KONTROL LİSTESİ)
+```
+Bu oturumda revenue_goal eklerken 5 yer güncellenmesi gerekti:
+1. ✅ supabase/migrations/ → ALTER TABLE (Hilmi çalıştırır)
+2. ✅ lib/db/types.ts → ProfileRow interface
+3. ✅ types/index.ts → User interface
+4. ✅ lib/validators/schemas/user.schema.ts → UpdateProfileSchema
+5. ✅ lib/auth.ts → mapProfileRow()
+6. ✅ services/user.logic.ts → UserProfile interface + getProfile return objesi
+BİRİ UNUTULURSA: alan DB'ye yazılır ama frontend'e dönmez!
 ```
 
-### Zod Schema Yazarken
-```typescript
-// lib/validators/schemas/ klasörüne ekle
-// .safeParse() kullan, .parse() değil
-// Türkçe hata mesajları yaz
-const Schema = z.object({
-  alan: z.string().min(1, 'Bu alan zorunludur').max(200),
-}).strict()
+### Stock API'ye Yeni Alan Eklerken
 ```
-
-## Geliştirici'nin Sınırları
-
-Bu işleri yapamam, diğer agent'lara bırakırım:
-- .env'e dokunmak → YASAK
-- Migration çalıştırmak → YASAK (yazabilirim, çalıştıramam)
-- Güvenlik kararı vermek → Güvenlik agent'ı
-- Mimari karar vermek → Mimar
-- Mevcut kodu silmek → Hilmi onayı gerekir
-
-## Özellik Yazma Süreci
-
-```
-1. Mimar'dan "nereye gidecek" onayı al
-2. Küçük parçalara böl
-3. İlk parçayı yaz
-4. Build + typecheck koştur
-5. Güvenlik agent'ı otomatik tarar
-6. Geçtiyse commit at
-7. Bir sonraki parçaya geç
-8. Tüm parçalar bitince şefe bildir
+1. stock/route.ts → products type'a alan ekle
+2. stock/route.ts → products.push'a alan ekle
+3. StockItem interface (products-table.tsx) → alan ekle
+4. app/products/page.tsx → stockData type + stockMap item + Map type
+5. app/dashboard/page.tsx → stockMap item (dashboard da kullanıyorsa)
 ```
 
 ## Öğrendiklerim
@@ -134,10 +100,19 @@ Bu işleri yapamam, diğer agent'lara bırakırım:
 *(Kural: "Bu bilgi 6 ay sonra da işime yarar mı?" → Evet → yaz)*
 
 - callGatewayV1Format standart route için, callGatewayWithSuccess marketplace route için — ikisini karıştırma
+- callGatewayWithSuccess → { success: true, ...data } spread eder
 - Marketplace route'larında connectionId asla user input'tan alınmaz, resolveConnectionId() zorunludur
 - 'use client' direktifi Framer Motion kullanan her component'te şart
 - cn() utility'si olmadan Tailwind class çakışması olur — her zaman kullan
 - Kârnet'te kullanıcıya gösterilen tüm hata mesajları Türkçe
+- **Yeni profil alanı eklerken 6 yer güncellenmeli** (yukarıdaki kontrol listesi)
+- **getProfile service metodu tüm alanları dönmeli** — eksik alan frontend'e null gelir
+- **barcode/merchant_sku inputs JSONB'ye de yazılmalı** — sadece kolon yetmez, frontend inputs'tan okuyor
+- **Input component'e text-foreground** — dark mode'da değerler görünmez olabilir
+- **Toplu silme tek API isteği ile yapılmalı** — loop ile 50 DELETE yavaş, Supabase .in() ile tek sorgu
+- **parseCostTemplate ID boşsa yeni ürün oluşturmalı** — tek fonksiyon hem güncelleme hem ekleme
+- **Excel import: CSV Import bölümü XLSX de kabul etmeli** — XLSX.read + sheet_to_csv çevirisi
+- **parseCSV ayraç algılamalı** — `;` veya `,` otomatik, header alias'ları geniş olmalı
 
 ## Asla Yapma
 
@@ -148,3 +123,8 @@ Bu işleri yapamam, diğer agent'lara bırakırım:
 - Mevcut pattern'i "daha iyi biliyorum" diyerek değiştirmek
 - CSS/UI dosyasına DB veya API kodu yazmak
 - any tipi kullanmak (TypeScript strict mode aktif)
+- Yeni profil alanı ekleyip getProfile'a eklemeyi unutmak
+- Yeni profil alanı ekleyip mapProfileRow'a eklemeyi unutmak
+- barcode'u sadece analyses kolonuna yazıp inputs JSONB'ye yazmayı unutmak
+- Sipariş sayarken whitelist kullanmak (Awaiting atlanır)
+- Barcode karşılaştırmasında toLowerCase() unutmak
