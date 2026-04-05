@@ -6,13 +6,13 @@ import { useAlerts } from '@/contexts/alert-context';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProductsTable } from '@/components/dashboard/products-table';
 import { deleteAnalysis, saveAnalysis, generateId } from '@/lib/api/analyses';
-import { parseCSV, analysesToXLSX, analysesToJSON } from '@/lib/csv';
+import { parseCSV, analysesToXLSX, analysesToJSON, exportCostTemplate, parseCostTemplate, exportBlankTemplate } from '@/lib/csv';
 import { ProductInput } from '@/types';
 import { calculateProfit } from '@/utils/calculations';
 import { calculateRisk } from '@/utils/risk-engine';
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
 import { Button } from '@/components/ui/button';
-import { Upload, Download, Lock, Settings2, Loader2, Package } from 'lucide-react';
+import { Upload, Download, Lock, Settings2, Loader2, Package, FileDown, FileUp, FilePlus2 } from 'lucide-react';
 import Link from 'next/link';
 import { BulkUpdateModal } from '@/components/dashboard/bulk-update-modal';
 import { CSVImportSection } from '@/components/dashboard/csv-import-section';
@@ -98,6 +98,80 @@ export default function ProductsPage() {
       toast.success(`${selected.length} ürün Excel olarak indirildi.`);
     } catch {
       toast.error('Excel dosyası oluşturulamadı.');
+    }
+  };
+
+  // ─── Aşama 1: Maliyet şablonu indir / yükle ───
+  const costFileRef = useRef<HTMLInputElement>(null);
+
+  const handleDownloadCostTemplate = () => {
+    if (analyses.length === 0) return;
+    try {
+      const buffer = exportCostTemplate(analyses);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'karnet_maliyet_sablonu.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Maliyet şablonu indirildi. Düzenleyip geri yükleyin.');
+    } catch {
+      toast.error('Şablon oluşturulamadı.');
+    }
+  };
+
+  const handleUploadCostTemplate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const updates = parseCostTemplate(buffer);
+      if (updates.length === 0) {
+        toast.error('Dosyada güncellenecek veri bulunamadı.');
+        return;
+      }
+
+      let success = 0;
+      for (const { id, updates: fields } of updates) {
+        const existing = analyses.find(a => a.id === id);
+        if (!existing) continue;
+
+        const updatedInput: ProductInput = { ...existing.input, ...fields };
+        const result = calculateProfit(updatedInput);
+        const risk = calculateRisk(updatedInput, result);
+        const res = await saveAnalysis({
+          ...existing,
+          input: updatedInput,
+          result,
+          risk,
+        });
+        if (res.success) success++;
+      }
+
+      toast.success(`${success} ürünün maliyetleri güncellendi.`);
+      await refresh();
+    } catch {
+      toast.error('Dosya okunamadı veya format hatalı.');
+    }
+  };
+
+  // ─── Aşama 2: Boş şablon indir ───
+  const handleDownloadBlankTemplate = () => {
+    try {
+      const buffer = exportBlankTemplate();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'karnet_yeni_urun_sablonu.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Yeni ürün şablonu indirildi.');
+    } catch {
+      toast.error('Şablon oluşturulamadı.');
     }
   };
 
@@ -204,6 +278,19 @@ export default function ProductsPage() {
             <Button variant="outline" size="sm" onClick={() => setShowBulkUpdate(true)} disabled={analyses.length === 0} className="whitespace-nowrap">
               <Settings2 className="mr-1.5 h-4 w-4" />
               Toplu Güncelle
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownloadCostTemplate} disabled={analyses.length === 0} className="whitespace-nowrap">
+              <FileDown className="mr-1.5 h-4 w-4" />
+              Maliyetleri Indir
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => costFileRef.current?.click()} disabled={analyses.length === 0} className="whitespace-nowrap">
+              <FileUp className="mr-1.5 h-4 w-4" />
+              Maliyetleri Yukle
+            </Button>
+            <input ref={costFileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleUploadCostTemplate} />
+            <Button variant="outline" size="sm" onClick={handleDownloadBlankTemplate} className="whitespace-nowrap">
+              <FilePlus2 className="mr-1.5 h-4 w-4" />
+              Bos Sablon
             </Button>
           </div>
         </div>

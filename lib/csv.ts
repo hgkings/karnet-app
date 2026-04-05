@@ -357,3 +357,203 @@ export function analysesToCSV(analyses: AnalysisForExport[]): string {
 export function analysesToJSON(analyses: unknown[]): string {
   return JSON.stringify(analyses, null, 2);
 }
+
+// ─── Aşama 1: Maliyet Güncelleme Şablonu ───────────────────────
+
+interface AnalysisWithId extends AnalysisForExport {
+  id: string;
+}
+
+/**
+ * Mevcut ürünlerin düzenlenebilir maliyet şablonunu Excel olarak export eder.
+ * id kolonu dahil — geri yüklendiğinde eşleşme için kullanılır.
+ */
+export function exportCostTemplate(analyses: AnalysisWithId[]): ArrayBuffer {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const XLSX = require('xlsx');
+
+  const headers = [
+    'ID',
+    'Urun Adi',
+    'Pazaryeri',
+    'Aylik Satis Adedi',
+    'Satis Fiyati',
+    'Urun Maliyeti',
+    'Kargo',
+    'Paketleme',
+    'Reklam',
+    'Komisyon %',
+    'Iade %',
+    'KDV %',
+    'Diger Giderler',
+  ];
+
+  const MP: Record<string, string> = {
+    trendyol: 'Trendyol', hepsiburada: 'Hepsiburada',
+    n11: 'n11', amazon_tr: 'Amazon TR', custom: 'Ozel',
+  };
+
+  const rows = analyses.map(a => {
+    const inp = a.input;
+    return [
+      a.id,
+      inp.product_name || '',
+      MP[inp.marketplace] || inp.marketplace,
+      num(inp.monthly_sales_volume),
+      num(inp.sale_price),
+      num(inp.product_cost),
+      num(inp.shipping_cost),
+      num(inp.packaging_cost),
+      num(inp.ad_cost_per_sale),
+      num(inp.commission_pct),
+      num(inp.return_rate_pct),
+      num(inp.vat_pct),
+      num(inp.other_cost),
+    ];
+  });
+
+  const wsData = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Auto-width
+  const colWidths = headers.map((h, ci) => {
+    let max = h.length;
+    for (const row of rows) { const l = String(row[ci] ?? '').length; if (l > max) max = l; }
+    return { wch: Math.min(max + 4, 40) };
+  });
+  ws['!cols'] = colWidths;
+
+  // ID kolonu gri arka plan (düzenleme)
+  for (let r = 1; r <= rows.length; r++) {
+    const cellRef = XLSX.utils.encode_cell({ r, c: 0 });
+    if (ws[cellRef]) {
+      ws[cellRef].s = { font: { color: { rgb: '999999' } }, fill: { fgColor: { rgb: 'F3F4F6' } } };
+    }
+  }
+
+  // Başlık bold
+  for (let c = 0; c < headers.length; c++) {
+    const cellRef = XLSX.utils.encode_cell({ r: 0, c });
+    if (ws[cellRef]) {
+      ws[cellRef].s = { font: { bold: true }, fill: { fgColor: { rgb: 'FEF3C7' } }, alignment: { horizontal: 'center' } };
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Maliyet Sablonu');
+  return XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+}
+
+/**
+ * Maliyet şablonundan geri yükleme — Excel parse edip id ile eşleştirir.
+ * Döndürür: { id, updates } dizisi.
+ */
+export function parseCostTemplate(file: ArrayBuffer): Array<{
+  id: string;
+  updates: Partial<ProductInput>;
+}> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const XLSX = require('xlsx');
+  const wb = XLSX.read(file, { type: 'array' });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+  if (rows.length < 2) return [];
+
+  // İlk satır başlık — atla
+  const results: Array<{ id: string; updates: Partial<ProductInput> }> = [];
+
+  const MP_REVERSE: Record<string, Marketplace> = {
+    'trendyol': 'trendyol', 'hepsiburada': 'hepsiburada',
+    'n11': 'n11', 'amazon tr': 'amazon_tr', 'ozel': 'custom',
+  };
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || !row[0]) continue;
+
+    const id = String(row[0]).trim();
+    if (!id) continue;
+
+    const mp = String(row[2] ?? '').toLowerCase().trim();
+
+    results.push({
+      id,
+      updates: {
+        marketplace: MP_REVERSE[mp] ?? 'trendyol',
+        monthly_sales_volume: num(row[3]),
+        sale_price: num(row[4]),
+        product_cost: num(row[5]),
+        shipping_cost: num(row[6]),
+        packaging_cost: num(row[7]),
+        ad_cost_per_sale: num(row[8]),
+        commission_pct: num(row[9]),
+        return_rate_pct: num(row[10]),
+        vat_pct: num(row[11]),
+        other_cost: num(row[12]),
+      },
+    });
+  }
+
+  return results;
+}
+
+// ─── Aşama 2: Boş Yeni Ürün Şablonu ────────────────────────────
+
+/**
+ * Boş şablon — yeni ürün ekleme için.
+ * parseCSV ile uyumlu başlıklar kullanır.
+ */
+export function exportBlankTemplate(): ArrayBuffer {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const XLSX = require('xlsx');
+
+  const headers = [
+    'pazaryeri',
+    'urun_adi',
+    'aylik_satis_adedi',
+    'urun_maliyeti',
+    'satis_fiyati',
+    'komisyon_orani',
+    'kargo_ucreti',
+    'paketleme_maliyeti',
+    'reklam_maliyeti',
+    'iade_orani',
+    'kdv_orani',
+  ];
+
+  // 3 örnek satır
+  const examples = [
+    ['trendyol', 'Ornek Urun 1', 100, 50, 150, 18, 10, 3, 5, 12, 20],
+    ['hepsiburada', 'Ornek Urun 2', 50, 80, 200, 15, 12, 4, 8, 10, 20],
+    ['trendyol', '', '', '', '', '', '', '', '', '', ''],
+  ];
+
+  const wsData = [headers, ...examples];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  const colWidths = headers.map(h => ({ wch: Math.max(h.length + 4, 18) }));
+  ws['!cols'] = colWidths;
+
+  // Başlık bold + sarı
+  for (let c = 0; c < headers.length; c++) {
+    const cellRef = XLSX.utils.encode_cell({ r: 0, c });
+    if (ws[cellRef]) {
+      ws[cellRef].s = { font: { bold: true }, fill: { fgColor: { rgb: 'FEF3C7' } }, alignment: { horizontal: 'center' } };
+    }
+  }
+
+  // Örnek satırlar gri (kullanıcı silecek)
+  for (let r = 1; r <= 2; r++) {
+    for (let c = 0; c < headers.length; c++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c });
+      if (ws[cellRef]) {
+        ws[cellRef].s = { font: { color: { rgb: '9CA3AF' }, italic: true } };
+      }
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Yeni Urun Sablonu');
+  return XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+}
