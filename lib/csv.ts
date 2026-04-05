@@ -116,11 +116,17 @@ export function parseCSV(text: string): { data: ProductInput[]; errors: string[]
   const separator = firstLine.includes(';') ? ';' : ',';
 
   // Başlıkları normalize et — hem TR hem EN hem maliyet şablonu kabul eder
-  const rawHeaders = firstLine.split(separator).map((h) => h.trim().toLowerCase().replace(/["%]/g, ''));
+  const rawHeaders = firstLine.split(separator).map((h) => h.trim().toLowerCase().replace(/"/g, '').trim());
   // ID kolonu varsa atla (maliyet şablonundan gelmiş)
   const hasIdCol = rawHeaders[0] === 'id';
   const headersToProcess = hasIdCol ? rawHeaders.slice(1) : rawHeaders;
-  const headers = headersToProcess.map(h => HEADER_ALIASES[h] ?? h);
+  // Alias ile eşleştir — önce olduğu gibi, sonra % temizleyerek dene
+  const headers = headersToProcess.map(h => {
+    if (HEADER_ALIASES[h]) return HEADER_ALIASES[h];
+    const cleaned = h.replace(/%/g, '').trim();
+    if (HEADER_ALIASES[cleaned]) return HEADER_ALIASES[cleaned];
+    return h;
+  });
 
   // Türkçe başlıkların varlığını kontrol et
   for (const col of TURKISH_COLUMNS) {
