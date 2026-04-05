@@ -70,7 +70,7 @@ export default function DashboardPage() {
         if (!data?.success) return;
         const map = new Map<string, StockItem>();
         for (const p of data.products) {
-          const item: StockItem = { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl };
+          const item: StockItem = { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl, monthlySales: p.monthlySales ?? 0 };
           if (p.barcode) map.set(p.barcode, item);
           if (p.stockCode && p.stockCode !== p.barcode) map.set(p.stockCode, item);
           if (p.title) {

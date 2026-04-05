@@ -46,6 +46,7 @@ export interface StockItem {
   salePrice: number;
   imageUrl: string | null;
   productUrl: string | null;
+  monthlySales: number;
 }
 
 interface ProductsTableProps {
@@ -586,10 +587,15 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-center">
-                      {a.input.monthly_sales_volume > 0 ? (
+                      {(stock?.monthlySales ?? 0) > 0 ? (
                         <span className="text-sm font-bold tabular-nums text-foreground">
-                          {a.input.monthly_sales_volume}
+                          {stock!.monthlySales}
                           <span className="text-[10px] text-muted-foreground ml-0.5">/ ay</span>
+                        </span>
+                      ) : a.input.monthly_sales_volume > 0 ? (
+                        <span className="text-sm font-bold tabular-nums text-muted-foreground">
+                          {a.input.monthly_sales_volume}
+                          <span className="text-[10px] text-muted-foreground/40 ml-0.5">/ ay</span>
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground/40">—</span>

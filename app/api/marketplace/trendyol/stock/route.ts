@@ -1,7 +1,7 @@
 import { requireAuth, resolveConnectionId, errorResponse } from '@/lib/api/helpers'
 import { decrypt } from '@/lib/db/db.helper'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { fetchProducts } from '@/lib/marketplace/trendyol.api'
+import { fetchProducts, fetchOrders } from '@/lib/marketplace/trendyol.api'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +39,7 @@ export async function GET() {
       salePrice: number; listPrice: number; quantity: number;
       imageUrl: string | null; categoryName: string; brand: string;
       productUrl: string | null;
+      monthlySales: number;
     }> = []
 
     let page = 0
@@ -61,10 +62,54 @@ export async function GET() {
           productUrl: p.productUrl
             ? String(p.productUrl)
             : (p.productContentId ? `https://www.trendyol.com/-p-${p.productContentId}` : null),
+          monthlySales: 0,
         })
       }
       totalPages = result.totalPages
       page++
+    }
+
+    // Son 30 günün sipariş verisi — barcode bazlı satış adedi
+    try {
+      const SOLD_STATUSES = ['Created', 'Picking', 'Invoiced', 'Shipped', 'Delivered', 'AtCollectionPoint']
+      const salesByBarcode = new Map<string, number>()
+      const endTs = Date.now()
+      const startTs = endTs - 30 * 24 * 60 * 60 * 1000
+      const WINDOW_MS = 13 * 24 * 60 * 60 * 1000
+
+      let windowStart = startTs
+      while (windowStart < endTs) {
+        const windowEnd = Math.min(windowStart + WINDOW_MS, endTs)
+        let orderPage = 0
+        let orderTotalPages = 1
+        while (orderPage < orderTotalPages && orderPage < 10) {
+          const orderResult = await fetchOrders(creds, windowStart, windowEnd, orderPage, 200)
+          for (const order of orderResult.content) {
+            const status = String(order.status ?? order.shipmentPackageStatus ?? '')
+            if (!SOLD_STATUSES.includes(status)) continue
+            const lines = (order.lines ?? order.orderItems ?? []) as Array<Record<string, unknown>>
+            for (const line of lines) {
+              const lineStatus = String(line.orderLineItemStatusName ?? status)
+              if (lineStatus === 'Cancelled' || lineStatus === 'Returned') continue
+              const barcode = String(line.barcode ?? '').trim()
+              const qty = Number(line.quantity ?? 1)
+              if (barcode) salesByBarcode.set(barcode, (salesByBarcode.get(barcode) ?? 0) + qty)
+            }
+          }
+          orderTotalPages = orderResult.totalPages
+          orderPage++
+        }
+        windowStart = windowEnd
+      }
+
+      // Satış adedini ürünlere yaz
+      for (const p of products) {
+        if (p.barcode && salesByBarcode.has(p.barcode)) {
+          p.monthlySales = salesByBarcode.get(p.barcode)!
+        }
+      }
+    } catch {
+      // Sipariş verisi opsiyonel — hata olursa satış 0 kalır
     }
 
     // Stok özeti

@@ -34,6 +34,7 @@ export default function ProductsPage() {
       salePrice: number; listPrice: number; quantity: number;
       imageUrl: string | null; categoryName: string; brand: string;
       productUrl: string | null;
+      monthlySales: number;
     }>;
   } | null>(null);
 
@@ -349,9 +350,9 @@ export default function ProductsPage() {
           onBulkDelete={handleBulkDelete}
           onBulkExport={handleBulkExport}
           stockMap={stockData ? (() => {
-            const map = new Map<string, { barcode: string; quantity: number; salePrice: number; imageUrl: string | null; productUrl: string | null }>();
+            const map = new Map<string, { barcode: string; quantity: number; salePrice: number; imageUrl: string | null; productUrl: string | null; monthlySales: number }>();
             for (const p of stockData.products) {
-              const item = { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl };
+              const item = { barcode: p.barcode, quantity: p.quantity, salePrice: p.salePrice, imageUrl: p.imageUrl, productUrl: p.productUrl, monthlySales: p.monthlySales ?? 0 };
               if (p.barcode) map.set(p.barcode, item);
               if (p.stockCode && p.stockCode !== p.barcode) map.set(p.stockCode, item);
               if (p.title) {
