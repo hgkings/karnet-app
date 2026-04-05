@@ -11,7 +11,7 @@ export async function POST() {
     const connectionId = await resolveConnectionId(user.id, 'trendyol')
     if (connectionId instanceof Response) return connectionId
 
-    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/marketplace/trendyol/webhook`
+    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/marketplace`
 
     return callGatewayWithSuccess('marketplace' as ServiceName, 'registerTrendyolWebhook', {
       connectionId,

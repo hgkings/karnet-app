@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Trendyol webhook — server-to-server POST, cookie yok, Basic Auth ile doğrulanır
-    if (request.nextUrl.pathname === '/api/marketplace/trendyol/webhook') {
+    if (request.nextUrl.pathname === '/api/marketplace/trendyol/webhook' || request.nextUrl.pathname === '/api/webhook/marketplace') {
         return NextResponse.next()
     }
     return await updateSession(request)
@@ -31,6 +31,6 @@ export const config = {
          * - favicon.ico (favicon file)
          * Feel free to modify this pattern to include more paths.
          */
-        '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/paytr/.*|api/marketplace/trendyol/webhook$|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/paytr/.*|api/marketplace/trendyol/webhook$|api/webhook/marketplace$|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
