@@ -26,6 +26,7 @@ function mapProfileRow(data: Record<string, unknown>): User {
     email_risk_alert: ((data.email_risk_alert ?? data.emailRiskAlert) as boolean) ?? true,
     email_margin_alert: ((data.email_margin_alert ?? data.emailMarginAlert) as boolean) ?? true,
     email_pro_expiry: ((data.email_pro_expiry ?? data.emailProExpiry) as boolean) ?? true,
+    revenue_goal: (data.revenue_goal ?? data.revenueGoal) as number | undefined,
   };
 }
 
