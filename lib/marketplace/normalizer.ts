@@ -422,9 +422,12 @@ export function normalizeOrderMetrics(
         const monthStr = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-01`;
 
         for (const line of lines) {
-            const extProductId = String(line.productId ?? line.id ?? '');
+            const extProductId = String(line.productId ?? line.contentId ?? line.id ?? '');
             const qty = typeof line.quantity === 'number' ? line.quantity : 1;
-            const price = typeof line.price === 'number' ? line.price : typeof line.amount === 'number' ? line.amount : 0;
+            const price = typeof line.price === 'number' ? line.price
+              : typeof line.amount === 'number' ? line.amount
+              : typeof line.lineUnitPrice === 'number' ? line.lineUnitPrice
+              : typeof line.lineGrossAmount === 'number' ? line.lineGrossAmount : 0;
             const lineTotal = price * qty;
 
             const internalId = mapLookup.get(extProductId);
