@@ -526,11 +526,31 @@ export class MarketplaceLogic {
         }
       }
 
-      // Fallback: Eşleştirme yapılmamış ürünler için barcode/ürün adı ile satış adedi hesapla
-      // normalizer eşleşmemiş ürünleri atlıyor — burada doğrudan sipariş verisinden hesaplıyoruz
+      // Fallback: productId → ürün bilgisi köprüsü ile satış adedi hesapla
+      // Trendyol sipariş satırlarında barcode/title YOK, sadece productId var.
+      // Ürün listesinden productId → barcode/title eşlemesi yapıp analizlerle eşleştiriyoruz.
       const allAnalyses = await this.analysisRepo.findByUserId(userId)
       if (allAnalyses.length > 0 && orders.length > 0) {
-        // Sipariş satırlarından ürün bazlı satış sayısı topla (barcode → adet)
+        // 1. Trendyol ürün listesinden productId → barcode/title haritası oluştur
+        const productIdToInfo = new Map<string, { barcode: string; title: string }>()
+        let pPage = 0
+        let pTotalPages = 1
+        while (pPage < pTotalPages && pPage < 25) {
+          const productPage = await trendyolApi.fetchProducts(creds, pPage, 200, { approved: true })
+          for (const p of productPage.content) {
+            const pid = String(p.id ?? '')
+            if (pid) {
+              productIdToInfo.set(pid, {
+                barcode: String(p.barcode ?? '').trim(),
+                title: String(p.title ?? '').trim().toLowerCase(),
+              })
+            }
+          }
+          pTotalPages = productPage.totalPages
+          pPage++
+        }
+
+        // 2. Sipariş satırlarından productId bazlı satış sayısı topla
         const SOLD_STATUSES = ['Created', 'Picking', 'Invoiced', 'Shipped', 'Delivered', 'AtCollectionPoint']
         const salesByBarcode = new Map<string, number>()
         const salesByTitle = new Map<string, number>()
@@ -541,28 +561,27 @@ export class MarketplaceLogic {
           const lines = (order.lines ?? order.orderItems ?? []) as Array<Record<string, unknown>>
           for (const line of lines) {
             const qty = Number(line.quantity ?? 1)
-            const barcode = String(line.barcode ?? '').trim()
-            const title = String(line.productName ?? line.title ?? '').trim().toLowerCase()
-            if (barcode) salesByBarcode.set(barcode, (salesByBarcode.get(barcode) ?? 0) + qty)
-            if (title) salesByTitle.set(title, (salesByTitle.get(title) ?? 0) + qty)
+            const pid = String(line.productId ?? line.id ?? '').trim()
+            const info = productIdToInfo.get(pid)
+            if (info?.barcode) salesByBarcode.set(info.barcode, (salesByBarcode.get(info.barcode) ?? 0) + qty)
+            if (info?.title) salesByTitle.set(info.title, (salesByTitle.get(info.title) ?? 0) + qty)
           }
         }
 
-        // Her analiz için eşleşme dene (auto_sales_qty henüz güncellenmemişse)
+        // 3. Her analiz için eşleşme dene
         for (const a of allAnalyses) {
-          if (a.auto_sales_qty && a.auto_sales_qty > 0) continue // Zaten güncellendi
+          if (a.auto_sales_qty && a.auto_sales_qty > 0) continue
           const inputs = (a.inputs ?? {}) as Record<string, unknown>
           const aBarcode = String(inputs.barcode ?? '').trim()
           const aName = String(a.product_name ?? '').trim().toLowerCase()
+          const normName = aName.replace(/[\s\-_./]+/g, '')
 
           let matched = 0
           if (aBarcode && salesByBarcode.has(aBarcode)) {
             matched = salesByBarcode.get(aBarcode)!
           } else if (aName && salesByTitle.has(aName)) {
             matched = salesByTitle.get(aName)!
-          } else {
-            // Normalize eşleşme dene
-            const normName = aName.replace(/[\s\-_./]+/g, '')
+          } else if (normName) {
             for (const [title, qty] of salesByTitle) {
               if (title.replace(/[\s\-_./]+/g, '') === normName) {
                 matched = qty
