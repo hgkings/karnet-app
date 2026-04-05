@@ -17,7 +17,7 @@ import {
   Calendar, CheckCircle, FileText, Download, Plus,
   Star, AlertTriangle, TrendingDown, ArrowRight,
   Store, ExternalLink, Loader2,
-  ShoppingBag, Truck, Clock, XCircle, Zap, Pencil
+  ShoppingBag, Truck, Clock, XCircle, Zap, Pencil, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -50,6 +50,9 @@ export default function DashboardPage() {
   const [orderSummary, setOrderSummary] = useState<{
     today: number; todayChange: number; shipped: number;
     pending: number; cancelled: number; pendingOver24h: number; activeClaims: number;
+  } | null>(null);
+  const [financeData, setFinanceData] = useState<{
+    hakedis: number; komisyon: number; iade: number; islemSayisi: number;
   } | null>(null);
   const [dailyProfit, setDailyProfit] = useState<{
     days: Array<{ date: string; label: string; profit: number }>;
@@ -101,7 +104,21 @@ export default function DashboardPage() {
       .then(data => { if (data?.success) setOrderSummary(data); })
       .catch(() => {});
 
-    // Günlük kar verisini cek
+    // Finans verisi cek
+    fetch('/api/marketplace/trendyol/finance?gun=30')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.success) return;
+        const settlements = (data.settlements ?? []) as Array<Record<string, unknown>>;
+        const others = (data.otherFinancials ?? []) as Array<Record<string, unknown>>;
+        const hakedis = settlements.reduce((s: number, x: Record<string, unknown>) => s + Number(x.amount ?? x.paidPrice ?? 0), 0);
+        const komisyon = settlements.reduce((s: number, x: Record<string, unknown>) => s + Math.abs(Number(x.commissionAmount ?? x.commission ?? 0)), 0);
+        const iade = others.reduce((s: number, x: Record<string, unknown>) => s + Math.abs(Number(x.amount ?? 0)), 0);
+        setFinanceData({ hakedis, komisyon, iade, islemSayisi: settlements.length + others.length });
+      })
+      .catch(() => {});
+
+    // Gunluk kar verisini cek
     fetch('/api/marketplace/trendyol/daily-profit')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.success) setDailyProfit(data); })
@@ -531,12 +548,56 @@ export default function DashboardPage() {
         )}
 
         {/* ═══ BÖLÜM 5 — Pazaryeri İstatistikleri ═══ */}
-        <PazaryeriIstatistikKarti
-          bagliPazaryerleri={[
-            { id: 'trendyol', status: trendyolConn.status, supplier_id: trendyolConn.seller_id },
-            { id: 'hepsiburada', status: 'disconnected' },
-          ]}
-        />
+        <div className="rounded-xl border border-border/40 bg-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="w-[13px] h-[13px] text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">Pazaryeri Istatistikleri</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                <span className="w-[5px] h-[5px] rounded-full bg-emerald-500 inline-block" style={{ boxShadow: '0 0 4px rgba(34,197,94,0.7)' }} />
+                Canli
+              </span>
+              <Link href="/finance" className="text-xs text-orange-500 font-medium">
+                Detaylar
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">Net Hakedis</span>
+              <span className="text-lg font-bold text-foreground">
+                {formatCurrency((financeData?.hakedis ?? 0) - (financeData?.komisyon ?? 0) - (financeData?.iade ?? 0))}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">Hakedis</span>
+              <span className="text-lg font-bold text-emerald-500">
+                {formatCurrency(financeData?.hakedis ?? 0)}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">Komisyon</span>
+              <span className="text-lg font-bold" style={{ color: '#ef4444' }}>
+                -{formatCurrency(financeData?.komisyon ?? 0)}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">Iade</span>
+              <span className="text-lg font-bold" style={{ color: '#f97316' }}>
+                -{formatCurrency(financeData?.iade ?? 0)}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-border/10">
+            <span className="text-xs text-muted-foreground">
+              Son 30 gunde {financeData?.islemSayisi ?? 0} islem
+            </span>
+          </div>
+        </div>
 
         {/* ═══ BÖLÜM 6 — Siparişler ═══ */}
         {orderSummary && (
