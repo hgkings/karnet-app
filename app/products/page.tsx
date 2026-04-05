@@ -62,6 +62,7 @@ export default function ProductsPage() {
   }, [isPro]);
 
   const handleDelete = async (id: string) => {
+    if (!confirm('Bu analizi silmek istediğinize emin misiniz?')) return;
     const result = await deleteAnalysis(id);
     if (!result.success) {
       toast.error(`Silme işlemi başarısız: ${result.error}`);
