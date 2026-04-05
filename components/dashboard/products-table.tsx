@@ -335,10 +335,20 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
             const sku = (inputs.merchant_sku as string) ?? '';
             const nameKey = a.input.product_name.toLowerCase();
             const normKey = nameKey.replace(/[\s\-_./]+/g, '');
-            const stock = (barcode ? stockMap?.get(barcode) : undefined)
+            let stock = (barcode ? stockMap?.get(barcode) : undefined)
               ?? (sku ? stockMap?.get(sku) : undefined)
               ?? stockMap?.get(nameKey)
               ?? stockMap?.get(normKey);
+            if (!stock && stockMap && nameKey.length > 3) {
+              const words = nameKey.split(/\s+/).filter(w => w.length > 2);
+              if (words.length >= 2) {
+                for (const [key, val] of stockMap) {
+                  if (key.length < 10) continue;
+                  const matches = words.filter(w => key.includes(w)).length;
+                  if (matches >= Math.ceil(words.length * 0.6)) { stock = val; break; }
+                }
+              }
+            }
             const imgUrl = stock?.imageUrl ?? (inputs.image_url as string | undefined);
             const stok = stock?.quantity ?? (inputs.stock_quantity as number | undefined);
 
@@ -506,10 +516,21 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                   const sku = (inputs.merchant_sku as string) ?? '';
                   const nameKey = a.input.product_name.toLowerCase();
                   const normKey = nameKey.replace(/[\s\-_./]+/g, '');
-                  const stock = (barcode ? stockMap?.get(barcode) : undefined)
+                  let stock = (barcode ? stockMap?.get(barcode) : undefined)
                     ?? (sku ? stockMap?.get(sku) : undefined)
                     ?? stockMap?.get(nameKey)
                     ?? stockMap?.get(normKey);
+                  // Fuzzy eşleşme: analiz adının kelimeleri Trendyol başlığında geçiyor mu
+                  if (!stock && stockMap && nameKey.length > 3) {
+                    const words = nameKey.split(/\s+/).filter(w => w.length > 2);
+                    if (words.length >= 2) {
+                      for (const [key, val] of stockMap) {
+                        if (key.length < 10) continue; // kısa key'ler barcode/id olabilir
+                        const matches = words.filter(w => key.includes(w)).length;
+                        if (matches >= Math.ceil(words.length * 0.6)) { stock = val; break; }
+                      }
+                    }
+                  }
                   const imgUrl = stock?.imageUrl ?? (inputs.image_url as string | undefined);
                   const stok = stock?.quantity ?? (inputs.stock_quantity as number | undefined);
 
