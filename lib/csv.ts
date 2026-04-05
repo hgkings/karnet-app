@@ -512,28 +512,26 @@ export function exportBlankTemplate(): ArrayBuffer {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const XLSX = require('xlsx');
 
-  // Maliyet şablonuyla AYNI başlıklar — ID boş bırakılır (yeni ürün)
+  // parseCSV ile uyumlu Türkçe başlıklar — CSV İçe Aktar'dan da yüklenebilir
   const headers = [
-    'ID',
-    'Urun Adi',
-    'Pazaryeri',
-    'Aylik Satis Adedi',
-    'Satis Fiyati',
-    'Urun Maliyeti',
-    'Kargo',
-    'Paketleme',
-    'Reklam',
-    'Komisyon %',
-    'Iade %',
-    'KDV %',
-    'Diger Giderler',
+    'pazaryeri',
+    'urun_adi',
+    'aylik_satis_adedi',
+    'urun_maliyeti',
+    'satis_fiyati',
+    'komisyon_orani',
+    'kargo_ucreti',
+    'paketleme_maliyeti',
+    'reklam_maliyeti',
+    'iade_orani',
+    'kdv_orani',
   ];
 
-  // 2 örnek satır (ID boş — yeni ürün olarak eklenir)
+  // 2 örnek satır
   const examples = [
-    ['', 'Ornek Urun 1', 'Trendyol', 100, 150, 50, 10, 3, 5, 18, 12, 20, 0],
-    ['', 'Ornek Urun 2', 'Hepsiburada', 50, 200, 80, 12, 4, 8, 15, 10, 20, 0],
-    ['', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['trendyol', 'Ornek Urun 1', 100, 50, 150, 18, 10, 3, 5, 12, 20],
+    ['hepsiburada', 'Ornek Urun 2', 50, 80, 200, 15, 12, 4, 8, 10, 20],
+    ['', '', '', '', '', '', '', '', '', '', ''],
   ];
 
   const wsData = [headers, ...examples];
