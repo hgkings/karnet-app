@@ -1522,7 +1522,7 @@ export async function getSellerSettlements(
     // transactionTypes (çoğul) ile tek istekte çoklu tip — 14 günlük pencereler
     let mevcutBaslangic = new Date(baslangic)
 
-    while (mevcutBaslangic <= bitis) {
+    while (mevcutBaslangic < bitis) {
       const mevcutBitis = new Date(mevcutBaslangic)
       mevcutBitis.setDate(mevcutBitis.getDate() + 14)
       if (mevcutBitis > bitis) mevcutBitis.setTime(bitis.getTime())
@@ -1572,7 +1572,7 @@ export async function getOtherFinancials(
     const bitis = new Date(endDate)
     let mevcutBaslangic = new Date(baslangic)
 
-    while (mevcutBaslangic <= bitis) {
+    while (mevcutBaslangic < bitis) {
         const mevcutBitis = new Date(mevcutBaslangic)
         mevcutBitis.setDate(mevcutBitis.getDate() + 14)
         if (mevcutBitis > bitis) mevcutBitis.setTime(bitis.getTime())
