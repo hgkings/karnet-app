@@ -1014,7 +1014,7 @@ export class MarketplaceLogic {
     traceId: string,
     payload: unknown,
     _userId: string
-  ): Promise<{ settlements: trendyolApi.SellerSettlement[]; otherFinancials: trendyolApi.OtherFinancial[] }> {
+  ): Promise<{ settlements: trendyolApi.SellerSettlement[]; otherFinancials: trendyolApi.OtherFinancial[]; debug?: Record<string, unknown> }> {
     const { connectionId, days, startDate, endDate } = payload as {
       connectionId: string; days?: number; startDate?: string; endDate?: string
     }
