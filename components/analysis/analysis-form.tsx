@@ -113,6 +113,7 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
   const [customRateMap, setCustomRateMap] = useState<Map<string, number>>(new Map());
   const [ratesLastUpdated, setRatesLastUpdated] = useState<string | null>(null);
   const [iadeOranCekiliyor, setIadeOranCekiliyor] = useState(false);
+  const [syncToTrendyol, setSyncToTrendyol] = useState(false);
 
   // In demo mode, treat as free user unless simulated otherwise
   const isProUserFlag = isDemo ? false : isProUser(user);
@@ -354,6 +355,32 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
       }
 
       toast.success(analysisId ? 'Analiz güncellendi.' : 'Analiz başarıyla kaydedildi.');
+
+      // Trendyol'a fiyat sync
+      if (syncToTrendyol && sanitized.marketplace === 'trendyol') {
+        const barcode = String((sanitized as Record<string, unknown>).barcode ?? '').trim();
+        if (barcode && sanitized.sale_price > 0) {
+          try {
+            const syncRes = await fetch('/api/marketplace/trendyol/stock/update', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                items: [{ barcode, salePrice: sanitized.sale_price, listPrice: sanitized.sale_price }],
+              }),
+            });
+            const syncData = await syncRes.json();
+            if (syncData.success) {
+              toast.success('Fiyat Trendyol\'da da guncellendi.');
+            } else {
+              toast.error('Trendyol fiyat guncellemesi basarisiz.');
+            }
+          } catch {
+            toast.error('Trendyol baglantisi kurulamadi.');
+          }
+        } else if (!barcode) {
+          toast.info('Trendyol fiyat guncellemesi icin barkod bilgisi gerekli.');
+        }
+      }
 
       // Trigger Risk Check (Fire and forget, don't await blocking UI)
       if (analysisData.id) {
@@ -689,6 +716,19 @@ export function AnalysisForm({ initialData, analysisId, isDemo = false }: Analys
                     </div>
                     {errors[field.key] && (
                       <p className="text-xs text-red-500">{errors[field.key]}</p>
+                    )}
+                    {field.key === 'sale_price' && input.marketplace === 'trendyol' && !isDemo && isProUserFlag && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <Switch
+                          id="sync-trendyol-price"
+                          checked={syncToTrendyol}
+                          onCheckedChange={setSyncToTrendyol}
+                          className="scale-75"
+                        />
+                        <Label htmlFor="sync-trendyol-price" className="text-[11px] text-muted-foreground cursor-pointer">
+                          Fiyati Trendyol&apos;da da guncelle
+                        </Label>
+                      </div>
                     )}
                   </div>
                 ))}

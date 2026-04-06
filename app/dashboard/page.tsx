@@ -9,6 +9,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProductsTable, StockItem } from '@/components/dashboard/products-table';
 import { PazaryeriIstatistikKarti } from '@/components/shared/PazaryeriIstatistikKarti';
 import { isProUser } from '@/utils/access';
+import { OrderActionsSheet } from '@/components/dashboard/order-actions-sheet';
 import { formatCurrency, formatPercent } from '@/components/shared/format';
 import { RiskBadge } from '@/components/shared/risk-badge';
 import { getMarketplaceLabel } from '@/lib/marketplace-data';
@@ -60,6 +61,7 @@ export default function DashboardPage() {
     totalRevenue: number; revenueChange: number; revenueGoal: number; goalPercent: number;
   } | null>(null);
   const isPro = isProUser(user);
+  const [showOrderSheet, setShowOrderSheet] = useState(false);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
 
@@ -627,10 +629,10 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold text-emerald-600">{orderSummary.shipped}</div>
                 <div className="text-xs text-muted-foreground mt-1">teslim edildi</div>
               </div>
-              <div className="px-5 py-4 text-center">
+              <div className="px-5 py-4 text-center cursor-pointer hover:bg-muted/10 transition-colors" onClick={() => setShowOrderSheet(true)}>
                 <div className="text-xs text-muted-foreground mb-1">Bekleyen</div>
                 <div className="text-2xl font-bold text-orange-500">{orderSummary.pending}</div>
-                <div className="text-xs text-muted-foreground mt-1">islem bekliyor</div>
+                <div className="text-xs text-orange-500 mt-1 font-medium">Yonet →</div>
               </div>
               <div className="px-5 py-4 text-center">
                 <div className="text-xs text-muted-foreground mb-1">Iptal / Iade</div>
@@ -689,6 +691,7 @@ export default function DashboardPage() {
         )}
 
       </div>
+      <OrderActionsSheet open={showOrderSheet} onOpenChange={setShowOrderSheet} />
     </DashboardLayout>
   );
 }

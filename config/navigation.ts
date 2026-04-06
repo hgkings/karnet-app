@@ -14,6 +14,7 @@ import {
     CreditCard,
     MessageSquare,
     Wallet,
+    MessageCircleQuestion,
 } from 'lucide-react';
 import type { PlanFeature } from '@/config/plans';
 
@@ -38,6 +39,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const FINANS_NAV_ITEMS: NavItem[] = [
     { label: 'Hakediş', href: '/finance', icon: Wallet, requiredFeature: 'apiIntegration' },
+    { label: 'Sorular', href: '/questions', icon: MessageCircleQuestion, requiredFeature: 'apiIntegration' },
 ];
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = [

@@ -12,9 +12,10 @@ import { calculateProfit } from '@/utils/calculations';
 import { calculateRisk } from '@/utils/risk-engine';
 import { UpgradeModal } from '@/components/shared/upgrade-modal';
 import { Button } from '@/components/ui/button';
-import { Upload, Download, Lock, Settings2, Loader2, Package, FileDown, FileUp, FilePlus2 } from 'lucide-react';
+import { Upload, Download, Lock, Settings2, Loader2, Package, FileDown, FileUp, FilePlus2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { BulkUpdateModal } from '@/components/dashboard/bulk-update-modal';
+import { StockPriceUpdateModal } from '@/components/dashboard/stock-price-update-modal';
 import { CSVImportSection } from '@/components/dashboard/csv-import-section';
 import { toast } from 'sonner';
 import { isProUser } from '@/utils/access';
@@ -24,6 +25,8 @@ export default function ProductsPage() {
   const { analyses, loading, refresh } = useAlerts();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
+  const [showStockPriceUpdate, setShowStockPriceUpdate] = useState(false);
+  const [selectedForStockUpdate, setSelectedForStockUpdate] = useState<string[]>([]);
 
   // Trendyol stok verileri
   const [stockLoading, setStockLoading] = useState(false);
@@ -90,6 +93,11 @@ export default function ProductsPage() {
       toast.error(result.error || 'Toplu silme başarısız.');
     }
     await refresh();
+  };
+
+  const handleBulkStockUpdate = (ids: string[]) => {
+    setSelectedForStockUpdate(ids);
+    setShowStockPriceUpdate(true);
   };
 
   const handleBulkExport = (ids: string[]) => {
@@ -359,6 +367,7 @@ export default function ProductsPage() {
           onDelete={handleDelete}
           onBulkDelete={handleBulkDelete}
           onBulkExport={handleBulkExport}
+          onBulkStockUpdate={isPro ? handleBulkStockUpdate : undefined}
           stockMap={stockData ? (() => {
             const map = new Map<string, { barcode: string; quantity: number; salePrice: number; imageUrl: string | null; productUrl: string | null; monthlySales: number }>();
             for (const p of stockData.products) {
@@ -379,6 +388,26 @@ export default function ProductsPage() {
 
       </div>
 
+      <StockPriceUpdateModal
+        open={showStockPriceUpdate}
+        onOpenChange={setShowStockPriceUpdate}
+        selectedProducts={selectedForStockUpdate.map(id => {
+          const a = analyses.find(x => x.id === id);
+          if (!a) return { barcode: '', productName: '', stock: undefined };
+          // stockData'dan direkt ürün adıyla eşleştir
+          const nameKey = a.input.product_name.toLowerCase();
+          const product = stockData?.products.find(p =>
+            p.title.toLowerCase() === nameKey ||
+            p.title.toLowerCase().replace(/[\s\-_./]+/g, '') === nameKey.replace(/[\s\-_./]+/g, '')
+          );
+          return {
+            barcode: product?.barcode ?? '',
+            productName: a.input.product_name,
+            stock: product ? { barcode: product.barcode, quantity: product.quantity, salePrice: product.salePrice, imageUrl: product.imageUrl, productUrl: product.productUrl, monthlySales: product.monthlySales ?? 0 } : undefined,
+          };
+        })}
+        onComplete={fetchStock}
+      />
       <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
     </DashboardLayout>
   );

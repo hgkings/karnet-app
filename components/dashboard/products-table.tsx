@@ -54,13 +54,14 @@ interface ProductsTableProps {
   onDelete?: (id: string) => void;
   onBulkDelete?: (ids: string[]) => void;
   onBulkExport?: (ids: string[]) => void;
+  onBulkStockUpdate?: (ids: string[]) => void;
   stockMap?: Map<string, StockItem>;
 }
 
 type SortField = 'monthly_net_profit' | 'margin_pct' | 'risk_score' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 
-export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, stockMap }: ProductsTableProps) {
+export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, onBulkStockUpdate, stockMap }: ProductsTableProps) {
   // --- States ---
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -281,12 +282,23 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
       </div>
 
       {/* --- Bulk Action Bar --- */}
-      {someSelected && (onBulkDelete || onBulkExport) && (
+      {someSelected && (onBulkDelete || onBulkExport || onBulkStockUpdate) && (
         <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
           <span className="text-sm font-medium text-primary">
             {selectedIds.size} ürün seçildi
           </span>
           <div className="flex items-center gap-2">
+            {onBulkStockUpdate && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs text-blue-600 border-blue-500/30 hover:bg-blue-500/10"
+                onClick={() => onBulkStockUpdate(Array.from(selectedIds))}
+              >
+                <Package className="h-3.5 w-3.5 mr-1.5" />
+                Stok/Fiyat Guncelle
+              </Button>
+            )}
             {onBulkExport && (
               <Button
                 variant="outline"
@@ -295,7 +307,7 @@ export function ProductsTable({ analyses, onDelete, onBulkDelete, onBulkExport, 
                 onClick={() => onBulkExport(Array.from(selectedIds))}
               >
                 <Download className="h-3.5 w-3.5 mr-1.5" />
-                Dışa Aktar
+                Disa Aktar
               </Button>
             )}
             {onBulkDelete && (

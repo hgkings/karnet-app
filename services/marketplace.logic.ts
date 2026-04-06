@@ -610,6 +610,211 @@ export class MarketplaceLogic {
     }
   }
 
+  async updateTrendyolStockPrice(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ batchRequestId: string; updatedCount: number }> {
+    const { connectionId, items } = payload as {
+      connectionId: string
+      items: Array<{ barcode: string; quantity?: number; salePrice?: number; listPrice?: number }>
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const result = await trendyolApi.updateStockAndPrice(creds, items)
+    return { batchRequestId: result.batchRequestId, updatedCount: items.length }
+  }
+
+  // ── Sipariş Aksiyonları ──────────────────────────────────────
+
+  async getPendingOrders(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ orders: Array<Record<string, unknown>> }> {
+    const { connectionId } = payload as { connectionId: string }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const now = Date.now()
+    const weekAgo = now - 7 * 24 * 60 * 60 * 1000
+    const result = await trendyolApi.fetchOrders(creds, weekAgo, now, 0, 200)
+    const pending = result.content.filter(o => {
+      const status = String(o.shipmentPackageStatus ?? o.status ?? '')
+      return ['Created', 'Picking', 'Awaiting', 'Invoiced'].includes(status)
+    })
+    return { orders: pending }
+  }
+
+  async updateOrderStatus(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, shipmentPackageId, status, trackingNumber, invoiceNumber } = payload as {
+      connectionId: string; shipmentPackageId: number; status: string;
+      trackingNumber?: string; invoiceNumber?: string
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const lines = [{ lineId: 0, quantity: 1 }]
+    await trendyolApi.updatePackageStatus(creds, shipmentPackageId, status as 'Picking' | 'Invoiced', lines, invoiceNumber)
+    return { success: true }
+  }
+
+  async markOrderUnsupplied(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, shipmentPackageId, lineItems } = payload as {
+      connectionId: string; shipmentPackageId: number; lineItems: Array<{ lineId: number; quantity: number }>
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    await trendyolApi.markUnsupplied(creds, shipmentPackageId, lineItems, 1) // reasonId 1 = default
+    return { success: true }
+  }
+
+  async splitOrderPackage(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, shipmentPackageId, splitGroups } = payload as {
+      connectionId: string; shipmentPackageId: number; splitGroups: Array<{ lineId: number; quantity: number }[]>
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    // splitGroups: [[{lineId, qty}], [{lineId, qty}]] → flat [{orderLineId, qty}]
+    const flatItems = splitGroups.flat().map(g => ({ orderLineId: g.lineId, quantity: g.quantity }))
+    await trendyolApi.splitPackage(creds, shipmentPackageId, flatItems)
+    return { success: true }
+  }
+
+  async updateOrderBoxInfo(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, shipmentPackageId, boxQuantity, deci } = payload as {
+      connectionId: string; shipmentPackageId: number; boxQuantity: number; deci: number
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    await trendyolApi.updateBoxInfo(creds, shipmentPackageId, boxQuantity, deci)
+    return { success: true }
+  }
+
+  async changeOrderCargo(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, shipmentPackageId, cargoProviderCode } = payload as {
+      connectionId: string; shipmentPackageId: number; cargoProviderCode: string
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    await trendyolApi.changeCargoProvider(creds, shipmentPackageId, cargoProviderCode)
+    return { success: true }
+  }
+
+  async sendTrendyolInvoiceLink(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, shipmentPackageId, invoiceLink, invoiceNumber, invoiceDate } = payload as {
+      connectionId: string; shipmentPackageId: number; invoiceLink: string;
+      invoiceNumber?: string; invoiceDate?: string
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const dateTs = invoiceDate ? new Date(invoiceDate).getTime() : Date.now()
+    await trendyolApi.sendInvoiceLink(creds, shipmentPackageId, invoiceLink, invoiceNumber ?? '', dateTs)
+    return { success: true }
+  }
+
+  // ── İade Aksiyonları ──────────────────────────────────────
+
+  async approveTrendyolClaim(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, claimId, claimLineItemIds } = payload as {
+      connectionId: string; claimId: string; claimLineItemIds: string[]
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    await trendyolApi.approveClaim(creds, claimId, claimLineItemIds)
+    return { success: true }
+  }
+
+  async rejectTrendyolClaim(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, claimId, claimLineItemIds, reasonId, description } = payload as {
+      connectionId: string; claimId: string; claimLineItemIds: string[];
+      reasonId: number; description?: string
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    await trendyolApi.rejectClaim(creds, claimId, reasonId, claimLineItemIds, description ?? '')
+    return { success: true }
+  }
+
+  async getTrendyolClaimReasons(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ reasons: Array<{ id: number; name: string }> }> {
+    const { connectionId } = payload as { connectionId: string }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const reasons = await trendyolApi.getClaimIssueReasons(creds)
+    return { reasons }
+  }
+
+  // ── Müşteri Soruları ──────────────────────────────────────
+
+  async getTrendyolQuestions(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ questions: trendyolApi.QuestionItem[]; totalElements: number }> {
+    const { connectionId, status, page } = payload as {
+      connectionId: string; status?: string; page?: number
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const validStatuses = ['WAITING_FOR_ANSWER', 'ANSWERED', 'REPORTED', 'REJECTED', 'UNANSWERED'] as const
+    type QStatus = typeof validStatuses[number]
+    const qStatus = validStatuses.includes(status as QStatus) ? (status as QStatus) : 'WAITING_FOR_ANSWER'
+    const result = await trendyolApi.getQuestions(creds, {
+      status: qStatus,
+      page: page ?? 0,
+      size: 50,
+    })
+    return { questions: result.content, totalElements: result.totalElements }
+  }
+
+  async answerTrendyolQuestion(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ success: boolean }> {
+    const { connectionId, questionId, answer } = payload as {
+      connectionId: string; questionId: number; answer: string
+    }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    await trendyolApi.answerQuestion(creds, questionId, answer)
+    return { success: true }
+  }
+
+  // ── Satıcı Bilgileri ──────────────────────────────────────
+
+  async getTrendyolSellerAddresses(
+    traceId: string,
+    payload: unknown,
+    _userId: string
+  ): Promise<{ addresses: trendyolApi.SellerAddress[] }> {
+    const { connectionId } = payload as { connectionId: string }
+    const creds = await this.resolveCredentials(connectionId, traceId)
+    const addresses = await trendyolApi.getSellerAddresses(creds)
+    return { addresses }
+  }
+
   async getOrderCount(
     traceId: string,
     payload: unknown,
