@@ -101,7 +101,11 @@ function hesaplaOzet(settlements: Settlement[], others: OtherFinancial[]): Finan
     const isReturn = tip === 'Return' || tipLower === 'iade' || tipLower.includes('return')
 
     if (isSale) {
-      brutSatis += s.alacak
+      // Brüt satış = satıcı hakediş + komisyon (credit alanı 0 olabiliyor)
+      const satisTutari = s.alacak > 0
+        ? s.alacak
+        : s.saticiHakedis + Math.abs(s.komisyonTutari)
+      brutSatis += satisTutari
       satisAdet++
       komisyonKesintisi += Math.abs(s.komisyonTutari)
     } else if (isReturn) {
