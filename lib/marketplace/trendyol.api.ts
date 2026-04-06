@@ -1476,8 +1476,25 @@ async function fetchSettlementsChunk(
           throw new Error(`Trendyol Finance API hatası (HTTP ${res.status}): ${errBody.slice(0, 500)}`)
         }
 
-        const data = await res.json() as { content?: Record<string, unknown>[]; totalPages?: number }
-        const items = (data.content || []).map((item: Record<string, unknown>): SellerSettlement => ({
+        const data = await res.json() as Record<string, unknown>
+
+        // DEBUG: İlk sayfa ise raw response anahtarlarını ve ilk item'ı logla
+        if (page === 0) {
+          console.log('[Finance DEBUG] Response keys:', Object.keys(data))
+          console.log('[Finance DEBUG] totalPages:', data.totalPages, 'totalElements:', data.totalElements)
+          const contentArr = data.content as Record<string, unknown>[] | undefined
+          if (contentArr?.[0]) {
+            console.log('[Finance DEBUG] First item keys:', Object.keys(contentArr[0]))
+            console.log('[Finance DEBUG] First item sample:', JSON.stringify(contentArr[0]).slice(0, 500))
+          } else {
+            console.log('[Finance DEBUG] content is empty or missing. Raw keys:', Object.keys(data))
+            // Belki content yerine farklı bir alan altında dönüyor
+            console.log('[Finance DEBUG] Raw data (ilk 1000 char):', JSON.stringify(data).slice(0, 1000))
+          }
+        }
+
+        const contentArray = (data.content ?? []) as Record<string, unknown>[]
+        const items = contentArray.map((item: Record<string, unknown>): SellerSettlement => ({
             siparisId: (item.orderNumber as string) ?? '',
             paketId: (item.shipmentPackageId as number) ?? 0,
             barkod: (item.barcode as string) ?? '',
@@ -1495,7 +1512,8 @@ async function fetchSettlementsChunk(
 
         allItems.push(...items)
 
-        if (!data.totalPages || page + 1 >= data.totalPages || items.length === 0) break
+        const totalPages = (data.totalPages as number) ?? 0
+        if (!totalPages || page + 1 >= totalPages || items.length === 0) break
     }
 
     return allItems

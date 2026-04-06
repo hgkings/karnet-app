@@ -1055,9 +1055,19 @@ export class MarketplaceLogic {
       otherFinancials = results[1].value
     }
 
+    // DEBUG: API'nin ne döndüğünü görmek için geçici bilgi
+    const debug = {
+      dateRange: `${startStr} → ${endStr}`,
+      settlementCount: settlements.length,
+      otherFinancialsCount: otherFinancials.length,
+      firstSettlement: settlements[0] ? JSON.stringify(settlements[0]).slice(0, 300) : null,
+      sellerId: creds.sellerId,
+    }
+
     return {
       settlements,
       otherFinancials,
+      debug,
       ...(financeError ? { warning: financeError } : {}),
     }
   }
