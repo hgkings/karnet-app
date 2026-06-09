@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   title: 'Kârnet Nedir? — Pazaryeri Kâr Analizi Platformu',
   description:
     'Kârnet, Trendyol ve Hepsiburada satıcılarının gerçek net kârını otomatik hesaplayan Türk SaaS platformudur. Komisyon, kargo, iade ve KDV dahil tüm maliyetleri hesaplar.',
-  alternates: { canonical: 'https://karnet.com.tr/nedir' },
+  alternates: { canonical: 'https://karnet.com/nedir' },
   openGraph: {
     title: 'Kârnet Nedir? — Pazaryeri Kâr Analizi Platformu',
     description:
       'Trendyol ve Hepsiburada satıcıları için gerçek kâr analizi. Komisyon, kargo, iade ve KDV otomatik hesaplanır.',
-    url: 'https://karnet.com.tr/nedir',
+    url: 'https://karnet.com/nedir',
     type: 'website',
   },
 };
@@ -45,8 +45,8 @@ export default function NedirPage() {
   const appSchema = softwareApplicationSchema();
   const faqSchema = faqPageSchema(FAQ_ITEMS.map((f) => ({ question: f.question, answer: f.answer })));
   const breadcrumbs = breadcrumbSchema([
-    { name: 'Ana Sayfa', url: 'https://karnet.com.tr' },
-    { name: 'Kârnet Nedir?', url: 'https://karnet.com.tr/nedir' },
+    { name: 'Ana Sayfa', url: 'https://karnet.com' },
+    { name: 'Kârnet Nedir?', url: 'https://karnet.com/nedir' },
   ]);
 
   return (

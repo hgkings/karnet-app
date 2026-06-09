@@ -88,7 +88,7 @@ gerçek net kârı görmesini sağlayan Türk SaaS platformudur.
 
 ## Teknik Riskler
 
-1. **Domain tutarsızlığı**: Kodda `karnet.com` ve `karnet.com.tr` karışık kullanılıyor.
+1. **Domain tutarsızlığı**: Kodda `karnet.com` ve `karnet.com` karışık kullanılıyor.
    → `NEXT_PUBLIC_APP_URL` env değişkeniyle yönetilmeli.
 
 2. **'use client' kısıtlaması**: Pricing ve landing page 'use client' olduğundan

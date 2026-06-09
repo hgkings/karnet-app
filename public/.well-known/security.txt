@@ -1,5 +1,5 @@
-Contact: mailto:security@karnet.com.tr
+Contact: mailto:security@karnet.com
 Expires: 2027-04-01T00:00:00.000Z
 Preferred-Languages: tr, en
-Canonical: https://karnet.com.tr/.well-known/security.txt
-Policy: https://karnet.com.tr/security
+Canonical: https://karnet.com/.well-known/security.txt
+Policy: https://karnet.com/security

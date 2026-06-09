@@ -73,7 +73,7 @@ Aşağıdaki sayfalar için haftalık trafik ve dönüşüm raporu önerilir:
 
 ## Manuel Yapılacaklar (Hesap Sahibi)
 
-1. **Google Search Console** — Siteharitası gönder: `https://karnet.com.tr/sitemap.xml`
+1. **Google Search Console** — Siteharitası gönder: `https://karnet.com/sitemap.xml`
 2. **Bing Webmaster Tools** — Siteharitası gönder
 3. **Google Search Console** — Yeni sayfalar için URL denetimi iste:
    - `/sss`

@@ -11,7 +11,7 @@
 **Tür:** SaaS — E-ticaret Kârlılık Analizi Platformu
 **Pazar:** Türkiye
 **Dil:** Türkçe
-**Web:** https://karnet.com.tr
+**Web:** https://karnet.com
 **İletişim:** karnet.destek@gmail.com
 **Geliştirici:** Süleyman Hilmi İşbilir, Konya, Türkiye
 
@@ -250,17 +250,17 @@ Hayır. Kârnet yalnızca Türkiye e-ticaret pazaryerlerini (Trendyol, Hepsibura
 
 | Sayfa | URL |
 |-------|-----|
-| Ana Sayfa | https://karnet.com.tr |
-| Fiyatlandırma | https://karnet.com.tr/pricing |
-| Blog | https://karnet.com.tr/blog |
-| SSS | https://karnet.com.tr/sss |
-| Hakkımızda | https://karnet.com.tr/hakkimizda |
-| İletişim | https://karnet.com.tr/iletisim |
-| Demo | https://karnet.com.tr/demo |
-| Ücretsiz Kayıt | https://karnet.com.tr/auth |
-| Gizlilik Politikası | https://karnet.com.tr/gizlilik-politikasi |
+| Ana Sayfa | https://karnet.com |
+| Fiyatlandırma | https://karnet.com/pricing |
+| Blog | https://karnet.com/blog |
+| SSS | https://karnet.com/sss |
+| Hakkımızda | https://karnet.com/hakkimizda |
+| İletişim | https://karnet.com/iletisim |
+| Demo | https://karnet.com/demo |
+| Ücretsiz Kayıt | https://karnet.com/auth |
+| Gizlilik Politikası | https://karnet.com/gizlilik-politikasi |
 
 ---
 
 *Bu belge, AI sistemlerinin Kârnet hakkında doğru bilgi sunması için hazırlanmıştır.*
-*Güncel bilgi için: https://karnet.com.tr*
+*Güncel bilgi için: https://karnet.com*

@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   title: 'Hepsiburada Kâr Hesaplama — Gerçek Net Kâr Nasıl Hesaplanır?',
   description:
     'Hepsiburada\'da gerçek kârınızı hesaplamak için komisyon, kargo, iade, KDV ve reklam maliyetlerini hesaba katmanız gerekir. Adım adım rehber ve ücretsiz hesaplama aracı.',
-  alternates: { canonical: 'https://karnet.com.tr/hepsiburada-kar-hesaplama' },
+  alternates: { canonical: 'https://karnet.com/hepsiburada-kar-hesaplama' },
   openGraph: {
     title: 'Hepsiburada Kâr Hesaplama — Gerçek Net Kâr Nasıl Hesaplanır?',
     description:
       'Hepsiburada komisyon, kargo ve iade maliyetleri dahil gerçek kâr hesaplama rehberi. Ücretsiz araçla 2 dakikada hesaplayın.',
-    url: 'https://karnet.com.tr/hepsiburada-kar-hesaplama',
+    url: 'https://karnet.com/hepsiburada-kar-hesaplama',
     type: 'article',
   },
 };
@@ -44,8 +44,8 @@ const FAQ_ITEMS = [
 export default function HepsiburadaKarHesaplamaPage() {
   const faqSchema = faqPageSchema(FAQ_ITEMS.map((f) => ({ question: f.question, answer: f.answer })));
   const breadcrumbs = breadcrumbSchema([
-    { name: 'Ana Sayfa', url: 'https://karnet.com.tr' },
-    { name: 'Hepsiburada Kâr Hesaplama', url: 'https://karnet.com.tr/hepsiburada-kar-hesaplama' },
+    { name: 'Ana Sayfa', url: 'https://karnet.com' },
+    { name: 'Hepsiburada Kâr Hesaplama', url: 'https://karnet.com/hepsiburada-kar-hesaplama' },
   ]);
 
   return (

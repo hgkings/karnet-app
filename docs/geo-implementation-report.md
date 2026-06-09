@@ -21,7 +21,7 @@ AI cevap motorlarının Kârnet'i daha iyi anlamasını, doğru alıntılamasın
 | `app/layout.tsx` | Gelişmiş metadata (keywords, authors, metadataBase, robots), Organization + WebSite + SoftwareApplication JSON-LD eklendi |
 | `app/page.tsx` | `'use client'` kaldırıldı (artık server component), sayfa özelinde metadata eklendi |
 | `app/pricing/layout.tsx` | Fiyatlandırma sayfası için özelleştirilmiş metadata |
-| `app/sitemap.ts` | 4 yeni GEO sayfası + legal sayfalar eklendi, domain karnet.com.tr olarak güncellendi |
+| `app/sitemap.ts` | 4 yeni GEO sayfası + legal sayfalar eklendi, domain karnet.com olarak güncellendi |
 | `app/blog/[slug]/page.tsx` | BlogPosting JSON-LD şeması + canonical URL eklendi |
 | `components/layout/footer.tsx` | "Kaynaklar" bölümü eklendi (SSS, Nedir, Trendyol/Hepsiburada hesaplama sayfaları) |
 
@@ -169,7 +169,7 @@ Bu platform aşağıdaki sorgularda öne çıkmalıdır:
 | Bing Webmaster Tools'da sitemap gönder | 🔴 Yüksek |
 | `/sss`, `/nedir`, `/trendyol-kar-hesaplama`, `/hepsiburada-kar-hesaplama` için URL denetimi iste | 🔴 Yüksek |
 | GA4'te AI referrer segmenti kur (docs/geo-measurement-plan.md) | 🟡 Orta |
-| karnet.com ve karnet.com.tr domain tutarsızlığını çöz, `NEXT_PUBLIC_APP_URL` env ayarla | 🟡 Orta |
+| karnet.com ve karnet.com domain tutarsızlığını çöz, `NEXT_PUBLIC_APP_URL` env ayarla | 🟡 Orta |
 | OG görseli (/brand/og.png) optimize et — Trendyol/Hepsiburada logolarını dahil et | 🟢 Düşük |
 | App Store / Google Play bağlantıları yoksa ekleme | 🟢 Düşük |
 

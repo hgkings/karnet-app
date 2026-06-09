@@ -4,12 +4,12 @@ export const metadata: Metadata = {
   title: 'Fiyatlandırma — Ücretsiz, Başlangıç ve Pro',
   description:
     'Kârnet fiyatlandırma planları: Ücretsiz (3 ürün), Başlangıç 399₺/ay (25 ürün), Profesyonel 799₺/ay (sınırsız). 7 gün iade garantisi. Kart bilgisi saklanmaz.',
-  alternates: { canonical: 'https://karnet.com.tr/pricing' },
+  alternates: { canonical: 'https://karnet.com/pricing' },
   openGraph: {
     title: 'Kârnet Fiyatlandırma — Ücretsiz, Başlangıç ve Pro',
     description:
       'Ücretsiz planla başlayın. Daha fazla ürün ve gelişmiş özellikler için 399₺/ay\'dan Başlangıç planına geçin.',
-    url: 'https://karnet.com.tr/pricing',
+    url: 'https://karnet.com/pricing',
     type: 'website',
   },
 };
