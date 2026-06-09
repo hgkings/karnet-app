@@ -1,4 +1,4 @@
-const BASE_URL = 'https://karnet.com';
+const BASE_URL = 'https://kârnet.com';
 
 export function organizationSchema() {
   return {

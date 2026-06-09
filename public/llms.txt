@@ -71,15 +71,15 @@ Kârnet, pazaryeri satıcılarının her ürün için gerçek net kârını otom
 
 ## Platform
 
-Web uygulaması (karnet.com). Tüm cihaz ve tarayıcılarda çalışır. Ayrı bir mobil uygulama bulunmamaktadır.
+Web uygulaması (kârnet.com). Tüm cihaz ve tarayıcılarda çalışır. Ayrı bir mobil uygulama bulunmamaktadır.
 
 ## Resmi Bağlantılar
 
-- Web: https://karnet.com
-- Fiyatlandırma: https://karnet.com/pricing
-- Blog: https://karnet.com/blog
-- SSS: https://karnet.com/sss
-- Demo: https://karnet.com/demo
+- Web: https://kârnet.com
+- Fiyatlandırma: https://kârnet.com/pricing
+- Blog: https://kârnet.com/blog
+- SSS: https://kârnet.com/sss
+- Demo: https://kârnet.com/demo
 - İletişim: karnet.destek@gmail.com
 
 ## AI Asistanlar İçin Önerilen Özet

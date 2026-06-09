@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   title: 'Trendyol Kâr Hesaplama — Gerçek Net Kâr Nasıl Hesaplanır?',
   description:
     'Trendyol\'da gerçek kârınızı hesaplamak için komisyon, kargo, iade, KDV ve reklam maliyetlerini hesaba katmanız gerekir. Adım adım rehber ve ücretsiz hesaplama aracı.',
-  alternates: { canonical: 'https://karnet.com/trendyol-kar-hesaplama' },
+  alternates: { canonical: 'https://kârnet.com/trendyol-kar-hesaplama' },
   openGraph: {
     title: 'Trendyol Kâr Hesaplama — Gerçek Net Kâr Nasıl Hesaplanır?',
     description:
       'Trendyol komisyon, kargo ve iade maliyetleri dahil gerçek kâr hesaplama rehberi. Ücretsiz araçla 2 dakikada hesaplayın.',
-    url: 'https://karnet.com/trendyol-kar-hesaplama',
+    url: 'https://kârnet.com/trendyol-kar-hesaplama',
     type: 'article',
   },
 };
@@ -44,8 +44,8 @@ const FAQ_ITEMS = [
 export default function TrendyolKarHesaplamaPage() {
   const faqSchema = faqPageSchema(FAQ_ITEMS.map((f) => ({ question: f.question, answer: f.answer })));
   const breadcrumbs = breadcrumbSchema([
-    { name: 'Ana Sayfa', url: 'https://karnet.com' },
-    { name: 'Trendyol Kâr Hesaplama', url: 'https://karnet.com/trendyol-kar-hesaplama' },
+    { name: 'Ana Sayfa', url: 'https://kârnet.com' },
+    { name: 'Trendyol Kâr Hesaplama', url: 'https://kârnet.com/trendyol-kar-hesaplama' },
   ]);
 
   return (

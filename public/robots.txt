@@ -1,5 +1,5 @@
 # Kârnet — robots.txt
-# https://karnet.com
+# https://kârnet.com
 
 User-agent: *
 Allow: /
@@ -45,7 +45,7 @@ User-agent: Googlebot
 Allow: /
 
 # AI Product Knowledge
-LLMs: https://karnet.com/llms.txt
+LLMs: https://kârnet.com/llms.txt
 
-Sitemap: https://karnet.com/sitemap.xml
-Host: https://karnet.com
+Sitemap: https://kârnet.com/sitemap.xml
+Host: https://kârnet.com

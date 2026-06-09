@@ -12,7 +12,7 @@ import { organizationSchema, websiteSchema, softwareApplicationSchema } from '@/
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-const BASE_URL = 'https://karnet.com';
+const BASE_URL = 'https://kârnet.com';
 
 export const metadata: Metadata = {
   title: {

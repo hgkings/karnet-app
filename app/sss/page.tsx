@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   title: 'Sıkça Sorulan Sorular',
   description:
     'Kârnet hakkında merak ettiğiniz her şey: kâr hesaplama, fiyatlandırma, pazaryeri entegrasyonu, güvenlik ve daha fazlası. Tüm sorularınız tek sayfada.',
-  alternates: { canonical: 'https://karnet.com/sss' },
+  alternates: { canonical: 'https://kârnet.com/sss' },
   openGraph: {
     title: 'Kârnet SSS — Sıkça Sorulan Sorular',
     description:
       'Kârnet\'in nasıl çalıştığı, fiyatları, hangi pazaryerlerini desteklediği ve güvenlik hakkındaki tüm sorulara cevaplar.',
-    url: 'https://karnet.com/sss',
+    url: 'https://kârnet.com/sss',
     type: 'website',
   },
 };
@@ -132,8 +132,8 @@ export default function SSSPage() {
   );
 
   const breadcrumbs = breadcrumbSchema([
-    { name: 'Ana Sayfa', url: 'https://karnet.com' },
-    { name: 'SSS', url: 'https://karnet.com/sss' },
+    { name: 'Ana Sayfa', url: 'https://kârnet.com' },
+    { name: 'SSS', url: 'https://kârnet.com/sss' },
   ]);
 
   return (

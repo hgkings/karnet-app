@@ -22,13 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: `https://karnet.com/blog/${post.slug}` },
+    alternates: { canonical: `https://kârnet.com/blog/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
       type: 'article',
       publishedTime: post.date,
-      url: `https://karnet.com/blog/${post.slug}`,
+      url: `https://kârnet.com/blog/${post.slug}`,
       images: [{ url: '/brand/og.png', width: 1200, height: 630 }],
     },
   };
