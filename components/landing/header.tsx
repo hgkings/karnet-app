@@ -29,7 +29,6 @@ export function Header() {
   const navLinks = [
     { href: '#features', label: 'Özellikler' },
     { href: '#how-it-works', label: 'Nasıl Çalışır?' },
-    { href: '/pricing', label: 'Fiyatlandırma' },
     { href: '/demo', label: 'Demo' },
     { href: '/blog', label: 'Blog' },
   ];

@@ -5,9 +5,8 @@ import { Mail, MapPin, User, ShieldCheck } from 'lucide-react';
 import { KarnetLogo } from '@/components/shared/KarnetLogo';
 
 const PRODUCT_LINKS = [
-  { href: '/pricing', label: 'Fiyatlandırma' },
   { href: '/demo', label: 'Demo' },
-  { href: '/auth', label: 'Giriş Yap' },
+  { href: '/auth', label: 'Ücretsiz Başla' },
   { href: '/support', label: 'Destek' },
   { href: '/hakkimizda', label: 'Hakkımızda' },
 ];
@@ -43,7 +42,7 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              <span>PayTR güvencesiyle ödeme</span>
+              <span>Tamamen ücretsiz · Kart bilgisi istemez</span>
             </div>
           </div>
 
@@ -125,7 +124,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-8 pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground/60">
-            © {new Date().getFullYear()} Kârnet · PayTR güvencesiyle · Veriler satılmaz
+            © {new Date().getFullYear()} Kârnet · Tamamen ücretsiz · Veriler satılmaz
           </p>
           <p className="text-xs text-muted-foreground/60">
             Tüm hakları saklıdır.

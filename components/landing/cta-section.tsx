@@ -60,7 +60,7 @@ export function CTASection() {
               </span>{' '}öğren
             </h2>
             <p className="mx-auto max-w-xl text-lg text-muted-foreground mb-10">
-              Ücretsiz plan ile hemen başla. Kurulum yok, kart bilgisi yok.
+              Tamamen ücretsiz, hemen başla. Kurulum yok, kart bilgisi yok.
             </p>
 
             {/* Buttons */}

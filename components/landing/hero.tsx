@@ -139,7 +139,7 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mb-8 text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0"
             >
-              Pazaryeri komisyonları, kargo maliyetleri, iade kayıpları... Hepsini görünür kıl, kontrolü ele al.
+              Pazaryeri komisyonları, kargo maliyetleri, iade kayıpları... Hepsini görünür kıl, kontrolü ele al. Üstelik tüm özellikler tamamen ücretsiz.
             </motion.p>
 
             <motion.div
@@ -174,7 +174,7 @@ export function Hero() {
             >
               <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-400" /> Kredi kartı gerekmez</span>
               <span className="flex items-center gap-1.5">👥 5.000+ satıcı</span>
-              <span className="flex items-center gap-1.5">⭐ Ücretsiz plan sonsuza kadar</span>
+              <span className="flex items-center gap-1.5">⭐ Tüm özellikler ücretsiz</span>
             </motion.div>
           </div>
 

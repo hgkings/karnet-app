@@ -38,6 +38,7 @@ import {
     Crown,
     CreditCard,
     ChevronRight,
+    Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { deleteAnalysis, getStoredAnalyses } from '@/lib/api/analyses';
@@ -308,100 +309,44 @@ export default function SettingsPage() {
                     )}
                 </section>
 
-                {/* ─── 2. Plan & Billing ─── */}
+                {/* ─── 2. Tüm Özellikler Ücretsiz ─── */}
                 <section className="rounded-2xl border border-border/40 bg-card p-6 space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                                <Crown className="h-5 w-5 text-primary" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+                                <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <h2 className="font-semibold">Plan & Faturalandırma</h2>
-                                <p className="text-xs text-muted-foreground">Mevcut planınızı ve ödeme detaylarınızı yönetin.</p>
+                                <h2 className="font-semibold">Tüm Özellikler Ücretsiz</h2>
+                                <p className="text-xs text-muted-foreground">Kârnet&apos;in tüm özellikleri ücretsiz ve sınırsızdır.</p>
                             </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isPro ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted/20 text-muted-foreground/70'
-                            }`}>
-                            {isPro ? 'Pro Aktif' : 'Ücretsiz Plan'}
+                        <div className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                            Sınırsız
                         </div>
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Plan Details */}
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium">Plan Avantajları</p>
-                                <ul className="space-y-2">
-                                    {[
-                                        { label: 'Sınırsız Analiz Geçmişi', active: isPro },
-                                        { label: 'CSV İnceleme & Dışa Aktar', active: isPro },
-                                        { label: 'Pazaryeri Karşılaştırma', active: isPro },
-                                        { label: 'Gelişmiş Risk Analizi', active: isPro },
-                                        { label: 'E-posta Bildirimleri', active: true },
-                                    ].map((item, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-xs">
-                                            <CheckCircle2 className={`h-3.5 w-3.5 ${item.active ? 'text-emerald-500' : 'text-muted-foreground opacity-30'}`} />
-                                            <span className={item.active ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/pricing')}
-                                className="w-full gap-2 rounded-xl"
-                            >
-                                {isPro ? 'Planı Yönet' : 'Pro\'ya Geç'}
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
+                    <ul className="grid gap-2 sm:grid-cols-2">
+                        {[
+                            'Sınırsız ürün analizi',
+                            'PRO muhasebe modu (KDV ayrıştırma)',
+                            'Hassasiyet & başabaş analizi',
+                            'Nakit akışı tahmini',
+                            'CSV içe/dışa aktarma',
+                            'Sınırsız PDF rapor',
+                            'Pazaryeri entegrasyonları',
+                            'E-posta bildirimleri',
+                        ].map((item) => (
+                            <li key={item} className="flex items-center gap-2 text-xs">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                <span className="text-foreground">{item}</span>
+                            </li>
+                        ))}
+                    </ul>
 
-                        {/* Pricing UI (Optional Toggle) */}
-                        {!isPro && (
-                            <div className="rounded-xl border border-border/40 bg-card p-4 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium">Fiyatlandırma</span>
-                                    <div className="flex items-center gap-1 bg-muted/10 p-0.5 rounded-lg border border-border/40">
-                                        <button
-                                            onClick={() => setBillingCycle('monthly')}
-                                            className={`px-2 py-1 text-[10px] rounded-md transition-all ${billingCycle === 'monthly' ? 'bg-muted/20 text-foreground' : 'text-muted-foreground/70'}`}
-                                        >
-                                            Aylık
-                                        </button>
-                                        <button
-                                            onClick={() => setBillingCycle('yearly')}
-                                            className={`px-2 py-1 text-[10px] rounded-md transition-all ${billingCycle === 'yearly' ? 'bg-muted/20 text-foreground' : 'text-muted-foreground/70'}`}
-                                        >
-                                            Yıllık
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-2xl font-bold">₺{billingCycle === 'monthly' ? PRICING.proMonthly : PRICING.proYearly.toLocaleString('tr-TR')}</span>
-                                        <span className="text-muted-foreground">/ {billingCycle === 'monthly' ? 'ay' : 'yıl'}</span>
-                                    </div>
-                                    {billingCycle === 'yearly' && (
-                                        <p className="text-[10px] text-emerald-600 font-medium">~2 ay ücretsiz! (Yıllık %17 tasarruf)</p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {isPro && (
-                            <div className="rounded-xl border border-border/40 bg-card p-4 flex flex-col justify-center items-center text-center space-y-2">
-                                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-1">
-                                    <CreditCard className="h-5 w-5 text-emerald-600" />
-                                </div>
-                                <p className="text-xs font-medium">Ödeme Yöntemi</p>
-                                <p className="text-[10px] text-muted-foreground">Ödeme işlemleri PayTR üzerinden güvenle gerçekleştirilmektedir.</p>
-                                <p className="text-[10px] text-muted-foreground mt-1">
-                                    Ödeme geçmişiniz ve fatura bilgileriniz için{' '}
-                                    <a href="mailto:destek@karnet.com" className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-400">destek@karnet.com</a>
-                                    {' '}adresine yazabilirsiniz.
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                    <p className="text-[11px] text-muted-foreground border-t border-border/40 pt-4">
+                        Kullanmak için ödeme veya kredi kartı gerekmez.
+                    </p>
                 </section>
 
                 {/* ─── 3. Email Settings & Notifications ─── */}
