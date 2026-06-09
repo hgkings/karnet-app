@@ -220,7 +220,7 @@ export default function TrendyolKarHesaplamaPage() {
             >
               Ücretsiz Hesapla →
             </Link>
-            <p className="text-xs text-muted-foreground">Kart bilgisi gerekmez. 3 ürüne kadar ücretsiz.</p>
+            <p className="text-xs text-muted-foreground">Kart bilgisi gerekmez. Tamamen ücretsiz ve sınırsız.</p>
           </div>
 
           {/* FAQ */}
@@ -243,7 +243,7 @@ export default function TrendyolKarHesaplamaPage() {
               { href: '/blog/trendyol-komisyon-oranlari-2026', label: 'Trendyol Komisyon Oranları' },
               { href: '/blog/trendyolda-gercek-kar-nasil-hesaplanir', label: 'Trendyol Kâr Rehberi' },
               { href: '/nedir', label: 'Kârnet Nedir?' },
-              { href: '/pricing', label: 'Fiyatlandırma' },
+              { href: '/auth', label: 'Ücretsiz Başla' },
               { href: '/sss', label: 'SSS' },
             ].map((link) => (
               <Link

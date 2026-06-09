@@ -213,7 +213,7 @@ export default function HepsiburadaKarHesaplamaPage() {
             >
               Ücretsiz Hesapla →
             </Link>
-            <p className="text-xs text-muted-foreground">Kart bilgisi gerekmez. 3 ürüne kadar ücretsiz.</p>
+            <p className="text-xs text-muted-foreground">Kart bilgisi gerekmez. Tamamen ücretsiz ve sınırsız.</p>
           </div>
 
           {/* FAQ */}
@@ -235,7 +235,7 @@ export default function HepsiburadaKarHesaplamaPage() {
               { href: '/trendyol-kar-hesaplama', label: 'Trendyol Kâr Hesaplama' },
               { href: '/blog/hepsiburadada-gercek-kar-nasil-hesaplanir', label: 'Hepsiburada Kâr Rehberi' },
               { href: '/nedir', label: 'Kârnet Nedir?' },
-              { href: '/pricing', label: 'Fiyatlandırma' },
+              { href: '/auth', label: 'Ücretsiz Başla' },
               { href: '/sss', label: 'SSS' },
               { href: '/demo', label: 'Demo Dene' },
             ].map((link) => (
