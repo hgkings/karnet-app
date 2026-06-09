@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://karnet.com.tr';
+const BASE_URL = 'https://karnet.com.tr';
 
 export function organizationSchema() {
   return {

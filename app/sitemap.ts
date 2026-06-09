@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { blogPosts } from '@/lib/blog';
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://karnet.com.tr';
+const BASE_URL = 'https://karnet.com.tr';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
