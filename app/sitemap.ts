@@ -15,10 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/nedir`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/trendyol-kar-hesaplama`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.85 },
     { url: `${BASE_URL}/hepsiburada-kar-hesaplama`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.85 },
+    { url: `${BASE_URL}/demo`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.75 },
     // Legal pages
     { url: `${BASE_URL}/gizlilik-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/kullanim-sartlari`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/iade-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE_URL}/mesafeli-satis-sozlesmesi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE_URL}/cerez-politikasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
