@@ -589,7 +589,7 @@ export const blogPosts: BlogPost[] = [
 <p><strong>Elektronik satıyorsanız:</strong> Hepsiburada'nın elektronik odaklı müşteri kitlesi avantaj sağlayabilir.</p>
 
 <h2>Kârnet ile İki Platformu Karşılaştırın</h2>
-<p>Kârnet'in Pro planında Trendyol ve Hepsiburada kâr karşılaştırması özelliği var. Aynı ürünü her iki platformda sattığınızda hangisinde daha fazla kazanacağınızı saniyeler içinde görürsünüz.</p>
+<p>Kârnet'te Trendyol ve Hepsiburada kâr karşılaştırması özelliği ücretsiz olarak mevcut. Aynı ürünü her iki platformda sattığınızda hangisinde daha fazla kazanacağınızı saniyeler içinde görürsünüz.</p>
 <p>Ücretsiz deneyin — doğru platform kararını veriye dayalı alın.</p>
     `.trim(),
   },

@@ -215,7 +215,7 @@ export default function AccountPage() {
               { icon: PlusCircle, label: 'Yeni Analiz Başlat', href: '/analysis/new', color: 'text-blue-500' },
               { icon: FileUp, label: 'CSV İçe Aktar', href: '/products', color: 'text-emerald-500' },
               { icon: FileText, label: 'PDF Rapor Oluştur', href: '/dashboard', color: 'text-amber-500' },
-              { icon: CreditCard, label: 'Fiyatlandırma', href: '/pricing', color: 'text-purple-500' },
+              { icon: Percent, label: 'Komisyon Oranları', href: '/settings/commission-rates', color: 'text-purple-500' },
             ].map((action) => (
               <Link key={action.href} href={action.href}>
                 <div className="flex items-center gap-3 rounded-xl border bg-background p-4 hover:bg-muted/50 hover:shadow-sm transition-all cursor-pointer group">
@@ -439,94 +439,27 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {hasPaid ? (
-            <>
-              {/* Plan detay bilgileri */}
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                <div className="rounded-xl bg-muted/30 border border-border/40 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>Bitiş</span>
-                  </div>
-                  <p className="text-sm font-semibold">
-                    {(() => {
-                      const d = user?.pro_expires_at || user?.pro_until;
-                      if (!d) return '—';
-                      try { return new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }); } catch { return '—'; }
-                    })()}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-muted/30 border border-border/40 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>Kalan</span>
-                  </div>
-                  <p className="text-sm font-semibold">
-                    {(() => {
-                      const d = user?.pro_expires_at || user?.pro_until;
-                      if (!d) return '—';
-                      try {
-                        const diff = new Date(d).getTime() - Date.now();
-                        const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-                        return `${days} gün`;
-                      } catch { return '—'; }
-                    })()}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-muted/30 border border-border/40 p-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                    <CreditCard className="h-3.5 w-3.5" />
-                    <span>Yenileme</span>
-                  </div>
-                  <p className="text-sm font-semibold">{user?.pro_renewal ? 'Otomatik' : 'Manuel'}</p>
-                </div>
-              </div>
+          {/* Özellikler — hepsi ücretsiz ve sınırsız */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {[
+              'Sınırsız ürün analizi',
+              'PRO muhasebe modu (KDV)',
+              'Hassasiyet & başabaş analizi',
+              'Nakit akışı tahmini',
+              'CSV içe/dışa aktarma',
+              'Sınırsız PDF rapor',
+              'Pazaryeri entegrasyonları',
+            ].map((f) => (
+              <span key={f} className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-2.5 py-1 text-xs">
+                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                {f}
+              </span>
+            ))}
+          </div>
 
-              {/* Özellikler */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(isPro ? [
-                  'Sınırsız analiz',
-                  'PRO muhasebe modu',
-                  'CSV içe/dışa aktarma',
-                  'Hassasiyet analizi',
-                  'Nakit akışı tahmini',
-                ] : [
-                  '25 ürün analizi',
-                  'CSV içe/dışa aktarma',
-                  'Başabaş hesaplama',
-                  'Duyarlılık analizi',
-                ]).map((f) => (
-                  <span key={f} className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-2.5 py-1 text-xs">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    {f}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-4 pt-4 border-t flex gap-2">
-                <Link href="/pricing">
-                  <Button variant="outline" size="sm" className="gap-1.5 rounded-[10px]">
-                    Planı Yönet
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-                {isStarter && (
-                  <Link href="/pricing">
-                    <Button size="sm" className="gap-1.5 rounded-[10px]">
-                      Pro&apos;ya Yükselt
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="mt-4 flex gap-2">
-              <Button onClick={() => window.location.href = '/pricing'} className="rounded-[10px]">Planınızı Yükseltin</Button>
-              <Link href="/pricing">
-                <Button variant="outline" className="rounded-[10px]">Planları Gör</Button>
-              </Link>
-            </div>
-          )}
+          <p className="mt-4 pt-4 border-t text-xs text-muted-foreground">
+            Kârnet&apos;in tüm özellikleri ücretsiz ve sınırsızdır. Ödeme veya kart bilgisi gerekmez.
+          </p>
         </div>
 
         {/* ─── 6. Security ─── */}

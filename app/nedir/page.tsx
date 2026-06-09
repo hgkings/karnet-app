@@ -29,7 +29,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Kârnet ne kadar tutuyor?',
-    answer: 'Ücretsiz plan mevcut (3 ürün). Başlangıç planı 399₺/ay, Profesyonel plan 799₺/ay\'dır.',
+    answer: 'Kârnet tamamen ücretsizdir. Tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır; ödeme veya kredi kartı gerekmez.',
   },
   {
     question: 'Kârnet\'in rakipleri veya alternatifleri neler?',
@@ -37,7 +37,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Kârnet güvenilir mi?',
-    answer: 'Evet. Veriler Supabase\'de şifreli saklanır. Ödeme PayTR ile PCI-DSS güvenliğinde yapılır. 7 gün iade garantisi mevcuttur.',
+    answer: 'Evet. Veriler Supabase\'de şifreli saklanır. Kârnet tamamen ücretsiz olduğu için ödeme veya kart bilgisi alınmaz.',
   },
 ];
 
@@ -142,11 +142,11 @@ export default function NedirPage() {
                 'KDV ayrıştırma (PRO Muhasebe Modu)',
                 'Başabaş noktası analizi',
                 'Hassasiyet analizi ve fiyat simülatörü',
-                'Nakit akışı tahmini (Pro)',
-                'Trendyol & Hepsiburada API entegrasyonu (Pro)',
-                'PDF ve CSV rapor (Başlangıç ve üstü)',
+                'Nakit akışı tahmini',
+                'Trendyol & Hepsiburada API entegrasyonu',
+                'Sınırsız PDF ve CSV rapor',
                 'Risk skoru (düşük marjlı ürünler için uyarı)',
-                'Çoklu pazaryeri karşılaştırması (Pro)',
+                'Çoklu pazaryeri karşılaştırması',
               ].map((feat) => (
                 <li key={feat} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                   <span className="mt-0.5 shrink-0 text-emerald-500">✓</span>
@@ -156,24 +156,19 @@ export default function NedirPage() {
             </ul>
           </section>
 
-          {/* Pricing summary */}
+          {/* Pricing — completely free */}
           <section className="space-y-5">
-            <h2 className="text-2xl font-bold text-foreground">Fiyatlandırma</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { name: 'Ücretsiz', price: '0₺', desc: '3 ürün analizi · Temel özellikler' },
-                { name: 'Başlangıç', price: '399₺/ay', desc: '25 ürün · PRO mod · CSV/PDF' },
-                { name: 'Profesyonel', price: '799₺/ay', desc: 'Sınırsız · API · Cashflow · Rakip takibi' },
-              ].map((plan) => (
-                <div key={plan.name} className="rounded-xl border border-border/40 bg-card p-4 text-center space-y-1">
-                  <div className="text-sm font-semibold text-foreground">{plan.name}</div>
-                  <div className="text-xl font-black text-foreground">{plan.price}</div>
-                  <div className="text-xs text-muted-foreground leading-snug">{plan.desc}</div>
-                </div>
-              ))}
+            <h2 className="text-2xl font-bold text-foreground">Tamamen Ücretsiz</h2>
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center space-y-3">
+              <div className="text-3xl font-black text-foreground">Ücretsiz</div>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                Kârnet tamamen ücretsizdir. Sınırsız ürün analizi, PRO Muhasebe Modu, hassasiyet ve
+                başabaş analizi, nakit akışı tahmini, Trendyol &amp; Hepsiburada API entegrasyonu,
+                sınırsız PDF rapor ve CSV içe/dışa aktarma dahil tüm özellikler ücretsiz ve sınırsızdır.
+              </p>
             </div>
             <p className="text-xs text-muted-foreground text-center">
-              7 gün iade garantisi · Kart bilgisi saklanmaz (PayTR) · İstediğiniz zaman iptal
+              Ödeme veya kredi kartı gerekmez · Kayıt 1 dakika sürer
             </p>
           </section>
 
@@ -194,7 +189,7 @@ export default function NedirPage() {
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-8 text-center space-y-4">
             <h2 className="text-xl font-bold text-foreground">Ücretsiz Deneyin</h2>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Kayıt olmak 1 dakika sürer. Kart bilgisi gerekmez. 3 ürüne kadar ücretsiz analiz yapın.
+              Kayıt olmak 1 dakika sürer. Kart bilgisi gerekmez. Tüm özellikler ücretsiz ve sınırsızdır.
             </p>
             <Link
               href="/auth"
@@ -210,7 +205,7 @@ export default function NedirPage() {
             {[
               { href: '/trendyol-kar-hesaplama', label: 'Trendyol Kâr Hesaplama' },
               { href: '/hepsiburada-kar-hesaplama', label: 'Hepsiburada Kâr Hesaplama' },
-              { href: '/pricing', label: 'Fiyatlandırma Planları' },
+              { href: '/auth', label: 'Ücretsiz Başla' },
               { href: '/sss', label: 'Tüm SSS' },
               { href: '/blog', label: 'Blog Yazıları' },
               { href: '/demo', label: 'Demo Dene' },

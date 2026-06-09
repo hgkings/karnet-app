@@ -12,7 +12,7 @@ const rows = [
   { label: 'Nakit akışı tahmini',  karnet: 'pro',     excel: 'no',  rakip: 'no'      },
   { label: 'PDF rapor',            karnet: 'yes',     excel: 'no',  rakip: 'no'      },
   { label: 'Kurulum gerektirmez',  karnet: 'yes',     excel: 'no',  rakip: 'partial' },
-  { label: 'Ücretsiz plan',        karnet: 'yes',     excel: 'yes', rakip: 'no'      },
+  { label: 'Tamamen ücretsiz',     karnet: 'yes',     excel: 'yes', rakip: 'no'      },
 ];
 
 function Cell({ value }: { value: string }) {

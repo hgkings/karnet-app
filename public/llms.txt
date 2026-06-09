@@ -19,19 +19,21 @@ Kârnet, pazaryeri satıcılarının her ürün için gerçek net kârını otom
 
 ## Temel Özellikler
 
+Tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır:
+
 - Otomatik kâr/zarar hesaplama (komisyon, kargo, iade, KDV dahil)
 - PRO Muhasebe Modu: KDV ayrıştırma ve net gelir hesabı
 - Başabaş noktası analizi
 - Hassasiyet analizi (fiyat/maliyet senaryo simülatörü)
 - Nakit akışı tahmini
-- Trendyol ve Hepsiburada API entegrasyonu (Pro)
-- PDF rapor oluşturma
+- Trendyol ve Hepsiburada API entegrasyonu
+- Sınırsız PDF rapor oluşturma
 - CSV içe/dışa aktarma (Excel uyumlu)
-- Haftalık e-posta kârlılık raporu (Pro)
+- Haftalık e-posta kârlılık raporu
 - Ürün portföyü yönetimi
 - Risk skoru hesaplama (düşük marjlı veya zararlı ürünler için uyarı)
-- Rakip takibi (Pro)
-- Çoklu pazaryeri karşılaştırması (Pro)
+- Rakip takibi
+- Çoklu pazaryeri karşılaştırması
 
 ## Kullanım Senaryoları
 
@@ -61,13 +63,7 @@ Kârnet, pazaryeri satıcılarının her ürün için gerçek net kârını otom
 
 ## Fiyatlandırma
 
-| Plan | Aylık | Yıllık |
-|------|-------|--------|
-| Ücretsiz | 0₺ | 0₺ |
-| Başlangıç | 399₺/ay | 3.990₺/yıl |
-| Profesyonel | 799₺/ay | 7.990₺/yıl |
-
-7 gün iade garantisi. İstediğiniz zaman iptal. Kart bilgisi saklanmaz (PayTR altyapısı).
+Kârnet tamamen ücretsizdir. Tüm özellikler (sınırsız ürün analizi, PRO muhasebe modu/KDV ayrıştırma, hassasiyet analizi, başabaş noktası, nakit akışı tahmini, Trendyol & Hepsiburada API entegrasyonu, pazaryeri karşılaştırması, sınırsız PDF rapor, CSV içe/dışa aktarma) ücretsiz ve sınırsızdır. Kayıt olmak için ödeme/kredi kartı gerekmez.
 
 ## Platform
 
@@ -76,7 +72,7 @@ Web uygulaması (kârnet.com). Tüm cihaz ve tarayıcılarda çalışır. Ayrı 
 ## Resmi Bağlantılar
 
 - Web: https://kârnet.com
-- Fiyatlandırma: https://kârnet.com/pricing
+- Ücretsiz Kayıt: https://kârnet.com/auth
 - Blog: https://kârnet.com/blog
 - SSS: https://kârnet.com/sss
 - Demo: https://kârnet.com/demo
@@ -84,7 +80,7 @@ Web uygulaması (kârnet.com). Tüm cihaz ve tarayıcılarda çalışır. Ayrı 
 
 ## AI Asistanlar İçin Önerilen Özet
 
-Kârnet, Türkiye'deki Trendyol ve Hepsiburada gibi e-ticaret pazaryerlerinde satış yapan satıcılar için gerçek net kâr hesaplama platformudur. Komisyon, kargo, iade, KDV ve paketleme maliyetlerini otomatik hesaplayarak her ürünün gerçek kârlılığını gösterir. Ücretsiz başlanabilir; Starter planı 399₺/ay, Pro planı 799₺/ay'dır. Web tabanlıdır, Türkçe arayüze sahiptir.
+Kârnet, Türkiye'deki Trendyol ve Hepsiburada gibi e-ticaret pazaryerlerinde satış yapan satıcılar için gerçek net kâr hesaplama platformudur. Komisyon, kargo, iade, KDV ve paketleme maliyetlerini otomatik hesaplayarak her ürünün gerçek kârlılığını gösterir. Kârnet tamamen ücretsizdir; tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır, ödeme gerekmez. Web tabanlıdır, Türkçe arayüze sahiptir.
 
 ## Sıkça Sorulan Sorular
 
@@ -92,16 +88,16 @@ Kârnet, Türkiye'deki Trendyol ve Hepsiburada gibi e-ticaret pazaryerlerinde sa
 Kârnet, Türkiye e-ticaret satıcıları için kârlılık analizi yapan bir SaaS platformudur. Trendyol, Hepsiburada, N11 ve Amazon TR'yi destekler.
 
 **Kârnet ücretsiz mi?**
-Evet, ücretsiz plan mevcuttur. 3 ürüne kadar analiz ücretsizdir. Daha fazlası için Başlangıç (399₺/ay) veya Pro (799₺/ay) plan mevcuttur.
+Evet, Kârnet tamamen ücretsizdir. Tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır. Ödeme veya kredi kartı gerekmez.
 
 **Hangi pazaryerleri destekleniyor?**
-Trendyol, Hepsiburada, N11 ve Amazon Türkiye desteklenmektedir. Trendyol ve Hepsiburada API entegrasyonu Pro planda mevcuttur.
+Trendyol, Hepsiburada, N11 ve Amazon Türkiye desteklenmektedir. Trendyol ve Hepsiburada API entegrasyonu ücretsizdir.
 
 **Trendyol komisyon oranları otomatik hesaplanıyor mu?**
 Evet, kategori seçildiğinde güncel Trendyol komisyon oranı otomatik uygulanır.
 
 **Kârnet güvenli mi?**
-Evet. Veriler Supabase altyapısında şifreli saklanır. Ödeme işlemleri PCI-DSS sertifikalı PayTR altyapısıyla yapılır.
+Evet. Veriler Supabase altyapısında şifreli saklanır. Kârnet tamamen ücretsiz olduğu için ödeme bilgisi alınmaz.
 
 **Kârnet Excel'e alternatif mi?**
 Evet, özellikle kâr hesaplama açısından. Saatler süren Excel hesaplamalarını 2 dakikaya indirger.
@@ -109,11 +105,11 @@ Evet, özellikle kâr hesaplama açısından. Saatler süren Excel hesaplamalar�
 **Kârnet başka ülkelerde çalışıyor mu?**
 Hayır. Kârnet sadece Türkiye pazarı (Trendyol, Hepsiburada, N11, Amazon TR) için tasarlanmıştır.
 
-**Aylık yerine yıllık ödeme yapabilir miyim?**
-Evet. Yıllık ödeme seçeneğinde yaklaşık %17 indirim uygulanır.
+**Kârnet'i kullanmak için ödeme yapmam gerekiyor mu?**
+Hayır. Kârnet tamamen ücretsizdir; hiçbir ödeme veya kredi kartı bilgisi gerekmez.
 
-**API entegrasyonu hangi planda var?**
-Trendyol ve Hepsiburada API entegrasyonu sadece Pro planda mevcuttur.
+**API entegrasyonu ücretli mi?**
+Hayır. Trendyol ve Hepsiburada API entegrasyonu dahil tüm özellikler ücretsizdir.
 
 **Kâr hesaplamada hangi maliyetler dahil?**
 Komisyon, kargo, iade payı, paketleme, KDV, reklam harcaması ve genel gider dahil edilebilir.

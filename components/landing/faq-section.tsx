@@ -22,8 +22,8 @@ const faqs = [
     a: 'Trendyol, Hepsiburada, N11 ve Amazon Türkiye desteklenmektedir. Her pazaryeri için varsayılan komisyon, iade oranı ve ödeme gecikme süresi otomatik doldurulur.',
   },
   {
-    q: 'Ücretsiz plan ile Pro plan arasındaki fark nedir?',
-    a: 'Ücretsiz planda 5 ürüne kadar analiz yapabilirsiniz. Pro plan: sınırsız analiz, PRO Muhasebe Modu (detaylı KDV ayrıştırma), PDF rapor indirme, e-posta risk bildirimleri ve öncelikli destek sunar.',
+    q: 'Kârnet ücretsiz mi?',
+    a: 'Evet, Kârnet tamamen ücretsizdir. Sınırsız analiz, PRO Muhasebe Modu (detaylı KDV ayrıştırma), PDF rapor indirme, e-posta risk bildirimleri ve tüm gelişmiş özellikler herkese ücretsiz açıktır. Ödeme veya kredi kartı gerekmez.',
   },
   {
     q: 'Verilerim güvende mi?',

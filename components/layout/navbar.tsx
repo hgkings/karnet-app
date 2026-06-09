@@ -25,9 +25,6 @@ export function Navbar() {
         <div className="hidden items-center gap-2 md:flex">
           {!user ? (
             <>
-              <Link href="/pricing">
-                <Button variant="ghost" size="sm" className="rounded-xl font-medium text-muted-foreground hover:text-foreground">Fiyatlandırma</Button>
-              </Link>
               <ThemeToggle />
               <Link href="/auth">
                 <Button variant="outline" size="sm" className="rounded-xl font-medium border-border/40">Giriş Yap</Button>
@@ -88,9 +85,6 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/pricing" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start rounded-xl text-muted-foreground hover:text-foreground">Fiyatlandırma</Button>
-                </Link>
                 <Link href="/auth" onClick={() => setMobileOpen(false)}>
                   <Button className="w-full rounded-xl text-white" style={{ background: 'linear-gradient(135deg, #D97706, #92400E)' }}>Giriş Yap</Button>
                 </Link>

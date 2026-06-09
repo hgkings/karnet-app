@@ -8,10 +8,8 @@ import {
     Store,
     User,
     Settings,
-    Crown,
     FileText,
     Upload,
-    CreditCard,
     MessageSquare,
     Wallet,
     MessageCircleQuestion,
@@ -28,22 +26,22 @@ export interface NavItem {
     group?: string;
 }
 
+// Kârnet tamamen ücretsiz — tüm menü öğeleri herkese açık, kilit yok.
 export const NAV_ITEMS: NavItem[] = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Yeni Analiz', href: '/analysis/new', icon: PlusCircle },
     { label: 'Ürünler', href: '/products', icon: Package },
-    { label: 'Başabaş', href: '/break-even', icon: Target, requiredFeature: 'breakEven' },
-    { label: 'Nakit Planı', href: '/cash-plan', icon: Landmark, requiredFeature: 'cashflow' },
-    { label: 'Pazaryeri', href: '/marketplace', icon: Store, requiredFeature: 'apiIntegration' },
+    { label: 'Başabaş', href: '/break-even', icon: Target },
+    { label: 'Nakit Planı', href: '/cash-plan', icon: Landmark },
+    { label: 'Pazaryeri', href: '/marketplace', icon: Store },
 ];
 
 export const FINANS_NAV_ITEMS: NavItem[] = [
-    { label: 'Hakediş', href: '/finance', icon: Wallet, requiredFeature: 'apiIntegration' },
-    { label: 'Sorular', href: '/questions', icon: MessageCircleQuestion, requiredFeature: 'apiIntegration' },
+    { label: 'Hakediş', href: '/finance', icon: Wallet },
+    { label: 'Sorular', href: '/questions', icon: MessageCircleQuestion },
 ];
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
-    { label: 'Premium', href: '/pricing', icon: Crown, highlight: true },
     { label: 'Profil', href: '/account', icon: User },
     { label: 'Destek', href: '/support', icon: MessageSquare },
     { label: 'Ayarlar', href: '/settings', icon: Settings },
@@ -52,5 +50,4 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
 export const QUICK_ACTIONS: NavItem[] = [
     { label: 'PDF Rapor', href: '/dashboard', icon: FileText, action: 'pdf' },
     { label: 'CSV İçe Aktar', href: '/products', icon: Upload },
-    { label: 'Fiyatlandırma', href: '/pricing', icon: CreditCard },
 ];

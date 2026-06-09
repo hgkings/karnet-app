@@ -45,34 +45,16 @@ export function softwareApplicationSchema() {
     operatingSystem: 'Web',
     url: BASE_URL,
     description:
-      'Trendyol, Hepsiburada, N11 ve Amazon Türkiye satıcıları için otomatik kâr hesaplama ve kârlılık analizi platformu.',
+      'Trendyol, Hepsiburada, N11 ve Amazon Türkiye satıcıları için tamamen ücretsiz otomatik kâr hesaplama ve kârlılık analizi platformu. Tüm özellikler sınırsız ve ücretsizdir.',
     inLanguage: 'tr-TR',
-    offers: [
-      {
-        '@type': 'Offer',
-        name: 'Ücretsiz Plan',
-        price: '0',
-        priceCurrency: 'TRY',
-        description: '3 ürüne kadar ücretsiz kâr analizi',
-      },
-      {
-        '@type': 'Offer',
-        name: 'Başlangıç Planı',
-        price: '399',
-        priceCurrency: 'TRY',
-        billingDuration: 'P1M',
-        description: '25 ürüne kadar analiz, PRO Muhasebe Modu, CSV export',
-      },
-      {
-        '@type': 'Offer',
-        name: 'Profesyonel Plan',
-        price: '799',
-        priceCurrency: 'TRY',
-        billingDuration: 'P1M',
-        description:
-          'Sınırsız analiz, Trendyol & Hepsiburada API, nakit akışı tahmini',
-      },
-    ],
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'TRY',
+      availability: 'https://schema.org/InStock',
+      description:
+        'Tamamen ücretsiz. Tüm özellikler (sınırsız ürün analizi, PRO Muhasebe Modu, hassasiyet analizi, başabaş noktası, nakit akışı tahmini, Trendyol & Hepsiburada API entegrasyonu, sınırsız PDF rapor, CSV içe/dışa aktarma) ücretsiz ve sınırsızdır. Ödeme veya kredi kartı gerekmez.',
+    },
     creator: {
       '@type': 'Person',
       name: 'Süleyman Hilmi İşbilir',

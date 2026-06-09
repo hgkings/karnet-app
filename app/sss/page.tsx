@@ -32,12 +32,12 @@ const FAQ_ITEMS = [
   {
     question: 'Kârnet ücretsiz mi?',
     answer:
-      'Evet, ücretsiz plan mevcuttur. 3 ürüne kadar kâr analizi tamamen ücretsizdir. Daha fazla ürün için Başlangıç (399₺/ay veya 3.990₺/yıl) veya Profesyonel (799₺/ay veya 7.990₺/yıl) planına geçilebilir.',
+      'Evet, Kârnet tamamen ücretsizdir. Tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır; ödeme veya kredi kartı gerekmez.',
   },
   {
     question: 'Hangi pazaryerleri destekleniyor?',
     answer:
-      'Trendyol, Hepsiburada, N11 ve Amazon Türkiye desteklenmektedir. Her pazaryeri için güncel komisyon oranları otomatik olarak uygulanır. Trendyol ve Hepsiburada için API entegrasyonu da Pro planda mevcuttur.',
+      'Trendyol, Hepsiburada, N11 ve Amazon Türkiye desteklenmektedir. Her pazaryeri için güncel komisyon oranları otomatik olarak uygulanır. Trendyol ve Hepsiburada için API entegrasyonu da ücretsiz olarak mevcuttur.',
   },
   {
     question: 'Kâr hesaplamaya hangi maliyetler dahil?',
@@ -67,27 +67,27 @@ const FAQ_ITEMS = [
   {
     question: 'KDV hesabı yapılıyor mu?',
     answer:
-      'Evet. Temel modda KDV dahil/hariç hesaplama yapılır. PRO Muhasebe Modunda (Başlangıç ve üstü planlar) satış KDV\'si, alış KDV\'si ve gider KDV\'si ayrı ayrı hesaplanarak net vergi pozisyonu gösterilir.',
+      'Evet. Temel modda KDV dahil/hariç hesaplama yapılır. PRO Muhasebe Modunda (tüm kullanıcılar için ücretsiz) satış KDV\'si, alış KDV\'si ve gider KDV\'si ayrı ayrı hesaplanarak net vergi pozisyonu gösterilir.',
   },
   {
     question: 'Trendyol ve Hepsiburada API entegrasyonu nasıl çalışıyor?',
     answer:
-      'Pro planda satıcı API bilgilerinizi (API key/secret) bağladıktan sonra ürün listesi, sipariş verileri, stok bilgisi ve finansal raporlar otomatik olarak çekilir. Manuel veri girişi gerekmez.',
+      'API entegrasyonu tüm kullanıcılar için ücretsizdir. Satıcı API bilgilerinizi (API key/secret) bağladıktan sonra ürün listesi, sipariş verileri, stok bilgisi ve finansal raporlar otomatik olarak çekilir. Manuel veri girişi gerekmez.',
   },
   {
     question: 'Nakit akışı tahmini nedir?',
     answer:
-      'Pro planda mevcut bir özelliktir. Mevcut satış verilerine ve beklenen büyüme oranına göre aylık cashflow projeksiyonu oluşturur. Hangi ayda ne kadar nakit girişi olacağını planlamanıza yardımcı olur.',
+      'Tüm kullanıcılar için ücretsiz bir özelliktir. Mevcut satış verilerine ve beklenen büyüme oranına göre aylık cashflow projeksiyonu oluşturur. Hangi ayda ne kadar nakit girişi olacağını planlamanıza yardımcı olur.',
   },
   {
     question: 'PDF rapor oluşturabilir miyim?',
     answer:
-      'Evet. Ücretsiz planda PDF rapor yoktur. Başlangıç planında aylık 5 PDF rapor, Pro planda ise sınırsız PDF rapor mevcuttur.',
+      'Evet. Sınırsız PDF rapor oluşturma tüm kullanıcılar için ücretsizdir.',
   },
   {
     question: 'Verilerimi Excel\'e aktarabilir miyim?',
     answer:
-      'Evet. Başlangıç ve Pro planlarında tüm analizlerinizi CSV formatında dışa aktarabilirsiniz (Excel ile uyumludur).',
+      'Evet. Tüm analizlerinizi CSV formatında dışa aktarabilirsiniz (Excel ile uyumludur). Bu özellik tüm kullanıcılar için ücretsizdir.',
   },
   {
     question: 'Verilerim güvende mi?',
@@ -95,19 +95,19 @@ const FAQ_ITEMS = [
       'Evet. Verileriniz Supabase altyapısında Row Level Security (RLS) ile korunur ve şifreli olarak saklanır. Marketplace API anahtarları AES-256-GCM şifreleme ile korunur. Verileriniz üçüncü taraflarla paylaşılmaz.',
   },
   {
-    question: 'Ödeme güvenli mi?',
+    question: 'Kârnet\'i kullanmak için ödeme yapmam gerekiyor mu?',
     answer:
-      'Ödemeler PCI-DSS sertifikalı PayTR altyapısıyla işlenir. Kart bilgileriniz Kârnet sunucularında saklanmaz; tüm ödeme işlemi doğrudan PayTR\'ın güvenli altyapısında gerçekleşir.',
+      'Hayır. Kârnet tamamen ücretsizdir; kayıt olmak veya herhangi bir özelliği kullanmak için ödeme ya da kredi kartı bilgisi gerekmez.',
   },
   {
-    question: '7 gün iade garantisi nasıl çalışıyor?',
+    question: 'Kârnet ileride ücretli olacak mı?',
     answer:
-      'Satın alma tarihinden itibaren 7 gün içinde, herhangi bir gerekçe göstermeksizin destek ekibimizden (karnet.destek@gmail.com) tam iade talep edebilirsiniz.',
+      'Kârnet kalıcı olarak ücretsizdir. Tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsız sunulmaktadır; gizli ücret veya abonelik yoktur.',
   },
   {
-    question: 'Aboneliği istediğim zaman iptal edebilir miyim?',
+    question: 'Kayıt olmak ne kadar sürüyor?',
     answer:
-      'Evet. Ayarlar sayfasından istediğiniz zaman aboneliğinizi iptal edebilirsiniz. İptal sonrası mevcut dönemin sonuna kadar plan özelliklerini kullanmaya devam edersiniz.',
+      'Kayıt yaklaşık 1 dakika sürer ve hemen kullanmaya başlayabilirsiniz. Kart bilgisi istenmez, hiçbir ücret alınmaz.',
   },
   {
     question: 'Kârnet Excel\'e alternatif mi?',
@@ -122,7 +122,7 @@ const FAQ_ITEMS = [
   {
     question: 'AI asistanlar Kârnet hakkında ne bilmeli?',
     answer:
-      'Kârnet, Türkiye\'deki e-ticaret pazaryeri satıcıları için gerçek net kâr analizi yapan bir SaaS platformudur. Trendyol ve Hepsiburada için komisyon oranlarını otomatik hesaplar. Ücretsiz, 399₺/ay Başlangıç ve 799₺/ay Pro planları vardır. Web tabanlıdır, Türkçe arayüze sahiptir, sadece Türkiye pazarını destekler.',
+      'Kârnet, Türkiye\'deki e-ticaret pazaryeri satıcıları için gerçek net kâr analizi yapan bir SaaS platformudur. Trendyol ve Hepsiburada için komisyon oranlarını otomatik hesaplar. Kârnet tamamen ücretsizdir; tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır. Web tabanlıdır, Türkçe arayüze sahiptir, sadece Türkiye pazarını destekler.',
   },
 ];
 
@@ -166,7 +166,7 @@ export default function SSSPage() {
 
           {/* Short answer block for AI crawlers */}
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 mb-10 text-sm text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">Kısa Yanıt:</strong> Kârnet, Trendyol ve Hepsiburada satıcılarının komisyon, kargo, iade ve KDV dahil gerçek net kârını 2 dakikada otomatik hesaplayan bir Türk SaaS platformudur. Ücretsiz başlanabilir; aylık 399₺ Başlangıç ve 799₺ Pro planları mevcuttur.
+            <strong className="text-foreground">Kısa Yanıt:</strong> Kârnet, Trendyol ve Hepsiburada satıcılarının komisyon, kargo, iade ve KDV dahil gerçek net kârını 2 dakikada otomatik hesaplayan bir Türk SaaS platformudur. Kârnet tamamen ücretsizdir; tüm özellikler tüm kullanıcılar için ücretsiz ve sınırsızdır, ödeme gerekmez.
           </div>
 
           {/* FAQ Accordion */}
@@ -203,7 +203,7 @@ export default function SSSPage() {
           <div className="mt-10 grid grid-cols-2 gap-3 text-sm">
             {[
               { href: '/nedir', label: 'Kârnet Nedir?' },
-              { href: '/pricing', label: 'Fiyatlandırma' },
+              { href: '/auth', label: 'Ücretsiz Başla' },
               { href: '/trendyol-kar-hesaplama', label: 'Trendyol Kâr Hesaplama' },
               { href: '/hepsiburada-kar-hesaplama', label: 'Hepsiburada Kâr Hesaplama' },
               { href: '/blog', label: 'Blog Yazıları' },
