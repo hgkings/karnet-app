@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Fiyatlandırma | Karnet',
+  title: 'Fiyatlandırma — Ücretsiz, Başlangıç ve Pro',
   description:
-    'Karnet fiyatlandırma planları. Ücretsiz, Başlangıç ve Profesyonel planlar ile e-ticaret kârlılık analizinizi başlatın.',
+    'Kârnet fiyatlandırma planları: Ücretsiz (3 ürün), Başlangıç 399₺/ay (25 ürün), Profesyonel 799₺/ay (sınırsız). 7 gün iade garantisi. Kart bilgisi saklanmaz.',
+  alternates: { canonical: 'https://karnet.com.tr/pricing' },
   openGraph: {
-    title: 'Fiyatlandırma | Karnet',
-    description: 'Sade ve şeffaf fiyatlandırma. Gizli ücret yok, istediğin zaman iptal et.',
+    title: 'Kârnet Fiyatlandırma — Ücretsiz, Başlangıç ve Pro',
+    description:
+      'Ücretsiz planla başlayın. Daha fazla ürün ve gelişmiş özellikler için 399₺/ay\'dan Başlangıç planına geçin.',
+    url: 'https://karnet.com.tr/pricing',
+    type: 'website',
   },
 };
 
-export default function PricingLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return children;
+export default function PricingLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }

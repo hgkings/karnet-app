@@ -12,6 +12,14 @@ const PRODUCT_LINKS = [
   { href: '/hakkimizda', label: 'Hakkımızda' },
 ];
 
+const GEO_LINKS = [
+  { href: '/nedir', label: 'Kârnet Nedir?' },
+  { href: '/sss', label: 'SSS' },
+  { href: '/trendyol-kar-hesaplama', label: 'Trendyol Kâr Hesaplama' },
+  { href: '/hepsiburada-kar-hesaplama', label: 'Hepsiburada Kâr Hesaplama' },
+  { href: '/blog', label: 'Blog' },
+];
+
 const LEGAL_LINKS = [
   { href: '/gizlilik-politikasi', label: 'Gizlilik Politikası' },
   { href: '/kullanim-sartlari', label: 'Kullanım Şartları' },
@@ -97,8 +105,25 @@ export function Footer() {
           </div>
         </div>
 
+        {/* GEO / Kaynaklar */}
+        <div className="mt-10 pt-8 border-t border-border/30">
+          <h4 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-4">Kaynaklar</h4>
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            {GEO_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-8 pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground/60">
             © {new Date().getFullYear()} Kârnet · PayTR güvencesiyle · Veriler satılmaz
           </p>
