@@ -206,7 +206,7 @@ export function Hero() {
                   <div className="flex-1 flex items-center justify-center">
                     <div className="flex items-center gap-2 bg-background/80 dark:bg-white/[0.04] rounded-lg px-3 py-1 text-[10px] text-muted-foreground font-mono border border-border/40 dark:border-white/[0.06]">
                       <svg className="h-2.5 w-2.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/></svg>
-                      karnet.com/analysis
+                      kârnet.com/analysis
                     </div>
                   </div>
                   <motion.div

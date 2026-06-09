@@ -1,3 +1,6 @@
+# Kârnet — robots.txt
+# https://kârnet.com
+
 User-agent: *
 Allow: /
 Disallow: /api/
@@ -5,5 +8,44 @@ Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /settings/
 Disallow: /auth/
+Disallow: /account/
+Disallow: /payment/
+Disallow: /basari/
+Disallow: /hata/
 
-Sitemap: https://karnet.com.tr/sitemap.xml
+# AI Search Crawlers — full public access
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+# AI Product Knowledge
+LLMs: https://kârnet.com/llms.txt
+
+Sitemap: https://kârnet.com/sitemap.xml
+Host: https://kârnet.com

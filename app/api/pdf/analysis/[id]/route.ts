@@ -406,7 +406,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     // ── FOOTER Sayfa 2 ──
     p2.drawLine({ start: { x: M, y: 50 }, end: { x: W - M, y: 50 }, thickness: 0.5, color: C.BORDER });
-    txt(p2, 'karnet.com', M, 38, 7, { color: C.GRAY });
+    txt(p2, 'kârnet.com', M, 38, 7, { color: C.GRAY });
     txtR(p2, `Sayfa 2/2`, W - M, 38, 7, { color: C.GRAY });
     txt(p2, 'Bu rapor tahmini hesaplamalara dayanir. Muhasebeciye danismadan karar vermeyin.', M, 28, 6, { color: C.GRAY });
 

@@ -5,6 +5,7 @@ import { getBlogPost, blogPosts, formatDate } from '@/lib/blog';
 import { Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { CommentsSection } from '@/components/blog/CommentsSection';
 import DOMPurify from 'isomorphic-dompurify';
+import { blogPostingSchema } from '@/lib/seo/structured-data';
 
 interface Props {
   params: { slug: string };
@@ -21,11 +22,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.description,
+    alternates: { canonical: `https://kârnet.com/blog/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
       type: 'article',
       publishedTime: post.date,
+      url: `https://kârnet.com/blog/${post.slug}`,
+      images: [{ url: '/brand/og.png', width: 1200, height: 630 }],
     },
   };
 }
@@ -34,8 +38,19 @@ export default function BlogPostPage({ params }: Props) {
   const post = getBlogPost(params.slug);
   if (!post) notFound();
 
+  const jsonLd = blogPostingSchema({
+    title: post.title,
+    description: post.description,
+    slug: post.slug,
+    datePublished: post.date,
+  });
+
   return (
     <main className="min-h-screen bg-background text-foreground pt-24 pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
         {/* Geri Butonu */}
         <Link
