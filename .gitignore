@@ -40,3 +40,6 @@ test-results/
 .claude/add.md
 .claude/settings.local.json
 .claude/hooks/
+
+# Dev tooling — installed skills (not app code)
+.claude/skills/

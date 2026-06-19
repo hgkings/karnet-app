@@ -21,6 +21,7 @@ const config: Config = {
       fontFamily: {
         sans: ['"DM Sans"', 'var(--font-inter)', 'system-ui', 'sans-serif'],
         geist: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
       },
       boxShadow: {
         'premium-sm': '0 1px 2px rgba(2,6,23,.06)',
