@@ -239,12 +239,12 @@ export default function TrendyolKarHesaplamaPage() {
           {/* Internal links */}
           <nav className="grid grid-cols-2 gap-3 text-sm" aria-label="İlgili sayfalar">
             {[
-              { href: '/hepsiburada-kar-hesaplama', label: 'Hepsiburada Kâr Hesaplama' },
+              { href: '/trendyol-kargo-ucreti-hesaplama', label: 'Trendyol Kargo Ücreti Hesaplama' },
+              { href: '/trendyol-kdv-hesaplama', label: 'Trendyol KDV Hesaplama' },
+              { href: '/trendyol-reklam-maliyeti-hesaplama', label: 'Trendyol Reklam Maliyeti' },
               { href: '/blog/trendyol-komisyon-oranlari-2026', label: 'Trendyol Komisyon Oranları' },
-              { href: '/blog/trendyolda-gercek-kar-nasil-hesaplanir', label: 'Trendyol Kâr Rehberi' },
-              { href: '/nedir', label: 'Kârnet Nedir?' },
+              { href: '/hepsiburada-kar-hesaplama', label: 'Hepsiburada Kâr Hesaplama' },
               { href: '/auth', label: 'Ücretsiz Başla' },
-              { href: '/sss', label: 'SSS' },
             ].map((link) => (
               <Link
                 key={link.href}

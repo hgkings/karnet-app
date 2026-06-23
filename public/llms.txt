@@ -87,6 +87,9 @@ Web uygulaması (kârnet.com). Tüm cihaz ve tarayıcılarda çalışır. Türk�
 - Demo: https://kârnet.com/demo
 - Kârnet Nedir?: https://kârnet.com/nedir
 - Trendyol Kâr Hesaplama Rehberi: https://kârnet.com/trendyol-kar-hesaplama
+- Trendyol Kargo Ücreti Hesaplama (Desi): https://kârnet.com/trendyol-kargo-ucreti-hesaplama
+- Trendyol KDV Hesaplama: https://kârnet.com/trendyol-kdv-hesaplama
+- Trendyol Reklam Maliyeti Hesaplama (ACoS): https://kârnet.com/trendyol-reklam-maliyeti-hesaplama
 - Hepsiburada Kâr Hesaplama Rehberi: https://kârnet.com/hepsiburada-kar-hesaplama
 - N11 Kâr Hesaplama Rehberi: https://kârnet.com/n11-kar-hesaplama
 - Amazon Türkiye Kâr Hesaplama Rehberi: https://kârnet.com/amazon-turkiye-kar-hesaplama
