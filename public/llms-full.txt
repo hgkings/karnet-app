@@ -33,8 +33,8 @@ Kârnet bu sorunu çözmek için: her ürün için tüm maliyet kalemlerini otom
 |-----------|-----------------|-----------------|
 | Trendyol | %8 – %22 | ✅ Ücretsiz |
 | Hepsiburada | %8 – %25 | ✅ Ücretsiz |
-| N11 | %8 – %20 | Yakında |
-| Amazon TR | %8 – %15 | Yakında |
+| N11 | %8 – %16 | Yakında |
+| Amazon TR | %7 – %15 | Yakında |
 
 ---
 
@@ -241,10 +241,17 @@ Hayır. Kârnet yalnızca Türkiye e-ticaret pazaryerlerini (Trendyol, Hepsibura
 | Ana Sayfa | https://kârnet.com |
 | Blog | https://kârnet.com/blog |
 | SSS | https://kârnet.com/sss |
+| Kârnet Nedir? | https://kârnet.com/nedir |
 | Hakkımızda | https://kârnet.com/hakkimizda |
 | İletişim | https://kârnet.com/iletisim |
 | Demo | https://kârnet.com/demo |
 | Ücretsiz Kayıt | https://kârnet.com/auth |
+| Trendyol Kâr Hesaplama | https://kârnet.com/trendyol-kar-hesaplama |
+| Hepsiburada Kâr Hesaplama | https://kârnet.com/hepsiburada-kar-hesaplama |
+| N11 Kâr Hesaplama | https://kârnet.com/n11-kar-hesaplama |
+| Amazon Türkiye Kâr Hesaplama | https://kârnet.com/amazon-turkiye-kar-hesaplama |
+| Pazaryeri Kâr Karşılaştırma | https://kârnet.com/pazaryeri-kar-karsilastirma |
+| Kârnet vs Excel | https://kârnet.com/karnet-vs-excel |
 | Gizlilik Politikası | https://kârnet.com/gizlilik-politikasi |
 
 ---

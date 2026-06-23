@@ -16,6 +16,10 @@ const GEO_LINKS = [
   { href: '/sss', label: 'SSS' },
   { href: '/trendyol-kar-hesaplama', label: 'Trendyol Kâr Hesaplama' },
   { href: '/hepsiburada-kar-hesaplama', label: 'Hepsiburada Kâr Hesaplama' },
+  { href: '/n11-kar-hesaplama', label: 'N11 Kâr Hesaplama' },
+  { href: '/amazon-turkiye-kar-hesaplama', label: 'Amazon TR Kâr Hesaplama' },
+  { href: '/pazaryeri-kar-karsilastirma', label: 'Pazaryeri Karşılaştırma' },
+  { href: '/karnet-vs-excel', label: 'Kârnet vs Excel' },
   { href: '/blog', label: 'Blog' },
 ];
 
